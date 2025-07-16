@@ -19,6 +19,10 @@
     {
       "source": "/api/export-csv",
       "destination": "/api/export-csv.js"
+    },
+    {
+      "source": "/:path((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 } 

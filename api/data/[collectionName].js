@@ -52,7 +52,7 @@ async function handler(req, res) {
   try {
     switch (req.method) {
       case 'GET':
-        const snapshot = await db.collection(collectionName).get();
+        const snapshot = await db.collection(collectionName).orderBy('startDate').get();
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
