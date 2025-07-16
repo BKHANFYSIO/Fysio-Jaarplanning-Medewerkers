@@ -48,8 +48,35 @@ function getMonthNumber(monthStr) {
   return months[monthStr.toLowerCase()] || 0;
 }
 
+// Helper functie om datumstrings (DD-MMM-YYYY) om te zetten naar Firestore Timestamp
+function parseDateToTimestamp(dateStr) {
+  if (!dateStr) return null; // Firestore accepteert null, niet undefined
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    console.warn(`Ongeldige datumformaat voor Timestamp conversie: ${dateStr}`);
+    return null; // Of gooi een fout
+  }
+  const day = parseInt(parts[0]);
+  const monthNum = getMonthNumber(parts[1]);
+  const year = parseInt(parts[2]);
+
+  if (isNaN(day) || isNaN(monthNum) || isNaN(year) || monthNum === 0) {
+    console.warn(`Datum parseerfout voor Timestamp conversie: ${dateStr}`);
+    return null;
+  }
+
+  const date = new Date(year, monthNum - 1, day); // Maanden zijn 0-indexed in Date object
+  // Controleer op ongeldige datums (bijv. 31 februari)
+  if (date.getFullYear() !== year || date.getMonth() !== monthNum - 1 || date.getDate() !== day) {
+    console.warn(`Ongeldige datumwaarde na parsing voor Timestamp: ${dateStr}`);
+    return null;
+  }
+  return admin.firestore.Timestamp.fromDate(date);
+}
+
 // Helper functie om datumstrings om te zetten (hergebruikt uit csvParser.ts)
-function formatCsvDate(dateStr) {
+// Deze functie is nu alleen voor het normaliseren van de jaar, nog niet voor de Timestamp conversie
+function formatCsvDateForParsing(dateStr) {
   if (!dateStr) return '';
   let parsedDate = dateStr.trim();
   if (parsedDate && !parsedDate.includes('2025') && !parsedDate.includes('2026')) {
@@ -83,8 +110,8 @@ async function parsePlanningData(csvFilePath) {
       title: (columns[0] || '').trim() || '',
       description: (columns[1] || '').trim() || '',
       link: (columns[2] || '').trim() || null,
-      startDate: formatCsvDate(columns[12]),
-      endDate: formatCsvDate(columns[13]),
+      startDate: parseDateToTimestamp(formatCsvDateForParsing(columns[12])),
+      endDate: parseDateToTimestamp(formatCsvDateForParsing(columns[13])),
       startTime: (columns[14] || '').trim() || null,
       endTime: (columns[15] || '').trim() || null,
       deadline: (columns[16] || '').trim() || null,
@@ -139,7 +166,7 @@ async function parseWeekData(csvFilePath) {
       const weekInfo = {
         weekCode: label.includes('.') ? label.split(' ')[0] : label,
         weekLabel: label,
-        startDate: formatCsvDate(dateStr),
+        startDate: parseDateToTimestamp(formatCsvDateForParsing(dateStr)),
         semester: currentSemester,
         isVacation
       };

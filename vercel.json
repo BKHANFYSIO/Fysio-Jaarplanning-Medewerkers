@@ -1,24 +1,21 @@
 {
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
   "rewrites": [
     {
-      "source": "/api/auth/login",
-      "destination": "/api/auth/login.js"
-    },
-    {
-      "source": "/api/data/:collectionName",
-      "destination": "/api/data/[collectionName].js"
-    },
-    {
-      "source": "/api/data/:collectionName/:id",
-      "destination": "/api/data/[collectionName].js"
-    },
-    {
-      "source": "/api/import-csv",
-      "destination": "/api/import-csv.js"
-    },
-    {
-      "source": "/api/export-csv",
-      "destination": "/api/export-csv.js"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
       "source": "/:path((?!api/).*)",

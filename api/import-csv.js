@@ -21,8 +21,34 @@ function getMonthNumber(monthStr) {
   return months[monthStr.toLowerCase()] || 0;
 }
 
+// Helper functie om datumstrings (DD-MMM-YYYY) om te zetten naar Firestore Timestamp (hergebruikt)
+function parseDateToTimestamp(dateStr) {
+  if (!dateStr) return null; // Firestore accepteert null, niet undefined
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    // console.warn(`Ongeldige datumformaat voor Timestamp conversie: ${dateStr}`);
+    return null;
+  }
+  const day = parseInt(parts[0]);
+  const monthNum = getMonthNumber(parts[1]);
+  const year = parseInt(parts[2]);
+
+  if (isNaN(day) || isNaN(monthNum) || isNaN(year) || monthNum === 0) {
+    // console.warn(`Datum parseerfout voor Timestamp conversie: ${dateStr}`);
+    return null;
+  }
+
+  const date = new Date(year, monthNum - 1, day); // Maanden zijn 0-indexed in Date object
+  if (date.getFullYear() !== year || date.getMonth() !== monthNum - 1 || date.getDate() !== day) {
+    // console.warn(`Ongeldige datumwaarde na parsing voor Timestamp: ${dateStr}`);
+    return null;
+  }
+  return admin.firestore.Timestamp.fromDate(date);
+}
+
 // Helper functie om datumstrings om te zetten (hergebruikt uit populateFirestore.js)
-function formatCsvDate(dateStr) {
+// Deze functie is nu alleen voor het normaliseren van de jaar, nog niet voor de Timestamp conversie
+function formatCsvDateForParsing(dateStr) {
   if (!dateStr) return '';
   let parsedDate = dateStr.trim();
   if (parsedDate && !parsedDate.includes('2025') && !parsedDate.includes('2026')) {
@@ -36,6 +62,17 @@ function formatCsvDate(dateStr) {
     }
   }
   return parsedDate;
+}
+
+// Helper functie om objecten te filteren om ongedefinieerde eigenschappen te verwijderen (hergebruikt)
+function removeUndefinedProperties(obj) {
+  const newObj = {};
+  for (const key in obj) {
+    if (obj[key] !== undefined) {
+      newObj[key] = obj[key];
+    }
+  }
+  return newObj;
 }
 
 // Functie om PlanningData te parsen (aangepast van populateFirestore.js)
@@ -55,8 +92,8 @@ async function parsePlanningData(csvContent) {
       title: (columns[0] || '').trim() || '',
       description: (columns[1] || '').trim() || '',
       link: (columns[2] || '').trim() || null,
-      startDate: formatCsvDate(columns[12]),
-      endDate: formatCsvDate(columns[13]),
+      startDate: parseDateToTimestamp(formatCsvDateForParsing(columns[12])),
+      endDate: parseDateToTimestamp(formatCsvDateForParsing(columns[13])),
       startTime: (columns[14] || '').trim() || null,
       endTime: (columns[15] || '').trim() || null,
       deadline: (columns[16] || '').trim() || null,
@@ -110,7 +147,7 @@ async function parseWeekData(csvContent) {
       const weekInfo = {
         weekCode: label.includes('.') ? label.split(' ')[0] : label,
         weekLabel: label,
-        startDate: formatCsvDate(dateStr),
+        startDate: parseDateToTimestamp(formatCsvDateForParsing(dateStr)),
         semester: currentSemester,
         isVacation
       };
@@ -144,16 +181,14 @@ async function handler(req, res) {
     return res.status(400).json({ message: 'Ongeldige import modus. Kies \'merge\' of \'overwrite\'.' });
   }
 
-  // Vercel's body parsing voor multipart/form-data: bestand is beschikbaar via req.body.file.buffer of req.body.file.filepath
-  const file = req.body.file; // Als het bestand als onderdeel van een multipart form wordt gestuurd
+  const file = req.body.file;
   let csvContent = '';
 
-  // Controleer of de body een string of buffer is (afhankelijk van hoe de frontend stuurt)
   if (typeof req.body === 'string') {
     csvContent = req.body;
-  } else if (req.body.file && req.body.file.data) { // Bijv. als base64 of buffer
+  } else if (req.body.file && req.body.file.data) {
     csvContent = Buffer.from(req.body.file.data).toString('utf8');
-  } else if (file && file.buffer) { // Vercel's multipart body parsing
+  } else if (file && file.buffer) {
     csvContent = file.buffer.toString('utf8');
   } else {
     return res.status(400).json({ message: 'Geen CSV-inhoud gevonden in request body.' });
@@ -178,13 +213,13 @@ async function handler(req, res) {
 
     const batch = db.batch();
     for (const item of parsedData) {
+      const cleanedItem = removeUndefinedProperties(item); // Zorg dat geen undefined waardes in de database komen
       if (mode === 'merge') {
-        // Probeer document te vinden op basis van unieke sleutel (title + startDate voor planning, weekCode voor weeks)
         let docRef;
         if (collectionName === 'planningItems') {
           const existingDocs = await db.collection(collectionName)
-            .where('title', '==', item.title)
-            .where('startDate', '==', item.startDate)
+            .where('title', '==', cleanedItem.title)
+            .where('startDate', '==', cleanedItem.startDate)
             .limit(1).get();
           if (!existingDocs.empty) {
             docRef = existingDocs.docs[0].ref;
@@ -193,7 +228,7 @@ async function handler(req, res) {
           }
         } else if (collectionName === 'weeks') {
           const existingDocs = await db.collection(collectionName)
-            .where('weekCode', '==', item.weekCode)
+            .where('weekCode', '==', cleanedItem.weekCode)
             .limit(1).get();
           if (!existingDocs.empty) {
             docRef = existingDocs.docs[0].ref;
@@ -201,10 +236,10 @@ async function handler(req, res) {
             docRef = db.collection(collectionName).doc();
           }
         }
-        batch.set(docRef, item, { merge: true }); // Gebruik merge:true om velden bij te werken zonder te overschrijven
+        batch.set(docRef, cleanedItem, { merge: true }); // Gebruik merge:true om velden bij te werken zonder te overschrijven
       } else { // overwrite of als geen match in merge
         const docRef = db.collection(collectionName).doc(); // Genereer altijd een nieuwe ID bij overwrite of geen match
-        batch.set(docRef, item);
+        batch.set(docRef, cleanedItem);
       }
     }
     await batch.commit();

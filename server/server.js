@@ -2,205 +2,197 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const multer = require('multer'); // Voor het afhandelen van bestandsuploads
-const path = require('path'); // Toegevoegd voor padmanipulatie
-const fs = require('fs');   // Toegevoegd voor bestandsbewerkingen
-const jwt = require('jsonwebtoken'); // Toegevoegd voor JWT
-const rateLimit = require('express-rate-limit'); // Toegevoegd voor rate limiting
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const admin = require('firebase-admin');
+const { parse } = require('csv-parse');
+const { stringify } = require('csv-stringify/sync');
 
-const app = express();
-const PORT = 3000; // Poort voor de backend server
-const JWT_SECRET = process.env.JWT_SECRET; // Haal JWT Secret op uit .env
-
-// Zorg ervoor dat JWT_SECRET is ingesteld
-if (!JWT_SECRET) {
-  console.error('Fout: JWT_SECRET is niet ingesteld in de .env-variabelen.');
+// Initialize Firebase Admin SDK for local server
+try {
+  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  if (!serviceAccountPath || !fs.existsSync(serviceAccountPath)) {
+    throw new Error('Fout: FIREBASE_SERVICE_ACCOUNT_PATH is niet ingesteld of het bestand bestaat niet.');
+  }
+  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+} catch (error) {
+  console.error('Fout bij het initialiseren van Firebase Admin SDK:', error);
   process.exit(1);
 }
+const db = admin.firestore();
 
-// Mappen voor uploads en configuratie
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const CONFIG_DIR = path.join(__dirname, 'config');
-const DATA_VERSIONS_FILE = path.join(CONFIG_DIR, 'data_versions.json');
+const app = express();
+const PORT = 3000;
 
-// Zorg ervoor dat de mappen bestaan
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
-if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR);
-
-// Multer configuratie voor bestandsuploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: (req, file, cb) => {
-    const timestamp = new Date().toISOString().replace(/[:.-]/g, '');
-    const originalname = file.originalname.replace(/\s/g, '_'); // spaties vervangen door underscores
-    const extension = path.extname(originalname);
-    const basename = path.basename(originalname, extension);
-    cb(null, `${basename}_${timestamp}${extension}`);
-  }
-});
-const upload = multer({ storage: storage });
-
-// Helper functies voor data_versions.json
-const readDataVersions = () => {
-  if (!fs.existsSync(DATA_VERSIONS_FILE)) {
-    // Als het bestand niet bestaat, initialiseren we het met een lege structuur
-    return {
-      planning_sem1: { active: null, versions: [] },
-      planning_sem2: { active: null, versions: [] },
-      week_planning: { active: null, versions: [] }
-    };
-  }
-  const data = fs.readFileSync(DATA_VERSIONS_FILE, 'utf8');
-  return JSON.parse(data);
+// CORS configuratie
+const corsOptions = {
+  origin: 'http://localhost:5173'
 };
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const writeDataVersions = (data) => {
-  fs.writeFileSync(DATA_VERSIONS_FILE, JSON.stringify(data, null, 2), 'utf8');
-};
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-// Middleware
-app.use(cors()); // Maakt cross-origin requests mogelijk
-app.use(bodyParser.json()); // Ondersteuning voor JSON-gecodeerde bodies
-app.use(bodyParser.urlencoded({ extended: true })); // Ondersteuning voor URL-gecodeerde bodies
+// --- Helper Functies ---
+function getMonthNumber(monthStr) {
+  const months = {
+    'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'okt': 10, 'nov': 11, 'dec': 12,
+    'januari': 1, 'februari': 2, 'maart': 3, 'april': 4, 'juni': 6,
+    'juli': 7, 'augustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'december': 12
+  };
+  return months[monthStr.toLowerCase()] || 0;
+}
 
-// Rate limiting voor login pogingen (max 5 pogingen per 15 minuten)
+function parseDateToTimestamp(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  const day = parseInt(parts[0]);
+  const monthNum = getMonthNumber(parts[1]);
+  const year = parseInt(parts[2]);
+  if (isNaN(day) || isNaN(monthNum) || isNaN(year) || monthNum === 0) return null;
+  const date = new Date(year, monthNum - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== monthNum - 1 || date.getDate() !== day) return null;
+  return admin.firestore.Timestamp.fromDate(date);
+}
+
+function formatTimestampToDateString(timestamp) {
+  if (!timestamp || !timestamp.toDate) return null;
+  const date = timestamp.toDate();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function removeUndefinedProperties(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(item => removeUndefinedProperties(item));
+  const newObj = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (value !== undefined) {
+        newObj[key] = removeUndefinedProperties(value);
+      }
+    }
+  }
+  return newObj;
+}
+
+// --- Middleware ---
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuten
-  max: 5, // Maximaal 5 verzoeken per IP in 15 minuten
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: 'Te veel inlogpogingen vanaf dit IP, probeer het over 15 minuten opnieuw.'
 });
 
-// Middleware voor token verificatie
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-
   if (token == null) return res.status(401).json({ message: 'Authenticatie token ontbreekt.' });
-
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: 'Ongeldig of verlopen authenticatie token.' });
-    req.user = user; // Voeg de gebruiker informatie toe aan het request object
+    req.user = user;
     next();
   });
 };
 
-// Basis route om te testen of de server werkt
-app.get('/', (req, res) => {
-  res.send('Backend server draait!');
-});
-
-app.post('/login', loginLimiter, (req, res) => {
+// --- Routes ---
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { username, password } = req.body;
-  const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Genereer een JWT
-    const user = { name: username }; // Hier kun je meer gebruikersinfo toevoegen indien nodig
-    const accessToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1h' }); // Token verloopt na 1 uur
+    const user = { name: username };
+    const accessToken = jwt.sign(user, JWT_SECRET, { expiresIn: '1h' });
     res.json({ message: 'Login succesvol', token: accessToken });
   } else {
     res.status(401).json({ message: 'Ongeldige gebruikersnaam of wachtwoord' });
   }
 });
 
-// Pas authenticatie middleware toe op alle admin gerelateerde routes
-app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'Geen bestand geüpload.' });
-  }
-
-  const { filetype } = req.body; // Verwacht filetype (e.g., 'planning_sem1', 'week_planning')
-  const uploadedFilename = req.file.filename;
-  const dataVersions = readDataVersions();
-
-  if (dataVersions[filetype]) {
-    // Voeg nieuwe versie toe
-    dataVersions[filetype].versions.push({
-      filename: uploadedFilename,
-      uploaded_at: new Date().toISOString()
-    });
-    // Stel de nieuwe upload in als de actieve versie
-    dataVersions[filetype].active = uploadedFilename;
-    writeDataVersions(dataVersions);
-
-    res.json({ message: `Bestand ${filetype} succesvol geüpload en geactiveerd.`, filename: uploadedFilename });
-  } else {
-    // Verwijder het geüploade bestand als het bestandstype ongeldig is
-    fs.unlinkSync(path.join(UPLOADS_DIR, uploadedFilename));
-    return res.status(400).json({ message: 'Ongeldig bestandstype opgegeven.' });
-  }
-});
-
-app.get('/download/:filename', authenticateToken, (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(UPLOADS_DIR, filename);
-
-  // Controleer of het bestand bestaat
-  if (fs.existsSync(filePath)) {
-    res.download(filePath, (err) => {
-      if (err) {
-        console.error('Fout bij het downloaden van bestand:', err);
-        res.status(500).json({ message: 'Fout bij het downloaden van bestand.' });
-      }
-    });
-  } else {
-    res.status(404).json({ message: 'Bestand niet gevonden.' });
-  }
-});
-
-app.get('/files', authenticateToken, (req, res) => {
+// GET data (publiek)
+app.get('/api/data/:collectionName', async (req, res) => {
+  const { collectionName } = req.params;
   try {
-    const dataVersions = readDataVersions();
-    res.json(dataVersions);
+    const snapshot = await db.collection(collectionName).orderBy('startDate').get();
+    const data = snapshot.docs.map(doc => {
+      const docData = doc.data();
+      if (docData.startDate) docData.startDate = formatTimestampToDateString(docData.startDate);
+      if (docData.endDate) docData.endDate = formatTimestampToDateString(docData.endDate);
+      if (docData.deadline) docData.deadline = formatTimestampToDateString(docData.deadline);
+      return { id: doc.id, ...docData };
+    });
+    res.status(200).json(data);
   } catch (error) {
-    console.error('Fout bij het ophalen van bestandsversies:', error);
-    res.status(500).json({ message: 'Fout bij het ophalen van bestandsversies.' });
+    console.error(`Fout bij het ophalen van data uit collectie ${collectionName}:`, error);
+    res.status(500).json({ message: `Fout bij het ophalen van data uit ${collectionName}` });
   }
 });
 
-app.post('/activate-version', authenticateToken, (req, res) => {
-  const { filetype, filename } = req.body;
-  const dataVersions = readDataVersions();
-
-  if (!dataVersions[filetype]) {
-    return res.status(400).json({ message: 'Ongeldig bestandstype.' });
+// POST data (beveiligd)
+app.post('/api/data/:collectionName', authenticateToken, async (req, res) => {
+  const { collectionName } = req.params;
+  let newItem = removeUndefinedProperties(req.body);
+  if (collectionName === 'planningItems') {
+    if (newItem.startDate) newItem.startDate = parseDateToTimestamp(newItem.startDate);
+    if (newItem.endDate) newItem.endDate = parseDateToTimestamp(newItem.endDate);
+    if (newItem.deadline) newItem.deadline = parseDateToTimestamp(newItem.deadline);
+  } else if (collectionName === 'weeks') {
+    if (newItem.startDate) newItem.startDate = parseDateToTimestamp(newItem.startDate);
   }
-
-  const versionExists = dataVersions[filetype].versions.some(v => v.filename === filename);
-
-  if (versionExists) {
-    dataVersions[filetype].active = filename;
-    writeDataVersions(dataVersions);
-    res.json({ message: `Versie ${filename} geactiveerd voor ${filetype}.` });
-  } else {
-    res.status(404).json({ message: `Versie ${filename} niet gevonden voor ${filetype}.` });
-  }
-});
-
-app.get('/api/data/:filetype', (req, res) => {
-  const filetype = req.params.filetype;
-  const dataVersions = readDataVersions();
-
-  if (!dataVersions[filetype] || !dataVersions[filetype].active) {
-    return res.status(404).json({ message: `Geen actief bestand gevonden voor bestandstype: ${filetype}.` });
-  }
-
-  const activeFilename = dataVersions[filetype].active;
-  const filePath = path.join(UPLOADS_DIR, activeFilename);
-
-  if (fs.existsSync(filePath)) {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    res.set('Content-Type', 'text/csv'); // Zorg ervoor dat de browser het als CSV behandelt
-    res.send(fileContent);
-  } else {
-    res.status(404).json({ message: `Actief bestand niet gevonden op de server: ${activeFilename}.` });
+  try {
+    const newDocRef = await db.collection(collectionName).add(newItem);
+    res.status(201).json({ id: newDocRef.id, message: 'Document succesvol toegevoegd.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Fout bij toevoegen van document.' });
   }
 });
 
-// Start de server
+// PUT data (beveiligd)
+app.put('/api/data/:collectionName/:id', authenticateToken, async (req, res) => {
+  const { collectionName, id } = req.params;
+  let updatedItem = removeUndefinedProperties(req.body);
+  if (collectionName === 'planningItems') {
+    if (updatedItem.startDate && typeof updatedItem.startDate === 'string') updatedItem.startDate = parseDateToTimestamp(updatedItem.startDate);
+    if (updatedItem.endDate && typeof updatedItem.endDate === 'string') updatedItem.endDate = parseDateToTimestamp(updatedItem.endDate);
+    if (updatedItem.deadline && typeof updatedItem.deadline === 'string') updatedItem.deadline = parseDateToTimestamp(updatedItem.deadline);
+  } else if (collectionName === 'weeks') {
+    if (updatedItem.startDate && typeof updatedItem.startDate === 'string') updatedItem.startDate = parseDateToTimestamp(updatedItem.startDate);
+  }
+  try {
+    await db.collection(collectionName).doc(id).update(updatedItem);
+    res.status(200).json({ id: id, message: 'Document succesvol bijgewerkt.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Fout bij bijwerken van document.' });
+  }
+});
+
+// DELETE data (beveiligd)
+app.delete('/api/data/:collectionName/:id', authenticateToken, async (req, res) => {
+  const { collectionName, id } = req.params;
+  try {
+    await db.collection(collectionName).doc(id).delete();
+    res.status(200).json({ id: id, message: 'Document succesvol verwijderd.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Fout bij verwijderen van document.' });
+  }
+});
+
+// TODO: Implementeer /api/import-csv en /api/export-csv op een vergelijkbare manier
+
+// --- Start Server ---
 app.listen(PORT, () => {
   console.log(`Server draait op http://localhost:${PORT}`);
 }); 

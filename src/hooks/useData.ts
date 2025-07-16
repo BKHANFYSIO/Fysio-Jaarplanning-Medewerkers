@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
 import { PlanningItem, WeekInfo } from '../types';
-// import { parsePlanningData, parseWeekData } from '../utils/csvParser'; // Niet meer nodig
+import { Timestamp } from 'firebase/firestore'; // Importeer Timestamp
 
-// const API_BASE_URL = 'http://localhost:3000'; // Niet meer nodig, Vercel routes automatisch
+// De basis URL voor je lokale backend server
+const API_BASE_URL = 'http://localhost:3000';
+
+// Helper functie om een Firestore Timestamp om te zetten naar een DD-MMM-YYYY string
+export const formatTimestampToDateString = (timestamp: Timestamp | null): string => {
+  if (!timestamp) return '';
+  const date = timestamp.toDate();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 export function useData() {
   const [planningItems, setPlanningItems] = useState<PlanningItem[]>([]);
@@ -16,8 +27,8 @@ export function useData() {
         setLoading(true);
         setError(null);
         
-        // Load planning data from Firestore via Vercel API
-        const planningResponse = await fetch('/api/data/planningItems');
+        // Load planning data from Firestore via local backend server
+        const planningResponse = await fetch(`${API_BASE_URL}/api/data/planningItems`);
         if (!planningResponse.ok) {
           throw new Error(`Kon planning data niet laden: ${planningResponse.statusText}`);
         }
@@ -25,8 +36,8 @@ export function useData() {
         setPlanningItems(planningData);
         console.log('Loaded planning items from Firestore:', planningData.length);
         
-        // Load week data from Firestore via Vercel API
-        const weekResponse = await fetch('/api/data/weeks');
+        // Load week data from Firestore via local backend server
+        const weekResponse = await fetch(`${API_BASE_URL}/api/data/weeks`);
         if (!weekResponse.ok) {
           throw new Error(`Kon week data niet laden: ${weekResponse.statusText}`);
         }

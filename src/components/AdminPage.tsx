@@ -41,7 +41,7 @@ interface WeekInfo {
   isVacation: boolean;
 }
 
-// const API_BASE_URL = 'http://localhost:3000'; // Backend API URL - deze wordt nu dynamisch via Vercel
+const API_BASE_URL = 'http://localhost:3000/api'; // Backend API URL
 
 const AdminPage: React.FC = () => {
   const [email, setEmail] = useState(''); // Gebruik email voor Firebase Auth
@@ -80,14 +80,14 @@ const AdminPage: React.FC = () => {
     if (!user) return; // Alleen fetchen als user ingelogd is
     setMessage('');
     try {
-      const planningResponse = await fetch(`/api/data/planningItems`, {
+      const planningResponse = await fetch(`${API_BASE_URL}/data/planningItems`, {
         headers: { 'Authorization': `Bearer ${await user.getIdToken()}` }
       });
       if (!planningResponse.ok) throw new Error('Kon planning data niet ophalen.');
       const planningData: PlanningItem[] = await planningResponse.json();
       setPlanningItems(planningData);
 
-      const weeksResponse = await fetch(`/api/data/weeks`, {
+      const weeksResponse = await fetch(`${API_BASE_URL}/data/weeks`, {
         headers: { 'Authorization': `Bearer ${await user.getIdToken()}` }
       });
       if (!weeksResponse.ok) throw new Error('Kon week data niet ophalen.');
@@ -134,13 +134,13 @@ const AdminPage: React.FC = () => {
       const collection = selectedCollection;
 
       if (isNewItem) {
-        response = await fetch(`/api/data/${collection}`, {
+        response = await fetch(`${API_BASE_URL}/data/${collection}`, {
           method: 'POST',
           headers,
           body: JSON.stringify(item),
         });
       } else if (item.id) {
-        response = await fetch(`/api/data/${collection}?id=${item.id}`, {
+        response = await fetch(`${API_BASE_URL}/data/${collection}?id=${item.id}`, {
           method: 'PUT',
           headers,
           body: JSON.stringify(item),
@@ -168,7 +168,7 @@ const AdminPage: React.FC = () => {
     if (!window.confirm('Weet je zeker dat je dit item wilt verwijderen?')) return;
     setMessage('');
     try {
-      const response = await fetch(`/api/data/${selectedCollection}?id=${id}`, {
+      const response = await fetch(`${API_BASE_URL}/data/${selectedCollection}?id=${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${await user.getIdToken()}` }
       });
@@ -197,7 +197,7 @@ const AdminPage: React.FC = () => {
     // collectionName en mode als query parameters of via andere velden in formData
 
     try {
-      const response = await fetch(`/api/import-csv?collectionName=${selectedCollection}&mode=${importMode}`, {
+      const response = await fetch(`${API_BASE_URL}/import-csv?collectionName=${selectedCollection}&mode=${importMode}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${await user.getIdToken()}` },
         body: formData,
@@ -219,7 +219,7 @@ const AdminPage: React.FC = () => {
     if (!user) { setMessage('Niet geauthenticeerd.'); return; }
     setMessage('');
     try {
-      const response = await fetch(`/api/export-csv?collectionName=${selectedCollection}`, {
+      const response = await fetch(`${API_BASE_URL}/export-csv?collectionName=${selectedCollection}`, {
         headers: { 'Authorization': `Bearer ${await user.getIdToken()}` }
       });
 

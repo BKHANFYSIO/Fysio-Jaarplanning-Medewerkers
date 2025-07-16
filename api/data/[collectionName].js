@@ -3,23 +3,66 @@ import jwt from 'jsonwebtoken'; // Importeer jwt voor directe verificatie
 
 const db = admin.firestore();
 
-// Verwijdert de applyMiddleware wrapper hier, authenticatie wordt nu in de handler beheerd
-// const applyMiddleware = (handler, middleware) => async (req, res) => {
-//   if (req.method === 'PUT' || req.method === 'POST') {
-//     if (!req.body) {
-//       let body = '';
-//       for await (const chunk of req) {
-//         body += chunk;
-//       }
-//       try {
-//         req.body = JSON.parse(body);
-//       } catch (e) {
-//         return res.status(400).json({ message: 'Ongeldige JSON in de request body.' });
-//       }
-//     }
-//   }
-//   middleware(req, res, () => handler(req, res));
-// };
+// Helper functies (hergebruikt uit populateFirestore.js)
+function getMonthNumber(monthStr) {
+  const months = {
+    'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'okt': 10, 'nov': 11, 'dec': 12,
+    'januari': 1, 'februari': 2, 'maart': 3, 'april': 4, 'juni': 6,
+    'juli': 7, 'augustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'december': 12
+  };
+  return months[monthStr.toLowerCase()] || 0;
+}
+
+function parseDateToTimestamp(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    return null;
+  }
+  const day = parseInt(parts[0]);
+  const monthNum = getMonthNumber(parts[1]);
+  const year = parseInt(parts[2]);
+
+  if (isNaN(day) || isNaN(monthNum) || isNaN(year) || monthNum === 0) {
+    return null;
+  }
+
+  const date = new Date(year, monthNum - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== monthNum - 1 || date.getDate() !== day) {
+    return null;
+  }
+  return admin.firestore.Timestamp.fromDate(date);
+}
+
+function removeUndefinedProperties(obj) {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => removeUndefinedProperties(item));
+  }
+  const newObj = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (value !== undefined) {
+        newObj[key] = removeUndefinedProperties(value);
+      }
+    }
+  }
+  return newObj;
+}
+
+// Nieuwe helper functie: Firestore Timestamp naar DD-MMM-YYYY string
+function formatTimestampToDateString(timestamp) {
+  if (!timestamp || !timestamp.toDate) return null; // Controleer of het een Firestore Timestamp is
+  const date = timestamp.toDate();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
 
 async function handler(req, res) {
   const { collectionName } = req.query;
@@ -52,18 +95,36 @@ async function handler(req, res) {
   try {
     switch (req.method) {
       case 'GET':
-        const snapshot = await db.collection(collectionName).orderBy('startDate').get();
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const snapshot = await db.collection(collectionName).orderBy('startDate').get(); // orderBy('startDate') hersteld
+        const data = snapshot.docs.map(doc => {
+          const docData = doc.data();
+          // Converteer Timestamps terug naar string-datums voor de frontend
+          if (docData.startDate && docData.startDate.toDate) docData.startDate = formatTimestampToDateString(docData.startDate);
+          if (docData.endDate && docData.endDate.toDate) docData.endDate = formatTimestampToDateString(docData.endDate);
+          if (docData.deadline && docData.deadline.toDate) docData.deadline = formatTimestampToDateString(docData.deadline);
+          return {
+            id: doc.id,
+            ...docData
+          };
+        });
         return res.status(200).json(data);
 
       case 'POST':
         if (!req.body) {
           return res.status(400).json({ message: 'Geen data opgegeven om toe te voegen.' });
         }
-        const newDocRef = await db.collection(collectionName).add(req.body);
+        let newItem = removeUndefinedProperties(req.body);
+        // Datumconversie voor PlanningItem
+        if (collectionName === 'planningItems') {
+          if (newItem.startDate) newItem.startDate = parseDateToTimestamp(newItem.startDate);
+          if (newItem.endDate) newItem.endDate = parseDateToTimestamp(newItem.endDate);
+          if (newItem.deadline) newItem.deadline = parseDateToTimestamp(newItem.deadline);
+        } else if (collectionName === 'weeks') {
+          // Datumconversie voor WeekInfo
+          if (newItem.startDate) newItem.startDate = parseDateToTimestamp(newItem.startDate);
+        }
+
+        const newDocRef = await db.collection(collectionName).add(newItem);
         return res.status(201).json({ id: newDocRef.id, message: 'Document succesvol toegevoegd.' });
 
       case 'PUT':
@@ -73,7 +134,18 @@ async function handler(req, res) {
         if (!req.body) {
           return res.status(400).json({ message: 'Geen data opgegeven om bij te werken.' });
         }
-        await db.collection(collectionName).doc(id).update(req.body);
+        let updatedItem = removeUndefinedProperties(req.body);
+        // Datumconversie voor PlanningItem
+        if (collectionName === 'planningItems') {
+          if (updatedItem.startDate && typeof updatedItem.startDate === 'string') updatedItem.startDate = parseDateToTimestamp(updatedItem.startDate);
+          if (updatedItem.endDate && typeof updatedItem.endDate === 'string') updatedItem.endDate = parseDateToTimestamp(updatedItem.endDate);
+          if (updatedItem.deadline && typeof updatedItem.deadline === 'string') updatedItem.deadline = parseDateToTimestamp(updatedItem.deadline);
+        } else if (collectionName === 'weeks') {
+          // Datumconversie voor WeekInfo
+          if (updatedItem.startDate && typeof updatedItem.startDate === 'string') updatedItem.startDate = parseDateToTimestamp(updatedItem.startDate);
+        }
+
+        await db.collection(collectionName).doc(id).update(updatedItem);
         return res.status(200).json({ id: id, message: 'Document succesvol bijgewerkt.' });
 
       case 'DELETE':
@@ -92,4 +164,4 @@ async function handler(req, res) {
   }
 }
 
-export default handler; // Exporteer de handler direct, zonder algemene authenticatie 
+export default handler; 

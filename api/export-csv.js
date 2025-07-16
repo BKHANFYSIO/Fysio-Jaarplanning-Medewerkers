@@ -4,10 +4,30 @@ import { stringify } from 'csv-stringify/sync';
 
 const db = admin.firestore();
 
-// Middleware wrapper for serverless functions
+// Middleware wrapper (re-used for consistency)
 const applyMiddleware = (handler, middleware) => async (req, res) => {
   middleware(req, res, () => handler(req, res));
 };
+
+// Helper functies (hergebruikt uit populateFirestore.js)
+function getMonthNumber(monthStr) {
+  const months = {
+    'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'okt': 10, 'nov': 11, 'dec': 12,
+    'januari': 1, 'februari': 2, 'maart': 3, 'april': 4, 'juni': 6,
+    'juli': 7, 'augustus': 8, 'september': 9, 'oktober': 10, 'november': 11, 'december': 12
+  };
+  return months[monthStr.toLowerCase()] || 0;
+}
+
+function formatTimestampToDateString(timestamp) {
+  if (!timestamp || !timestamp.toDate) return null; // Controleer of het een Firestore Timestamp is
+  const date = timestamp.toDate();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -22,7 +42,31 @@ async function handler(req, res) {
 
   try {
     const snapshot = await db.collection(collectionName).get();
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map(doc => {
+      const docData = doc.data();
+      // Converteer Timestamps terug naar string-datums voor de CSV
+      if (docData.startDate && docData.startDate.toDate) docData.startDate = formatTimestampToDateString(docData.startDate);
+      if (docData.endDate && docData.endDate.toDate) docData.endDate = formatTimestampToDateString(docData.endDate);
+      if (docData.deadline && docData.deadline.toDate) docData.deadline = formatTimestampToDateString(docData.deadline);
+      
+      // Speciale behandeling voor booleans in subjects en phases: zet ze om naar 'v' of leeg
+      if (docData.subjects) {
+        for (const key in docData.subjects) {
+          if (typeof docData.subjects[key] === 'boolean') {
+            docData.subjects[key] = docData.subjects[key] ? 'v' : '';
+          }
+        }
+      }
+      if (docData.phases) {
+        for (const key in docData.phases) {
+          if (typeof docData.phases[key] === 'boolean') {
+            docData.phases[key] = docData.phases[key] ? 'v' : '';
+          }
+        }
+      }
+      
+      return { id: doc.id, ...docData };
+    });
 
     if (data.length === 0) {
       return res.status(200).send('Geen data gevonden om te exporteren.');
@@ -42,19 +86,19 @@ async function handler(req, res) {
         { key: 'endTime', header: 'endTime' },
         { key: 'deadline', header: 'deadline' },
         // Subjects
-        { key: 'subjects.waarderen', header: 'subjects.waarderen' },
-        { key: 'subjects.juniorstage', header: 'subjects.juniorstage' },
-        { key: 'subjects.ipl', header: 'subjects.ipl' },
-        { key: 'subjects.bvp', header: 'subjects.bvp' },
-        { key: 'subjects.pzw', header: 'subjects.pzw' },
-        { key: 'subjects.minor', header: 'subjects.minor' },
-        { key: 'subjects.getuigschriften', header: 'subjects.getuigschriften' },
-        { key: 'subjects.inschrijven', header: 'subjects.inschrijven' },
-        { key: 'subjects.overig', header: 'subjects.overig' },
+        { key: 'subjects.waarderen', header: 'waarderen' },
+        { key: 'subjects.juniorstage', header: 'juniorstage' },
+        { key: 'subjects.ipl', header: 'ipl' },
+        { key: 'subjects.bvp', header: 'bvp' },
+        { key: 'subjects.pzw', header: 'pzw' },
+        { key: 'subjects.minor', header: 'minor' },
+        { key: 'subjects.getuigschriften', header: 'getuigschriften' },
+        { key: 'subjects.inschrijven', header: 'inschrijven' },
+        { key: 'subjects.overig', header: 'overig' },
         // Phases
-        { key: 'phases.p', header: 'phases.p' },
-        { key: 'phases.h1', header: 'phases.h1' },
-        { key: 'phases.h2h3', header: 'phases.h2h3' }
+        { key: 'phases.p', header: 'p' },
+        { key: 'phases.h1', header: 'h1' },
+        { key: 'phases.h2h3', header: 'h2h3' }
       ];
     } else if (collectionName === 'weeks') {
       // Definieer de kolommen en hun mappings voor WeekInfo
