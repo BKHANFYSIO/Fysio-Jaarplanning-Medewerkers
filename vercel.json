@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login.js"
+    },
+    {
+      "source": "/api/data/:collectionName",
+      "destination": "/api/data/[collectionName].js"
+    },
+    {
+      "source": "/api/data/:collectionName/:id",
+      "destination": "/api/data/[collectionName].js"
+    },
+    {
+      "source": "/api/import-csv",
+      "destination": "/api/import-csv.js"
+    },
+    {
+      "source": "/api/export-csv",
+      "destination": "/api/export-csv.js"
+    }
+  ]
+} 
