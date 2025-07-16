@@ -224,6 +224,13 @@ async function populateFirestore() {
       const planningBatch = db.batch();
       planningDataSem1.forEach(item => {
         const cleanedItem = removeUndefinedProperties(item); // Verwijder undefined properties
+
+        // Controleer of startDate een geldig Timestamp is
+        if (!(cleanedItem.startDate instanceof admin.firestore.Timestamp)) {
+          console.warn(`Ongeldige of ontbrekende startDate voor item: ${cleanedItem.title}. Item wordt overgeslagen.`);
+          return; // Sla dit item over
+        }
+
         console.log("Cleaned Item before Firestore:");
         console.log(JSON.stringify(cleanedItem, null, 2));
 
@@ -241,6 +248,12 @@ async function populateFirestore() {
       const weekData = await parseWeekData(WEEK_PLANNING_CSV_PATH);
       const weekBatch = db.batch();
       weekData.forEach(item => {
+        // Controleer of startDate een geldig Timestamp is
+        if (!(item.startDate instanceof admin.firestore.Timestamp)) {
+          console.warn(`Ongeldige of ontbrekende startDate voor week: ${item.weekLabel}. Item wordt overgeslagen.`);
+          return; // Sla dit item over
+        }
+        
         const docRef = db.collection('weeks').doc(); // Genereer een unieke ID
         weekBatch.set(docRef, item);
       });
