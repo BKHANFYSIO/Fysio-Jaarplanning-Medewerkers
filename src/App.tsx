@@ -79,7 +79,7 @@ function App() {
       if (element && headerRef.current) {
         const headerHeight = headerRef.current.offsetHeight;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerHeight - 20; // 20px extra margin
+        const offsetPosition = elementPosition - headerHeight - 40; // Increased margin to 40px
 
         window.scrollTo({
           top: offsetPosition,
@@ -189,35 +189,37 @@ function App() {
         </header>
 
          {/* Main Content Grid */}
-         {loading ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {[...Array(12)].map((_, i) => (
-              <div key={i} className="p-4 space-y-4 bg-white rounded-lg shadow-sm animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="space-y-3">
-                  <div className="h-24 bg-gray-200 rounded"></div>
-                  <div className="h-16 bg-gray-200 rounded"></div>
+         <div className="mt-8"> {/* Added margin-top to the content grid */}
+          {loading ? (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="p-4 space-y-4 bg-white rounded-lg shadow-sm animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                  <div className="space-y-3">
+                    <div className="h-24 bg-gray-200 rounded"></div>
+                    <div className="h-16 bg-gray-200 rounded"></div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {weeks.map((week) => {
-              const weekKey = `${week.semester}-${week.weekCode}`;
-              return (
-                <div key={weekKey} ref={el => weekRefs.current.set(weekKey, el)}>
-                  <WeekSection
-                    week={week}
-                    items={itemsByWeek.get(weekKey) || []}
-                    onDocumentClick={() => {}} // Placeholder for now
-                    isClosest={closestWeek?.weekCode === week.weekCode && closestWeek?.semester === week.semester}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              {weeks.map((week) => {
+                const weekKey = `${week.semester}-${week.weekCode}`;
+                return (
+                  <div key={weekKey} ref={el => weekRefs.current.set(weekKey, el)}>
+                    <WeekSection
+                      week={week}
+                      items={itemsByWeek.get(weekKey) || []}
+                      onDocumentClick={() => {}} // Placeholder for now
+                      isClosest={closestWeek?.weekCode === week.weekCode && closestWeek?.semester === week.semester}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+         </div>
       </div>
     </div>
   );
