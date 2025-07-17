@@ -4,56 +4,38 @@ interface FilterButtonProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  color?: string;
+  color: string;
 }
 
-export function FilterButton({ label, isActive, onClick, color = 'blue' }: FilterButtonProps) {
-  const baseClasses = "px-3 py-1.5 text-sm font-medium transition-all duration-200 rounded-md relative";
-  
-  // Color accent for left border (matching card colors)
-  const getColorAccent = (color: string) => {
-    switch (color) {
-      case 'green': return 'border-l-green-500';
-      case 'orange': return 'border-l-orange-500';
-      case 'purple': return 'border-l-purple-500';
-      case 'pink': return 'border-l-pink-500';
-      case 'indigo': return 'border-l-indigo-500';
-      default: return 'border-l-blue-500';
-    }
-  };
-  
-  const getActiveClasses = (color: string) => {
-    switch (color) {
-      case 'green': return 'bg-green-500 text-white border-green-500 shadow-md';
-      case 'orange': return 'bg-orange-500 text-white border-orange-500 shadow-md';
-      case 'purple': return 'bg-purple-500 text-white border-purple-500 shadow-md';
-      case 'pink': return 'bg-pink-500 text-white border-pink-500 shadow-md';
-      case 'indigo': return 'bg-indigo-500 text-white border-indigo-500 shadow-md';
-      default: return 'bg-blue-500 text-white border-blue-500 shadow-md';
-    }
-  };
-  
-  const getInactiveClasses = (color: string) => {
-    switch (color) {
-      case 'green': return 'bg-white text-gray-600 hover:bg-green-50 hover:text-green-700 border-gray-200 hover:border-green-200';
-      case 'orange': return 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-700 border-gray-200 hover:border-orange-200';
-      case 'purple': return 'bg-white text-gray-600 hover:bg-purple-50 hover:text-purple-700 border-gray-200 hover:border-purple-200';
-      case 'pink': return 'bg-white text-gray-600 hover:bg-pink-50 hover:text-pink-700 border-gray-200 hover:border-pink-200';
-      case 'indigo': return 'bg-white text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 border-gray-200 hover:border-indigo-200';
-      default: return 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-700 border-gray-200 hover:border-blue-200';
-    }
-  };
-  
-  const colorAccent = getColorAccent(color);
-  const activeClasses = getActiveClasses(color);
-  const inactiveClasses = getInactiveClasses(color);
-  
+const colorClasses = {
+  // Mapping from color names in config to Tailwind classes
+  green: { bg: 'bg-green-100', text: 'text-green-800' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-800' },
+  purple: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  pink: { bg: 'bg-pink-100', text: 'text-pink-800' },
+  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-800' },
+  blue: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  yellow: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  gray: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  teal: { bg: 'bg-teal-100', text: 'text-teal-800' },
+  slate: { bg: 'bg-slate-100', text: 'text-slate-800' },
+};
+
+export const FilterButton: React.FC<FilterButtonProps> = ({ label, isActive, onClick, color }) => {
+  const selectedColor = colorClasses[color as keyof typeof colorClasses] || colorClasses.gray;
+
+  const baseClasses = "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200";
+  const colorStyle = `${selectedColor.bg} ${selectedColor.text}`;
+  const activeClasses = `ring-2 ring-han-red ring-offset-2`;
+  const inactiveClasses = "opacity-70 hover:opacity-100";
+
   return (
     <button
+      type="button"
+      className={`${baseClasses} ${colorStyle} ${isActive ? activeClasses : inactiveClasses}`}
       onClick={onClick}
-      className={`${baseClasses} border border-l-4 ${colorAccent} ${isActive ? activeClasses : inactiveClasses}`}
     >
       {label}
     </button>
   );
-}
+};

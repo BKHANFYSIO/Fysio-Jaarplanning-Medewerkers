@@ -222,15 +222,15 @@ const AdminPage = () => {
           <h2 className="p-3 mb-4 -mx-6 -mt-6 text-xl font-semibold text-white bg-gray-700 rounded-t-lg">Uitleg & Instructies</h2>
           <Accordion title={<p><strong>Instructies voor CSV Upload</strong> (voor grote wijzigingen of een nieuw studiejaar)</p>}>
             <div className="space-y-4 text-sm">
-              <p>Gebruik de CSV-upload om in één keer een volledige planning voor een semester of een complete weekplanning voor een nieuw jaar te importeren. Deze actie <strong>overschrijft alle bestaande data</strong> in de betreffende categorie.</p>
+              <p>Gebruik de CSV-upload om in één keer een volledige planning voor een semester of een complete lesweekplanning voor een nieuw jaar te importeren. Deze actie <strong>overschrijft alle bestaande data</strong> in de betreffende categorie.</p>
               <div className="p-3 border-l-4 border-yellow-400 bg-yellow-50">
                 <h4 className="font-bold">Workflow (volg deze stappen altijd):</h4>
                 <ol className="ml-5 list-decimal">
                   <li><strong>Download altijd eerst een backup!</strong> Voordat je een nieuw bestand uploadt, klik op de "Download Backup" knop. Sla dit bestand veilig op. Mocht er iets misgaan, dan kun je deze backup gebruiken om de oude staat te herstellen.</li>
                   <li><strong>Bereid je CSV-bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen.
                     <ul className="ml-5 list-disc">
-                      <li><strong>Voor Planning-items:</strong> <code>Titel (of wat)</code>, <code>Extra regel</code>, <code>link</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
-                      <li><strong>Voor Weekplanning:</strong> <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor de datum (dd-mmm), en <code>jaar</code>.</li>
+                      <li><strong>Voor Activiteiten:</strong> <code>Titel (of wat)</code>, <code>Extra regel</code>, <code>link</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
+                      <li><strong>Voor Lesweekplanning:</strong> <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor de datum (dd-mmm), en <code>jaar</code>.</li>
                     </ul>
                   </li>
                   <li><strong>Upload het nieuwe bestand.</strong> Gebruik de juiste upload-knop. Je krijgt een waarschuwing die je moet bevestigen voordat de oude data wordt gewist.</li>
@@ -252,18 +252,20 @@ const AdminPage = () => {
         {/* Status Section */}
         <div className="p-6 mb-8 bg-white rounded-lg shadow">
           <h2 className="p-3 mb-4 -mx-6 -mt-6 text-xl font-semibold text-white bg-indigo-700 rounded-t-lg">Data Integriteit Status</h2>
+          <p className="mb-4 text-sm text-gray-600">
+            Deze sectie controleert of alle activiteiten correct aan een week in de lesweekplanning gekoppeld kunnen worden. Als dit niet lukt, verschijnt hier een waarschuwing. Dit voorkomt dat data onzichtbaar is in de planning en helpt bij het opsporen van fouten, zoals een incomplete lesweekplanning of een activiteit die een start/einddatum mist.
+          </p>
           {!orphanedLoading && (
               <div className={`p-4 border-l-4 rounded-md ${orphanedItems.length > 0 ? 'bg-orange-100 border-orange-500 text-orange-800' : 'bg-green-100 border-green-500 text-green-800'}`}>
                   {orphanedItems.length > 0 ? (
                       <>
                           <h3 className="flex items-center font-bold"><AlertTriangle size={20} className="mr-2"/>Waarschuwing: {orphanedItems.length} Wees-Activiteit(en) Gevonden</h3>
-                          <p className="mt-2 text-sm">De volgende activiteiten konden niet aan een week in de planning worden gekoppeld. Controleer de datums.</p>
                           <ul className="mt-2 ml-5 text-sm list-disc">
                               {orphanedItems.map(item => <li key={item.id}>{item.title} (Start: {item.startDate}, Eind: {item.endDate})</li>)}
                           </ul>
                       </>
                   ) : (
-                      <h3 className="flex items-center font-bold"><CheckCircle2 size={20} className="mr-2"/>Alle activiteiten zijn succesvol gekoppeld aan de weekplanning.</h3>
+                      <h3 className="flex items-center font-bold"><CheckCircle2 size={20} className="mr-2"/>Alle activiteiten zijn succesvol gekoppeld aan de lesweekplanning.</h3>
                   )}
               </div>
           )}
@@ -272,24 +274,36 @@ const AdminPage = () => {
         {/* Management Sections in a grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             
-            {/* Planning Items Management */}
+            {/* Activiteitenbeheer */}
             <div className="p-6 bg-white rounded-lg shadow">
-                <h2 className="p-3 mb-4 -mx-6 -mt-6 text-2xl font-semibold text-white bg-blue-700 rounded-t-lg">Planning Items</h2>
-                <div className="grid gap-4 mb-4 sm:grid-cols-2">
-                    <CsvUploader label="Upload Semester 1 CSV" collectionName="planning-items-sem1" />
-                    <CsvUploader label="Upload Semester 2 CSV" collectionName="planning-items-sem2" />
-                    <button onClick={() => fetchAndExportAsCsv('planning-items-sem1', `backup-sem1-${new Date().toISOString()}.csv`)} className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Backup Sem 1</button>
-                    <button onClick={() => fetchAndExportAsCsv('planning-items-sem2', `backup-sem2-${new Date().toISOString()}.csv`)} className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Backup Sem 2</button>
+                <h2 className="p-3 mb-4 -mx-6 -mt-6 text-2xl font-semibold text-white bg-blue-700 rounded-t-lg">Activiteitenbeheer</h2>
+                <div className="space-y-6">
+                    <div>
+                        <h3 className="font-bold">Stap 1: Maak een backup (Aanbevolen)</h3>
+                        <p className="text-sm text-gray-600">Download de huidige planning voordat je een nieuw bestand uploadt.</p>
+                        <div className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+                            <button onClick={() => fetchAndExportAsCsv('planning-items-sem1', `backup-sem1-${new Date().toISOString()}.csv`)} className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Backup Sem 1</button>
+                            <button onClick={() => fetchAndExportAsCsv('planning-items-sem2', `backup-sem2-${new Date().toISOString()}.csv`)} className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Backup Sem 2</button>
+                        </div>
+                    </div>
+                     <div>
+                        <h3 className="font-bold">Stap 2: Importeer een volledige planning</h3>
+                        <p className="text-sm text-gray-600">Deze actie overschrijft alle bestaande activiteiten voor het gekozen semester.</p>
+                        <div className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+                           <CsvUploader label="Upload Semester 1 CSV" collectionName="planning-items-sem1" />
+                           <CsvUploader label="Upload Semester 2 CSV" collectionName="planning-items-sem2" />
+                        </div>
+                    </div>
+                     <div>
+                        <h3 className="font-bold">Stap 3: Maak kleine aanpassingen</h3>
+                        <p className="text-sm text-gray-600">Voeg een enkele activiteit toe of gebruik de "Bewerken/Verwijderen" knoppen in de tabel hieronder.</p>
+                        <div className="mt-2">
+                            <button onClick={handleAddNewItem} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"> <PlusCircle size={18} /> Nieuw Item Toevoegen </button>
+                        </div>
+                    </div>
                 </div>
-                
-                 {/* Table for Planning Items */}
-                <div className="flex justify-end mb-4">
-                     <button onClick={handleAddNewItem} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                        <PlusCircle size={18} />
-                        Nieuw Item
-                    </button>
-                </div>
-                 {planningLoading && <p>Items laden...</p>}
+                <hr className="my-6"/>
+                {planningLoading && <p>Items laden...</p>}
                  {planningError && <p className="text-red-500">{planningError}</p>}
                  {!planningLoading && !planningError && (
                     <table className="min-w-full text-sm text-left text-gray-700">
@@ -339,14 +353,30 @@ const AdminPage = () => {
                  )}
             </div>
 
-            {/* Week Management */}
+            {/* Lesweekplanning Beheer */}
             <div className="p-6 bg-white rounded-lg shadow">
-                <h2 className="p-3 mb-4 -mx-6 -mt-6 text-2xl font-semibold text-white bg-teal-700 rounded-t-lg">Weekbeheer</h2>
-                <div className="grid gap-4 mb-4 sm:grid-cols-2">
-                    <CsvUploader label="Upload Weekplanning CSV" collectionName="week-planning" customParser={parseWeekCsvForUpload}/>
-                    <button onClick={() => fetchAndExportAsCsv('week-planning', `backup-weken-${new Date().toISOString()}.csv`)} className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Backup Weken</button>
+                <h2 className="p-3 mb-4 -mx-6 -mt-6 text-2xl font-semibold text-white bg-teal-700 rounded-t-lg">Lesweekplanning Beheer</h2>
+                <div className="space-y-6">
+                     <div>
+                        <h3 className="font-bold">Stap 1: Maak een backup (Aanbevolen)</h3>
+                        <p className="text-sm text-gray-600">Download de huidige lesweekplanning als CSV-bestand.</p>
+                         <div className="mt-2">
+                             <button onClick={() => fetchAndExportAsCsv('week-planning', `backup-weken-${new Date().toISOString()}.csv`)} className="flex items-center gap-2 px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"> <Download size={18} /> Download Backup Weken </button>
+                         </div>
+                    </div>
+                     <div>
+                        <h3 className="font-bold">Stap 2: Importeer een volledige lesweekplanning</h3>
+                        <p className="text-sm text-gray-600">Overschrijf de volledige planning. Tip: combineer studiejaren (bijv. semester 2 van dit jaar en het volledige komende jaar) in één CSV voor een soepele overgang.</p>
+                         <div className="mt-2">
+                            <CsvUploader label="Upload Lesweekplanning CSV" collectionName="week-planning" customParser={parseWeekCsvForUpload}/>
+                         </div>
+                    </div>
+                     <div>
+                        <h3 className="font-bold">Stap 3: Maak kleine aanpassingen</h3>
+                        <p className="text-sm text-gray-600">Gebruik de "Bewerken/Verwijderen" knoppen in de tabel hieronder voor snelle, individuele wijzigingen.</p>
+                    </div>
                 </div>
-                 {/* Table for Weeks */}
+                 <hr className="my-6"/>
                  {weeksLoading && <p>Weken laden...</p>}
                  {weeksError && <p className="text-red-500">{weeksError}</p>}
                  {!weeksLoading && !weeksError && (

@@ -125,7 +125,7 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
 
   const data = snapshot.docs.map(doc => doc.data());
 
-  // Check if we are exporting weeks or planning items
+  // Check if we are exporting weeks or activities
   if (collectionName.includes('week-planning')) {
     const csvData = (data as WeekInfo[]).map(item => ({
       'Weergave voor in app.': item.weekLabel,
@@ -137,7 +137,7 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     return;
   }
   
-  // Existing logic for planning items
+  // Existing logic for activities
   const csvData = (data as PlanningItem[]).map(item => ({
     'Titel (of wat)': item.title,
     'Extra regel': item.description,

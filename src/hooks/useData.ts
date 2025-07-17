@@ -17,7 +17,7 @@ export const useData = () => {
       try {
         setLoading(true);
         
-        // Fetch BOTH weeks and planning items from Firestore
+        // Fetch BOTH weeks and activities from Firestore
         const weekSnapshot = await getDocs(collection(db, 'week-planning'));
         const sem1Snapshot = await getDocs(collection(db, 'planning-items-sem1'));
         const sem2Snapshot = await getDocs(collection(db, 'planning-items-sem2'));

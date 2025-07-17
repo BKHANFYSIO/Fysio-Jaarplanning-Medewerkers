@@ -14,16 +14,6 @@ export type FilterConfig = {
 
 export const filterConfig: FilterConfig[] = [
   {
-    id: 'semester',
-    label: 'Semester',
-    type: 'pills',
-    dataKey: 'semester',
-    options: [
-      { value: '1', label: 'Semester 1', color: 'blue' },
-      { value: '2', label: 'Semester 2', color: 'red' },
-    ],
-  },
-  {
     id: 'phase',
     label: 'Studiefase',
     type: 'pills',
@@ -32,7 +22,7 @@ export const filterConfig: FilterConfig[] = [
       { value: 'p', label: 'P', color: 'green' },
       { value: 'h1', label: 'H1', color: 'orange' },
       { value: 'h2h3', label: 'H2/3', color: 'purple' },
-      { value: 'algemeen', label: 'Algemeen', color: 'gray' },
+      { value: 'algemeen', label: 'Niet aan fase gekoppeld', color: 'gray' },
     ],
   },
   {

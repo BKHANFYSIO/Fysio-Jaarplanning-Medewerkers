@@ -1,6 +1,7 @@
 import React from 'react';
 import { Clock, Calendar, AlertTriangle, FileText } from 'lucide-react';
 import { PlanningItem } from '../types';
+import { filterConfig } from '../config/filters';
 
 interface PlanningCardProps {
   item: PlanningItem;
@@ -25,11 +26,15 @@ const subjectColors: { [key: string]: string } = {
   overig: 'gray-400'
 };
 
-const phaseColors: { [key: string]: string } = {
-  p: 'bg-green-100 text-green-700',
-  h1: 'bg-orange-100 text-orange-700',
-  h2h3: 'bg-purple-100 text-purple-700'
+const phaseColorClasses: { [key: string]: string } = {
+  green: 'bg-green-100 text-green-700',
+  orange: 'bg-orange-100 text-orange-700',
+  purple: 'bg-purple-100 text-purple-700',
+  gray: 'bg-gray-100 text-gray-700',
 };
+
+// Find the phase config from the central configuration
+const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
 
 export function PlanningCard({ item, showDateDetails, onDocumentClick }: PlanningCardProps) {
   // Get all active subjects
@@ -37,10 +42,10 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
     .filter(([_, value]) => value)
     .map(([key, _]) => key);
   
-  // Get active phases
-  const activePhases = Object.entries(item.phases)
-    .filter(([_, value]) => value)
-    .map(([key, _]) => key.toUpperCase());
+  // Get active phases IN THE CORRECT ORDER and with correct labels
+  const activePhases = phaseFilterConfig 
+    ? phaseFilterConfig.options.filter(option => item.phases[option.value])
+    : [];
 
   const handleCardClick = () => {
     if (item.link) {
@@ -52,7 +57,7 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
   return (
     <div 
-      className={`bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden ${hasLink ? 'cursor-pointer' : ''}`}
+      className={`bg-white border-l-4 border-han-red rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden ${hasLink ? 'cursor-pointer' : ''}`}
       onClick={handleCardClick}
     >
       <div className="p-4">
@@ -85,13 +90,12 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
               <FileText className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
             )}
           </div>
-          <div className="flex gap-1 ml-2">
+          <div className="flex flex-wrap items-center gap-1 ml-2">
             {activePhases.map(phase => {
-              const phaseKey = phase.toLowerCase() === 'h2/3' ? 'h2h3' : phase.toLowerCase();
-              const colorClass = phaseColors[phaseKey] || 'bg-gray-100 text-gray-700';
+              const colorClass = phaseColorClasses[phase.color] || 'bg-gray-100 text-gray-700';
               return (
-                <span key={phase} className={`${colorClass} px-2 py-1 rounded text-xs font-medium`}>
-                  {phase}
+                <span key={phase.value} className={`${colorClass} px-2 py-1 text-xs font-medium rounded`}>
+                  {phase.label}
                 </span>
               );
             })}
