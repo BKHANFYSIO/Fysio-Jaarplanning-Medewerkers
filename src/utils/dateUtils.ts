@@ -38,7 +38,8 @@ export function parseDate(dateStr: string): Date | null {
   return null;
 }
 
-function getMonthNumber(monthStr: string): number {
+export function getMonthNumber(monthStr: string): number {
+  if (!monthStr) return 0;
   // First check if it's a numeric month
   const numericMonth = parseInt(monthStr);
   if (!isNaN(numericMonth) && numericMonth >= 1 && numericMonth <= 12) {

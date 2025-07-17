@@ -1,42 +1,35 @@
-import { useState, useMemo } from 'react';
-import { PlanningItem, SubjectFilter, PhaseFilter } from '../types';
+import { useState, useCallback } from 'react';
+import { filterConfig } from '../config/filters';
 
-export function useFilters(items: PlanningItem[]) {
-  const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>('all');
-  const [phaseFilter, setPhaseFilter] = useState<PhaseFilter>('all');
+// The state will be an object where keys are filter IDs (e.g., 'phase')
+// and values are arrays of selected option values (e.g., ['p', 'h1']).
+type ActiveFiltersState = Record<string, string[]>;
 
-  const filteredItems = useMemo(() => {
-    return items.filter(item => {
-      // Phase filter
-      if (phaseFilter !== 'all') {
-        const phaseKey = phaseFilter === 'h2h3' ? 'h2h3' : phaseFilter;
-        if (!item.phases[phaseKey as keyof typeof item.phases]) {
-          return false;
-        }
-      }
+const initialState: ActiveFiltersState = filterConfig.reduce((acc, filter) => {
+  acc[filter.id] = [];
+  return acc;
+}, {} as ActiveFiltersState);
 
-      // Subject filter
-      if (subjectFilter !== 'all') {
-        if (!item.subjects[subjectFilter]) {
-          return false;
-        }
-      }
+export const useFilters = () => {
+  const [activeFilters, setActiveFilters] = useState<ActiveFiltersState>(initialState);
 
-      return true;
+  const toggleFilter = useCallback((filterId: string, value: string) => {
+    setActiveFilters(prevState => {
+      const currentFilterValues = prevState[filterId] || [];
+      const newFilterValues = currentFilterValues.includes(value)
+        ? currentFilterValues.filter(v => v !== value)
+        : [...currentFilterValues, value];
+      
+      return {
+        ...prevState,
+        [filterId]: newFilterValues,
+      };
     });
-  }, [items, subjectFilter, phaseFilter]);
+  }, []);
 
-  const resetFilters = () => {
-    setSubjectFilter('all');
-    setPhaseFilter('all');
-  };
+  const resetFilters = useCallback(() => {
+    setActiveFilters(initialState);
+  }, []);
 
-  return {
-    filteredItems,
-    subjectFilter,
-    phaseFilter,
-    setSubjectFilter,
-    setPhaseFilter,
-    resetFilters
-  };
-}
+  return { activeFilters, toggleFilter, resetFilters };
+};

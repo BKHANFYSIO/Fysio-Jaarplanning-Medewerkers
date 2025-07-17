@@ -1,4 +1,9 @@
 export interface PlanningItem {
+  [key: string]: any; // Allow dynamic property access
+  id?: string;
+  collection?: string;
+  semester?: number; // Add semester
+  weekCode?: string; // Add weekCode
   title: string;
   description: string;
   link?: string;
@@ -8,6 +13,7 @@ export interface PlanningItem {
   endTime?: string;
   deadline?: string;
   subjects: {
+    [key: string]: boolean; // Add index signature
     waarderen: boolean;
     juniorstage: boolean;
     ipl: boolean;
@@ -19,6 +25,7 @@ export interface PlanningItem {
     overig: boolean;
   };
   phases: {
+    [key: string]: boolean; // Add index signature
     p: boolean;
     h1: boolean;
     h2h3: boolean;
