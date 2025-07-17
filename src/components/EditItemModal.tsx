@@ -52,12 +52,17 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
           
           <div>
             <label htmlFor="title" className="block text-sm font-medium">Titel</label>
-            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full p-2 mt-1 border rounded" />
+            <input type="text" name="title" value={formData.title || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" />
           </div>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium">Beschrijving</label>
-            <textarea name="description" value={formData.description} onChange={handleChange} className="w-full p-2 mt-1 border rounded"></textarea>
+            <textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded"></textarea>
+          </div>
+
+          <div>
+            <label htmlFor="link" className="block text-sm font-medium">Link naar document</label>
+            <input type="url" name="link" value={formData.link || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://..."/>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

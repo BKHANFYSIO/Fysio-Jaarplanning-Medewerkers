@@ -2,56 +2,13 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { WeekInfo, PlanningItem } from '../types';
-import { getWeeksForDateRange, parseDate, getMonthNumber } from '../utils/dateUtils';
+import { getWeeksForDateRange, parseDate } from '../utils/dateUtils';
 
-// Custom parser specifically for the Weekplanning CSV structure
-const parseWeekPlanning = async (filePath: string): Promise<WeekInfo[]> => {
-  const response = await fetch(filePath);
-  const text = await response.text();
-  const lines = text.split('\n').filter(line => line.trim() !== '');
-  const weeks: WeekInfo[] = [];
-  let currentSemester: 1 | 2 = 1;
-
-  lines.forEach(line => {
-    if (line.includes('Semester 1')) {
-      currentSemester = 1;
-      return;
-    }
-    if (line.includes('Semester 2')) {
-      currentSemester = 2;
-      return;
-    }
-
-    const parts = line.split(';');
-    if (parts.length >= 2 && parts[0].trim() !== 'Weergave voor in app.') {
-      const label = parts[0].trim();
-      const dateStr = parts[1].trim();
-
-      if (label && dateStr) {
-        const isVacation = label.toLowerCase().includes('vakantie') || label.toLowerCase().includes('afsluiting');
-        
-        let year = 2025;
-        const month = getMonthNumber(dateStr.split('-')[1]);
-        if (month >= 1 && month <= 7) {
-          year = 2026;
-        }
-
-        weeks.push({
-          weekCode: label.includes('.') ? label.split(' ')[0] : label,
-          weekLabel: label,
-          startDate: `${dateStr}-${year}`,
-          semester: currentSemester,
-          isVacation,
-        });
-      }
-    }
-  });
-  return weeks;
-};
 
 export const useData = () => {
   const [weeks, setWeeks] = useState<WeekInfo[]>([]);
   const [planningItems, setPlanningItems] = useState<PlanningItem[]>([]);
+  const [orphanedItems, setOrphanedItems] = useState<PlanningItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,35 +17,62 @@ export const useData = () => {
       try {
         setLoading(true);
         
-        // Fetch week data from local CSV (for now)
-        const weekData = await parseWeekPlanning('/data/Weekplanning semesters.csv');
-        
-        // Fetch planning items from Firestore
+        // Fetch BOTH weeks and planning items from Firestore
+        const weekSnapshot = await getDocs(collection(db, 'week-planning'));
         const sem1Snapshot = await getDocs(collection(db, 'planning-items-sem1'));
         const sem2Snapshot = await getDocs(collection(db, 'planning-items-sem2'));
         
+        const weekData = weekSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as unknown as WeekInfo[];
+        
+        // Sort weeks by start date, same as in useWeekData
+        weekData.sort((a, b) => {
+          const parseDateString = (dateStr: string) => {
+              const parts = dateStr.split('-');
+              if (parts.length < 3) return new Date(0); // Invalid date
+              const day = parseInt(parts[0]);
+              const month = getMonthNumberFromString(parts[1]);
+              const year = parseInt(parts[2]);
+              return new Date(year, month - 1, day);
+          };
+          const dateA = parseDateString(a.startDate);
+          const dateB = parseDateString(b.startDate);
+          return dateA.getTime() - dateB.getTime();
+        });
+
         const sem1Items = sem1Snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as unknown as PlanningItem));
         const sem2Items = sem2Snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as unknown as PlanningItem));
         
         const allItems = [...sem1Items, ...sem2Items];
         console.log(`Fetched ${allItems.length} items from Firestore.`);
         
-        // Enrich planning items with week and semester info
-        const enrichedItems = allItems.flatMap(item => {
+        const enrichedItems: PlanningItem[] = [];
+        const orphans: PlanningItem[] = [];
+
+        allItems.forEach(item => {
           const startDate = parseDate(item.startDate);
           const endDate = parseDate(item.endDate);
-          if (!startDate || !endDate) return [];
+          if (!startDate || !endDate) {
+            orphans.push(item);
+            return;
+          }
 
           const relevantWeeks = getWeeksForDateRange(startDate, endDate, weekData);
-          return relevantWeeks.map(week => ({
-            ...item,
-            semester: week.semester,
-            weekCode: week.weekCode,
-          }));
+          if (relevantWeeks.length === 0) {
+            orphans.push(item);
+          } else {
+            relevantWeeks.forEach(week => {
+              enrichedItems.push({
+                ...item,
+                semester: week.semester,
+                weekCode: week.weekCode,
+              });
+            });
+          }
         });
 
         setWeeks(weekData);
         setPlanningItems(enrichedItems);
+        setOrphanedItems(orphans);
         setError(null);
       } catch (err: any) {
         setError('Fout bij het laden van de data: ' + err.message);
@@ -101,5 +85,16 @@ export const useData = () => {
     fetchData();
   }, []);
 
-  return { weeks, planningItems, loading, error };
+  return { weeks, planningItems, orphanedItems, loading, error };
+};
+
+const monthMap: { [key: string]: number } = {
+  'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
+  'jul': 7, 'aug': 8, 'sep': 9, 'okt': 10, 'nov': 11, 'dec': 12
+};
+
+const getMonthNumberFromString = (monthStr: string): number => {
+    if (!monthStr) return 0;
+    const lowerMonth = monthStr.toLowerCase().substring(0, 3);
+    return monthMap[lowerMonth] || 0;
 };

@@ -1,5 +1,5 @@
 export interface PlanningItem {
-  [key: string]: any; // Allow dynamic property access
+  [key: string]: any; // Allow dynamic property access for robust filtering/editing
   id?: string;
   collection?: string;
   semester?: number; // Add semester
@@ -11,7 +11,7 @@ export interface PlanningItem {
   endDate: string;
   startTime?: string;
   endTime?: string;
-  deadline?: string;
+  deadline?: string | null;
   subjects: {
     [key: string]: boolean; // Add index signature
     waarderen: boolean;
@@ -33,6 +33,8 @@ export interface PlanningItem {
 }
 
 export interface WeekInfo {
+  id?: string;
+  year?: number;
   weekCode: string;
   weekLabel: string;
   startDate: string;

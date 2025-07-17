@@ -43,23 +43,19 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
     .map(([key, _]) => key.toUpperCase());
 
   const handleCardClick = () => {
-    if (item.link && onDocumentClick) {
-      onDocumentClick(item.link, item.title);
+    if (item.link) {
+      window.open(item.link, '_blank', 'noopener,noreferrer');
     }
   };
 
   const hasLink = Boolean(item.link);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden">
-      <div 
-        className={`p-4 ${
-          hasLink 
-            ? 'hover:bg-gray-50 cursor-pointer' 
-            : ''
-        }`}
-        onClick={handleCardClick}
-      >
+    <div 
+      className={`bg-white border border-gray-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden ${hasLink ? 'cursor-pointer' : ''}`}
+      onClick={handleCardClick}
+    >
+      <div className="p-4">
         {/* Colored dots for subjects */}
         {activeSubjects.length > 0 && (
           <div className="flex gap-1.5 mb-3">
@@ -134,9 +130,9 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
           )}
 
           {hasLink && (
-            <div className="flex items-center gap-2 text-sm font-medium mt-3 pt-2 border-t border-gray-200">
-              <FileText className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-600">Instructies en uitleg beschikbaar</span>
+            <div className="flex items-center gap-2 pt-3 mt-3 text-sm font-medium text-blue-600 border-t border-gray-200">
+              <FileText className="w-4 h-4" />
+              <span>Instructies en uitleg beschikbaar</span>
             </div>
           )}
         </div>

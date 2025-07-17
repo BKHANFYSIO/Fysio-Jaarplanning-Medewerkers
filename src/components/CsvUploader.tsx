@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import { bulkOverwrite } from '../services/firestoreService';
-import { PlanningItem } from '../types';
+import { PlanningItem, WeekInfo } from '../types';
 
 interface CsvUploaderProps {
   label: string;
   collectionName: string;
+  customParser?: (results: any) => PlanningItem[] | WeekInfo[];
 }
 
-export const CsvUploader: React.FC<CsvUploaderProps> = ({ label, collectionName }) => {
+export const CsvUploader: React.FC<CsvUploaderProps> = ({ label, collectionName, customParser }) => {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -34,8 +35,10 @@ export const CsvUploader: React.FC<CsvUploaderProps> = ({ label, collectionName 
         }
 
         try {
-          // Map CSV data to PlanningItem structure
-          const parsedData = results.data.map((row: any) => ({
+          // Use custom parser if provided, otherwise use default
+          const parsedData = customParser 
+            ? customParser(results)
+            : results.data.map((row: any) => ({
              title: row['Titel (of wat)'] || '',
              description: row['Extra regel'] || '',
              link: row['link'] || null,
@@ -60,9 +63,9 @@ export const CsvUploader: React.FC<CsvUploaderProps> = ({ label, collectionName 
                h1: row['H1'] === 'v',
                h2h3: row['H2/3'] === 'v',
              },
-          })).filter(item => item.title); // Filter out items without a title
+          })).filter(item => (item as PlanningItem).title); // Filter out items without a title
           
-          await bulkOverwrite(collectionName, parsedData as PlanningItem[]);
+          await bulkOverwrite(collectionName, parsedData);
           setFeedback(`'${file.name}' succesvol geüpload! ${parsedData.length} items verwerkt.`);
         } catch (error) {
           console.error("Error uploading to Firestore: ", error);

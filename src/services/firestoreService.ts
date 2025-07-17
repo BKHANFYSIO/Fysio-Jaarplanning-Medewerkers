@@ -1,7 +1,7 @@
-import { collection, writeBatch, doc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs, deleteDoc, updateDoc, addDoc } from 'firebase/firestore';
 import Papa from 'papaparse';
 import { db } from '../firebase'; // Make sure you have this file exporting your db instance
-import { PlanningItem } from '../types';
+import { PlanningItem, WeekInfo } from '../types';
 
 /**
  * Overwrites all documents in a specific collection with new data.
@@ -11,7 +11,7 @@ import { PlanningItem } from '../types';
  * @param collectionName The name of the collection to overwrite.
  * @param data An array of objects to write to the collection.
  */
-export const bulkOverwrite = async (collectionName: string, data: PlanningItem[]) => {
+export const bulkOverwrite = async (collectionName: string, data: PlanningItem[] | WeekInfo[]) => {
   if (!data) {
     console.log('No data provided to bulk overwrite. Skipping.');
     return;
@@ -44,7 +44,8 @@ export const bulkOverwrite = async (collectionName: string, data: PlanningItem[]
 
   for (const item of data) {
     const docRef = doc(collectionRef); // Creates a new doc with a unique ID
-    addBatch.set(docRef, item);
+    const { id, ...itemData } = item; // Exclude 'id' if it exists, as it's not part of the doc data
+    addBatch.set(docRef, itemData);
     count++;
 
     if (count === batchSize) {
@@ -80,11 +81,33 @@ export const deleteItem = async (collectionName: string, documentId: string) => 
  * @param documentId The ID of the document to update.
  * @param data The new data for the document.
  */
-export const updateItem = async (collectionName: string, documentId: string, data: Partial<PlanningItem>) => {
+export const updateItem = async (collectionName: string, documentId: string, data: Partial<PlanningItem | WeekInfo>) => {
   const docRef = doc(db, collectionName, documentId);
   await updateDoc(docRef, data);
   console.log(`Document with ID ${documentId} successfully updated in ${collectionName}.`);
 };
+
+/**
+ * Creates or updates a single document in a specified Firestore collection.
+ * If the documentId is provided, it updates; otherwise, it creates a new document.
+ * @param collectionName The name of the collection.
+ * @param data The data for the document.
+ * @param documentId Optional ID of the document to update.
+ */
+export const saveItem = async (collectionName: string, data: Partial<PlanningItem | WeekInfo>, documentId?: string) => {
+  if (documentId) {
+    // Update existing document
+    const docRef = doc(db, collectionName, documentId);
+    await updateDoc(docRef, data);
+    console.log(`Document with ID ${documentId} successfully updated in ${collectionName}.`);
+  } else {
+    // Create new document
+    const collectionRef = collection(db, collectionName);
+    await addDoc(collectionRef, data);
+    console.log(`New document successfully created in ${collectionName}.`);
+  }
+};
+
 
 /**
  * Fetches all documents from a collection and triggers a browser download as a CSV file.
@@ -100,10 +123,22 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     return;
   }
 
-  const data = snapshot.docs.map(doc => doc.data() as PlanningItem);
+  const data = snapshot.docs.map(doc => doc.data());
 
-  // Remap data to match the expected CSV headers
-  const csvData = data.map(item => ({
+  // Check if we are exporting weeks or planning items
+  if (collectionName.includes('week-planning')) {
+    const csvData = (data as WeekInfo[]).map(item => ({
+      'Weergave voor in app.': item.weekLabel,
+      '': item.startDate.substring(0, item.startDate.lastIndexOf('-')), // Date without year
+      'jaar': item.year || new Date(item.startDate.split('-').reverse().join('-')).getFullYear()
+    }));
+    const csvString = Papa.unparse(csvData);
+    triggerCsvDownload(csvString, fileName);
+    return;
+  }
+  
+  // Existing logic for planning items
+  const csvData = (data as PlanningItem[]).map(item => ({
     'Titel (of wat)': item.title,
     'Extra regel': item.description,
     'link': item.link,
@@ -128,8 +163,10 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
   }));
 
   const csvString = Papa.unparse(csvData);
+  triggerCsvDownload(csvString, fileName);
+};
 
-  // Trigger download
+const triggerCsvDownload = (csvString: string, fileName: string) => {
   const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   if (link.download !== undefined) {
@@ -141,4 +178,4 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     link.click();
     document.body.removeChild(link);
   }
-};
+}
