@@ -1,19 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PlanningItem, WeekInfo } from '../types';
-import { Timestamp } from 'firebase/firestore'; // Importeer Timestamp
-
-// De basis URL voor je lokale backend server - Verwijderd voor deployment
-// const API_BASE_URL = 'http://localhost:3000';
-
-// Helper functie om een Firestore Timestamp om te zetten naar een DD-MMM-YYYY string
-export const formatTimestampToDateString = (timestamp: Timestamp | null): string => {
-  if (!timestamp) return '';
-  const date = timestamp.toDate();
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][date.getMonth()];
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-};
+import { parsePlanningData, parseWeekData } from '../utils/csvParser';
 
 export function useData() {
   const [planningItems, setPlanningItems] = useState<PlanningItem[]>([]);
@@ -25,26 +12,30 @@ export function useData() {
     async function loadData() {
       try {
         setLoading(true);
-        setError(null);
         
-        // Load planning data from Firestore via Vercel API
-        const planningResponse = await fetch('/api/data/planningItems');
+        // Load planning data
+        const planningResponse = await fetch('/data/Sem1 gegevens voor inlezen.csv');
         if (!planningResponse.ok) {
-          throw new Error(`Kon planning data niet laden: ${planningResponse.statusText}`);
+          throw new Error('Kon planning data niet laden');
         }
-        const planningData: PlanningItem[] = await planningResponse.json();
-        setPlanningItems(planningData);
-        console.log('Loaded planning items from Firestore:', planningData.length);
+        const planningText = await planningResponse.text();
+        console.log('Planning CSV loaded, length:', planningText.length);
+        const planning = parsePlanningData(planningText);
+        console.log('Parsed planning items:', planning.length);
         
-        // Load week data from Firestore via Vercel API
-        const weekResponse = await fetch('/api/data/weeks');
+        // Load week data
+        const weekResponse = await fetch('/data/Weekplanning semesters.csv');
         if (!weekResponse.ok) {
-          throw new Error(`Kon week data niet laden: ${weekResponse.statusText}`);
+          throw new Error('Kon week data niet laden');
         }
-        const weekData: WeekInfo[] = await weekResponse.json();
-        setWeeks(weekData);
-        console.log('Loaded week items from Firestore:', weekData.length);
+        const weekText = await weekResponse.text();
+        console.log('Week CSV loaded, length:', weekText.length);
+        const weekData = parseWeekData(weekText);
+        console.log('Parsed weeks:', weekData.length);
         
+        setPlanningItems(planning);
+        setWeeks(weekData);
+        setError(null);
       } catch (err) {
         console.error('Error loading data:', err);
         setError(err instanceof Error ? err.message : 'Fout bij het laden van de data');

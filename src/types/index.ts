@@ -1,15 +1,12 @@
-import { Timestamp } from 'firebase/firestore'; // Importeer Timestamp
-
 export interface PlanningItem {
-  id?: string;
   title: string;
   description: string;
   link?: string;
-  startDate: Timestamp | string;
-  endDate: Timestamp | string;
+  startDate: string;
+  endDate: string;
   startTime?: string;
   endTime?: string;
-  deadline?: Timestamp | string;
+  deadline?: string;
   subjects: {
     waarderen: boolean;
     juniorstage: boolean;
@@ -29,10 +26,9 @@ export interface PlanningItem {
 }
 
 export interface WeekInfo {
-  id?: string;
   weekCode: string;
   weekLabel: string;
-  startDate: Timestamp | string;
+  startDate: string;
   semester: 1 | 2;
   isVacation: boolean;
 }
