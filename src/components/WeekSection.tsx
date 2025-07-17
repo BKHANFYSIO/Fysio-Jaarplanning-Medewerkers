@@ -7,10 +7,10 @@ interface WeekSectionProps {
   week: WeekInfo;
   items: PlanningItem[];
   onDocumentClick?: (documentName: string, activityTitle: string) => void;
-  isClosest?: boolean;
+  highlightLabel?: string | null;
 }
 
-export function WeekSection({ week, items, onDocumentClick, isClosest = false }: WeekSectionProps) {
+export function WeekSection({ week, items, onDocumentClick, highlightLabel = null }: WeekSectionProps) {
   const weekStartDate = parseDate(week.startDate);
   
   if (week.isVacation) {
@@ -29,14 +29,14 @@ export function WeekSection({ week, items, onDocumentClick, isClosest = false }:
   return (
     <div className="mb-8">
       <h2 className={`text-2xl font-bold mb-4 pb-2 border-b-2 ${
-        isClosest 
+        highlightLabel 
           ? 'text-green-600 border-green-200 bg-green-50 px-4 py-2 rounded-t-lg' 
           : 'text-blue-600 border-blue-200'
       }`}>
         {week.weekLabel} ({week.startDate})
-        {isClosest && (
+        {highlightLabel && (
           <span className="ml-3 text-sm font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">
-            Eerstvolgende
+            {highlightLabel}
           </span>
         )}
       </h2>

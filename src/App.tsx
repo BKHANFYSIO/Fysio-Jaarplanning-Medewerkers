@@ -67,13 +67,51 @@ function App() {
     return counts;
   }, [planningItems]);
 
-  const closestWeek = findClosestFutureWeek(weeks);
+  const targetWeekInfo = useMemo(() => {
+    const now = new Date();
+    
+    // 1. Try to find the current week
+    const currentWeek = weeks.find(week => {
+      const startDate = parseDate(week.startDate);
+      if (!startDate) return false;
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6); // Assuming a week is 7 days
+      return now >= startDate && now <= endDate;
+    });
+
+    if (currentWeek) {
+      return { week: currentWeek, label: 'Huidige week' };
+    }
+
+    // 2. If no current week, find the closest future week
+    let closestFutureWeek: WeekInfo | null = null;
+    let smallestDiff = Infinity;
+
+    weeks.forEach(week => {
+      const weekStartDate = parseDate(week.startDate);
+      if (weekStartDate && weekStartDate >= now) {
+        const diff = weekStartDate.getTime() - now.getTime();
+        if (diff < smallestDiff) {
+          smallestDiff = diff;
+          closestFutureWeek = week;
+        }
+      }
+    });
+    
+    if (closestFutureWeek) {
+      return { week: closestFutureWeek, label: 'Eerstvolgende' };
+    }
+
+    return { week: null, label: null };
+  }, [weeks]);
+
+
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null); // Ref for the header element
 
-  const scrollToClosestWeek = () => {
-    if (closestWeek) {
-      const weekKey = `${closestWeek.semester}-${closestWeek.weekCode}`;
+  const scrollToTargetWeek = () => {
+    if (targetWeekInfo.week) {
+      const weekKey = `${targetWeekInfo.week.semester}-${targetWeekInfo.week.weekCode}`;
       const element = weekRefs.current.get(weekKey);
       
       if (element && headerRef.current) {
@@ -181,7 +219,9 @@ function App() {
 
               {/* Action Buttons */}
               <div className="flex flex-col items-start gap-2 sm:flex-row">
-                <button onClick={scrollToClosestWeek} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700"> <LocateFixed size={16}/> Eerstvolgende week</button>
+                <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700 disabled:bg-gray-400">
+                  <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
+                </button>
                 <button onClick={resetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
               </div>
             </div>
@@ -206,13 +246,14 @@ function App() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {weeks.map((week) => {
                 const weekKey = `${week.semester}-${week.weekCode}`;
+                const isTargetWeek = targetWeekInfo.week?.id === week.id;
                 return (
                   <div key={weekKey} ref={el => weekRefs.current.set(weekKey, el)}>
                     <WeekSection
                       week={week}
                       items={itemsByWeek.get(weekKey) || []}
                       onDocumentClick={() => {}} // Placeholder for now
-                      isClosest={closestWeek?.weekCode === week.weekCode && closestWeek?.semester === week.semester}
+                      highlightLabel={isTargetWeek ? targetWeekInfo.label : null}
                     />
                   </div>
                 )

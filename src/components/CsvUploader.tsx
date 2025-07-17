@@ -35,13 +35,13 @@ export const CsvUploader: React.FC<CsvUploaderProps> = ({ label, collectionName,
         }
 
         try {
-          // Use custom parser if provided, otherwise use default
+          // Use custom parser if provided, otherwise use default for activities
           const parsedData = customParser 
             ? customParser(results)
             : results.data.map((row: any) => ({
-             title: row['Titel (of wat)'] || '',
+             title: row['Wat?'] || '', // Corrected from 'Titel (of wat)'
              description: row['Extra regel'] || '',
-             link: row['link'] || null,
+             link: row['Links'] || null, // Corrected from 'link'
              startDate: row['Startdatum'] || null,
              endDate: row['Einddatum'] || null,
              startTime: row['Tijd startdatum'] || null,

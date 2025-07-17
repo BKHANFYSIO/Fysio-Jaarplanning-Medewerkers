@@ -106,35 +106,38 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
           <p className="text-sm mb-3 text-gray-600">{item.description}</p>
         )}
         
-        <div className="space-y-2">
-          {(showDateDetails?.showStartDate || showDateDetails?.showEndDate || item.startTime || item.endTime) && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
+        <div className="space-y-2 text-sm">
+          {/* Start Date/Time Row */}
+          {showDateDetails?.showStartDate && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>
-                {showDateDetails?.showStartDate && `Start: ${showDateDetails.startDateStr}`}
-                {showDateDetails?.showStartDate && showDateDetails?.showEndDate && ' • '}
-                {showDateDetails?.showEndDate && `Eind: ${showDateDetails.endDateStr}`}
-                {(item.startTime || item.endTime) && (
-                  <>
-                    {(showDateDetails?.showStartDate || showDateDetails?.showEndDate) && ' • '}
-                    {item.startTime && `${item.startTime}`}
-                    {item.startTime && item.endTime && '-'}
-                    {item.endTime && `${item.endTime}`}
-                  </>
-                )}
+                  Start: {showDateDetails?.startDateStr}
+                  {item.startTime && <span className="ml-2 font-medium text-gray-800">{item.startTime}</span>}
               </span>
             </div>
           )}
           
-          {item.deadline && (
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-              <span className="text-red-700">Deadline: {item.deadline}</span>
+          {/* End Date/Time Row - Emphasized */}
+          {showDateDetails?.showEndDate && (
+            <div className="flex items-center gap-2 font-semibold text-red-600">
+              <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
+               <span>
+                  Eind: {showDateDetails?.endDateStr}
+                  {item.endTime && <span className="ml-2">{item.endTime}</span>}
+               </span>
             </div>
           )}
 
-          {hasLink && (
-            <div className="flex items-center gap-2 pt-3 mt-3 text-sm font-medium text-blue-600 border-t border-gray-200">
+          {item.deadline && (
+            <div className="flex items-center gap-2 pt-2 mt-2 font-medium border-t">
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              <span className="text-red-600">Deadline: {item.deadline}</span>
+            </div>
+          )}
+
+          {item.link && (
+            <div className="flex items-center gap-2 pt-3 mt-2 text-sm font-medium text-blue-600 border-t border-gray-200">
               <FileText className="w-4 h-4" />
               <span>Instructies en uitleg beschikbaar</span>
             </div>
