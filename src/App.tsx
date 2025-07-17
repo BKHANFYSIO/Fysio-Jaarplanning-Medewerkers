@@ -69,15 +69,23 @@ function App() {
 
   const closestWeek = findClosestFutureWeek(weeks);
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const headerRef = useRef<HTMLElement | null>(null); // Ref for the header element
 
   const scrollToClosestWeek = () => {
     if (closestWeek) {
       const weekKey = `${closestWeek.semester}-${closestWeek.weekCode}`;
       const element = weekRefs.current.get(weekKey);
-      element?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+      
+      if (element && headerRef.current) {
+        const headerHeight = headerRef.current.offsetHeight;
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - headerHeight - 20; // 20px extra margin
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
   };
 
@@ -119,7 +127,7 @@ function App() {
   const Home = () => (
     <div className="bg-slate-50 min-h-screen">
       <div className="container p-4 mx-auto">
-        <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
+        <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-4">
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
