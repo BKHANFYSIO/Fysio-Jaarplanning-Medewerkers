@@ -4,6 +4,100 @@ import { db } from '../firebase';
 import { WeekInfo, PlanningItem } from '../types';
 import { getWeeksForDateRange, parseDate } from '../utils/dateUtils';
 
+const processSeries = (items: PlanningItem[], weeks: WeekInfo[]): PlanningItem[] => {
+  // 1. Create a map for quick week lookup by weekCode, containing index and vacation status
+  const weekMap = new Map<string, { index: number; isVacation: boolean }>();
+  weeks.forEach((week, index) => {
+    weekMap.set(week.weekCode, { index, isVacation: week.isVacation });
+  });
+
+  // 2. Sort all items primarily by their week's index to ensure chronological order
+  const sortedItems = [...items].sort((a, b) => {
+    const weekA = weekMap.get(a.weekCode ?? '');
+    const weekB = weekMap.get(b.weekCode ?? '');
+    if (weekA && weekB && weekA.index !== weekB.index) {
+      return weekA.index - weekB.index;
+    }
+    // Fallback sort for items in the same week
+    return (a.title > b.title) ? 1 : -1;
+  });
+
+  // 3. Group items by title
+  const groupedByTitle = sortedItems.reduce((acc, item) => {
+    if (!acc[item.title]) {
+      acc[item.title] = [];
+    }
+    acc[item.title].push(item);
+    return acc;
+  }, {} as { [key:string]: PlanningItem[] });
+  
+  const finalResult: PlanningItem[] = [];
+
+  // 4. Process each group to find CONSECUTIVE sub-series
+  for (const title in groupedByTitle) {
+    const series = groupedByTitle[title];
+    if (series.length === 0) continue;
+
+    let currentSubSeries: PlanningItem[] = [series[0]];
+
+    for (let i = 0; i < series.length - 1; i++) {
+      const currentItem = series[i];
+      const nextItem = series[i + 1];
+      
+      const currentWeek = weekMap.get(currentItem.weekCode ?? '');
+      const nextWeek = weekMap.get(nextItem.weekCode ?? '');
+
+      let isConsecutive = false;
+      if (currentWeek && nextWeek) {
+        // Find all weeks between the two items
+        const weeksBetween = weeks.slice(currentWeek.index + 1, nextWeek.index);
+        // If all weeks in between are vacation weeks, they are consecutive
+        if (weeksBetween.every(w => w.isVacation)) {
+          isConsecutive = true;
+        }
+      }
+
+      if (isConsecutive) {
+        // If consecutive, add the next item to the current sub-series
+        currentSubSeries.push(nextItem);
+      } else {
+        // If not consecutive, the sub-series is broken. Process it.
+        const subSeriesLength = currentSubSeries.length;
+        currentSubSeries.forEach((item, index) => {
+          finalResult.push({
+            ...item,
+            seriesLength: subSeriesLength,
+            isFirstInSeries: index === 0,
+            isLastInSeries: index === subSeriesLength - 1,
+          });
+        });
+        // Start a new sub-series with the next item
+        currentSubSeries = [nextItem];
+      }
+    }
+
+    // Process the last sub-series after the loop finishes
+    const subSeriesLength = currentSubSeries.length;
+    currentSubSeries.forEach((item, index) => {
+      finalResult.push({
+        ...item,
+        seriesLength: subSeriesLength,
+        isFirstInSeries: index === 0,
+        isLastInSeries: index === subSeriesLength - 1,
+      });
+    });
+  }
+
+  // Restore original sorting order for display
+  return finalResult.sort((a, b) => {
+      const weekA = weekMap.get(a.weekCode ?? '');
+      const weekB = weekMap.get(b.weekCode ?? '');
+      if (weekA && weekB && weekA.index !== weekB.index) {
+          return weekA.index - weekB.index;
+      }
+      return (a.title > b.title) ? 1 : -1;
+  });
+};
 
 export const useData = () => {
   const [weeks, setWeeks] = useState<WeekInfo[]>([]);
@@ -71,7 +165,11 @@ export const useData = () => {
         });
 
         setWeeks(weekData);
-        setPlanningItems(enrichedItems);
+        
+        // Process for series detection
+        const processedItems = processSeries(enrichedItems, weekData);
+        
+        setPlanningItems(processedItems);
         setOrphanedItems(orphans);
         setError(null);
       } catch (err: any) {

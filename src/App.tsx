@@ -8,9 +8,14 @@ import { useFilters } from './hooks/useFilters';
 import { FilterButton } from './components/FilterButton';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp } from 'lucide-react';
+
+interface TopWeekInfo {
+  key: string;
+  position: number;
+}
 
 function isSubjects(obj: any): obj is PlanningItem['subjects'] {
   return typeof obj === 'object' && obj !== null;
@@ -39,6 +44,69 @@ function App() {
   const { weeks, planningItems, loading, error } = useData();
   const { activeFilters, toggleFilter, resetFilters } = useFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(false);
+
+  const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const headerRef = useRef<HTMLElement | null>(null);
+  const keepInViewWeekKey = useRef<string | null>(null);
+
+  const saveCurrentScrollPosition = () => {
+    if (headerRef.current) {
+      const headerHeight = headerRef.current.offsetHeight;
+      
+      const weekElements = Array.from(weekRefs.current.entries())
+        .map(([key, element]) => ({ key, element }))
+        .filter(({ element }) => element !== null);
+      
+      let topWeek: TopWeekInfo | null = null;
+      
+      for (const { key, element } of weekElements) {
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top >= headerHeight) {
+            if (!topWeek || rect.top < topWeek.position) {
+              topWeek = { key, position: rect.top };
+            }
+          }
+        }
+      }
+
+      if (topWeek) {
+        keepInViewWeekKey.current = topWeek.key;
+      }
+    }
+  };
+
+  const handleToggleFilter = (configId: string, optionValue: string) => {
+    saveCurrentScrollPosition();
+    toggleFilter(configId, optionValue);
+  };
+
+  const handleResetFilters = () => {
+    saveCurrentScrollPosition();
+    resetFilters();
+  };
+
+  const toggleSectionCollapse = (weekKey: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [weekKey]: !(prev[weekKey] || false)
+    }));
+  };
+
+  const toggleAllLopendeZaken = () => {
+    saveCurrentScrollPosition();
+    const nextState = !areAllLopendeZakenCollapsed;
+    setAreAllLopendeZakenCollapsed(nextState);
+    // Create a new object where every weekKey is set to the new state
+    const newCollapsedSections: Record<string, boolean> = {};
+    weeks.forEach(week => {
+      const weekKey = `${week.semester}-${week.weekCode}`;
+      newCollapsedSections[weekKey] = nextState;
+    });
+    setCollapsedSections(newCollapsedSections);
+  };
 
   // Calculate which filter options have corresponding items
   const availableOptions = useMemo(() => {
@@ -106,8 +174,27 @@ function App() {
   }, [weeks]);
 
 
-  const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
-  const headerRef = useRef<HTMLElement | null>(null); // Ref for the header element
+  useLayoutEffect(() => {
+    // After a re-render caused by filtering, scroll the stored week back into view
+    if (keepInViewWeekKey.current && headerRef.current) {
+      const weekKey = keepInViewWeekKey.current;
+      const element = weekRefs.current.get(weekKey);
+      
+      if (element) {
+        const headerHeight = headerRef.current.offsetHeight;
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - headerHeight - 20; // 20px margin
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'auto' // Use 'auto' to make it feel instant
+        });
+      }
+      // Reset the ref so this doesn't run on every render
+      keepInViewWeekKey.current = null;
+    }
+  }, [activeFilters, areAllLopendeZakenCollapsed]); // This effect runs whenever filters or global collapse change
+
 
   const scrollToTargetWeek = () => {
     if (targetWeekInfo.week) {
@@ -203,8 +290,9 @@ function App() {
                               key={option.value}
                               label={option.label}
                               color={option.color}
+                              variant={config.id === 'phase' ? 'outline' : 'solid'}
                               isActive={activeFilters[config.id]?.includes(option.value)}
-                              onClick={() => toggleFilter(config.id, option.value)}
+                              onClick={() => handleToggleFilter(config.id, option.value)}
                             />
                           );
                         }
@@ -222,7 +310,14 @@ function App() {
                 <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700 disabled:bg-gray-400">
                   <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
                 </button>
-                <button onClick={resetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
+                <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
+                <button 
+                  onClick={toggleAllLopendeZaken} 
+                  className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"
+                >
+                  <ChevronUp size={16} className={`transition-transform ${areAllLopendeZakenCollapsed ? 'rotate-180' : ''}`}/>
+                  <span>{areAllLopendeZakenCollapsed ? 'Toon alle lopende zaken' : 'Verberg alle lopende zaken'}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -254,6 +349,8 @@ function App() {
                       items={itemsByWeek.get(weekKey) || []}
                       onDocumentClick={() => {}} // Placeholder for now
                       highlightLabel={isTargetWeek ? targetWeekInfo.label : null}
+                      isLopendeZakenCollapsed={collapsedSections[weekKey] || false}
+                      onToggleLopendeZaken={() => toggleSectionCollapse(weekKey)}
                     />
                   </div>
                 )

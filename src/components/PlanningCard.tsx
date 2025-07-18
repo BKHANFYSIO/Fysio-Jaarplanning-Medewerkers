@@ -1,5 +1,12 @@
-import React from 'react';
-import { Clock, Calendar, AlertTriangle, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  AlertTriangle, 
+  FileText, 
+  ChevronDown, 
+  ChevronUp, 
+  CalendarPlus, 
+  CalendarCheck2 
+} from 'lucide-react';
 import { PlanningItem } from '../types';
 import { filterConfig } from '../config/filters';
 
@@ -15,28 +22,39 @@ interface PlanningCardProps {
 }
 
 const subjectColors: { [key: string]: string } = {
-  waarderen: 'purple-500',
-  juniorstage: 'green-500',
-  ipl: 'blue-500',
-  bvp: 'orange-500',
-  pzw: 'pink-500',
-  minor: 'indigo-500',
-  getuigschriften: 'yellow-500',
-  inschrijven: 'cyan-500',
-  overig: 'gray-400'
+  waarderen: 'bg-yellow-500',
+  juniorstage: 'bg-green-500',
+  ipl: 'bg-blue-500',
+  bvp: 'bg-orange-500',
+  pzw: 'bg-pink-500',
+  minor: 'bg-indigo-500',
+  getuigschriften: 'bg-gray-400',
+  inschrijven: 'bg-teal-500',
+  overig: 'bg-slate-400'
 };
 
 const phaseColorClasses: { [key: string]: string } = {
-  green: 'bg-green-100 text-green-700',
-  orange: 'bg-orange-100 text-orange-700',
-  purple: 'bg-purple-100 text-purple-700',
-  gray: 'bg-gray-100 text-gray-700',
+  green: 'border border-green-300 bg-green-50 text-green-700',
+  orange: 'border border-orange-300 bg-orange-50 text-orange-700',
+  purple: 'border border-purple-300 bg-purple-50 text-purple-700',
+  gray: 'border border-gray-300 bg-gray-50 text-gray-700',
 };
 
 // Find the phase config from the central configuration
 const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
 
 export function PlanningCard({ item, showDateDetails, onDocumentClick }: PlanningCardProps) {
+  const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
+
+  const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
+
+  const handleToggleExpand = (e: React.MouseEvent) => {
+    if (isMiddleOfLongSeries) {
+      e.stopPropagation();
+      setIsExpanded(prev => !prev);
+    }
+  };
+
   // Get all active subjects
   const activeSubjects = Object.entries(item.subjects)
     .filter(([_, value]) => value)
@@ -48,28 +66,50 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
     : [];
 
   const handleCardClick = () => {
-    if (item.link) {
+    // For regular cards, or expanded collapsible cards, the whole card opens the link.
+    if (hasLink && (!isMiddleOfLongSeries || isExpanded)) {
       window.open(item.link, '_blank', 'noopener,noreferrer');
+    } else if (isMiddleOfLongSeries && !isExpanded) {
+      // If a collapsed card is clicked anywhere, expand it.
+      setIsExpanded(true);
     }
   };
 
   const hasLink = Boolean(item.link);
+
+  if (isMiddleOfLongSeries && !isExpanded) {
+    return (
+      <div
+        className="bg-gray-50 border-l-4 border-gray-300 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
+        onClick={handleToggleExpand}
+      >
+        <div className="p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg text-gray-600">{item.title}</h3>
+            {hasLink && <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+          </div>
+          <ChevronDown className="w-5 h-5 text-gray-500 transition-transform" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
       className={`bg-white border-l-4 border-han-red rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden ${hasLink ? 'cursor-pointer' : ''}`}
       onClick={handleCardClick}
     >
-      <div className="p-4">
-        {/* Colored dots for subjects */}
-        {activeSubjects.length > 0 && (
-          <div className="flex gap-1.5 mb-3">
+      <div className="p-3">
+        {/* Top row: dots and phase tags */}
+        <div className="flex items-center justify-between mb-2">
+          {/* Colored dots for subjects */}
+          <div className="flex gap-1.5">
             {activeSubjects.slice(0, 6).map((subject) => {
-              const colorClass = subjectColors[subject] || 'gray-400';
+              const colorClass = subjectColors[subject] || 'bg-gray-400';
               return (
                 <div
                   key={subject}
-                  className={`w-2.5 h-2.5 rounded-full bg-${colorClass} shadow-sm`}
+                  className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
                   title={subject.charAt(0).toUpperCase() + subject.slice(1)}
                 />
               );
@@ -81,67 +121,75 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
               />
             )}
           </div>
-        )}
-
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-start gap-2 flex-1">
-            <h3 className="font-semibold text-lg leading-tight text-gray-900">{item.title}</h3>
-            {hasLink && (
-              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-1 ml-2">
+          {/* Phase tags */}
+          <div className="flex flex-wrap items-center gap-1">
             {activePhases.map(phase => {
-              const colorClass = phaseColorClasses[phase.color] || 'bg-gray-100 text-gray-700';
+              const colorClass = phaseColorClasses[phase.color] || phaseColorClasses.gray;
               return (
-                <span key={phase.value} className={`${colorClass} px-2 py-1 text-xs font-medium rounded`}>
+                <span key={phase.value} className={`${colorClass} px-2 py-0.5 text-xs font-medium rounded`}>
                   {phase.label}
                 </span>
               );
             })}
           </div>
         </div>
+
+        {/* Title Section */}
+        <div 
+          className={`flex justify-between items-start gap-2 ${isMiddleOfLongSeries ? 'cursor-pointer' : ''}`}
+          onClick={handleToggleExpand}
+        >
+          <div className="flex items-start gap-2">
+            <h3 className="font-semibold text-lg leading-tight text-gray-900">{item.title}</h3>
+            {hasLink && !isMiddleOfLongSeries && (
+              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            )}
+          </div>
+          {isMiddleOfLongSeries && (
+            <ChevronUp className="w-5 h-5 text-gray-500 transition-transform mt-1 flex-shrink-0" />
+          )}
+        </div>
         
         {item.description && (
-          <p className="text-sm mb-3 text-gray-600">{item.description}</p>
+          <p className="text-sm mt-1 mb-2 text-gray-600">{item.description}</p>
         )}
         
-        <div className="space-y-2 text-sm">
-          {/* Start Date/Time Row */}
-          {showDateDetails?.showStartDate && (
-            <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>
-                  Start: {showDateDetails?.startDateStr}
-                  {item.startTime && <span className="ml-2 font-medium text-gray-800">{item.startTime}</span>}
+        {/* Meta-balk Footer */}
+        <div className="text-sm mt-3 pt-2 border-t border-gray-100">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            {/* Date Range */}
+            <div className="flex items-center gap-1.5 text-gray-600">
+              {/* Start Date & Time */}
+              <span className={`flex items-center gap-1.5 ${item.isFirstInSeries ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
+                <CalendarPlus className="w-4 h-4 flex-shrink-0" />
+                {showDateDetails?.startDateStr}
+                {item.startTime && <span className="ml-1 text-xs opacity-80">({item.startTime})</span>}
+              </span>
+              <span className="text-gray-400">→</span>
+              {/* End Date & Time */}
+              <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600 animate-heartbeat' : 'text-gray-500'}`}>
+                <CalendarCheck2 className="w-4 h-4 flex-shrink-0" />
+                {showDateDetails?.endDateStr}
+                {item.endTime && <span className="ml-1 text-xs opacity-80">({item.endTime})</span>}
               </span>
             </div>
-          )}
-          
-          {/* End Date/Time Row - Emphasized */}
-          {showDateDetails?.showEndDate && (
-            <div className="flex items-center gap-2 font-semibold text-red-600">
-              <Calendar className="w-4 h-4 mt-0.5 flex-shrink-0" />
-               <span>
-                  Eind: {showDateDetails?.endDateStr}
-                  {item.endTime && <span className="ml-2">{item.endTime}</span>}
-               </span>
-            </div>
-          )}
 
-          {item.deadline && (
-            <div className="flex items-center gap-2 pt-2 mt-2 font-medium border-t">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-              <span className="text-red-600">Deadline: {item.deadline}</span>
+            {/* Actions */}
+            <div className="flex items-center gap-x-4">
+              {item.link && (
+                <div className="flex items-center gap-1.5 font-medium text-blue-600">
+                  <FileText className="w-4 h-4" />
+                  <span>Instructies</span>
+                </div>
+              )}
+              {item.deadline && (
+                <div className="flex items-center gap-1.5 font-medium text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Deadline: {item.deadline}</span>
+                </div>
+              )}
             </div>
-          )}
-
-          {item.link && (
-            <div className="flex items-center gap-2 pt-3 mt-2 text-sm font-medium text-blue-600 border-t border-gray-200">
-              <FileText className="w-4 h-4" />
-              <span>Instructies en uitleg beschikbaar</span>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

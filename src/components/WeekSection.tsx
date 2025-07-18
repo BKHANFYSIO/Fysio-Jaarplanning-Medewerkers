@@ -2,15 +2,43 @@ import React from 'react';
 import { PlanningCard } from './PlanningCard';
 import { PlanningItem, WeekInfo } from '../types';
 import { parseDate, shouldShowDateDetails } from '../utils/dateUtils';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface WeekSectionProps {
   week: WeekInfo;
   items: PlanningItem[];
   onDocumentClick?: (documentName: string, activityTitle: string) => void;
   highlightLabel?: string | null;
+  isLopendeZakenCollapsed: boolean;
+  onToggleLopendeZaken: () => void;
 }
 
-export function WeekSection({ week, items, onDocumentClick, highlightLabel = null }: WeekSectionProps) {
+const getItemPriority = (item: PlanningItem): number => {
+  if (item.deadline) return 1;
+  // A standalone item is both first and last
+  if (item.isFirstInSeries && item.isLastInSeries) return 2; 
+  if (item.isFirstInSeries) return 3;
+  if (item.isLastInSeries) return 4;
+  return 5; // Lopende zaken (ingeklapt)
+};
+
+const GroupHeader = ({ title, isCollapsed, onToggle, count }: { title: string, isCollapsed: boolean, onToggle: () => void, count: number }) => (
+  <div className="mt-4 first:mt-0">
+    <div 
+      className="flex items-center justify-between cursor-pointer group"
+      onClick={onToggle}
+    >
+      <h4 className="text-xs font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-700">{title}</h4>
+      <div className="flex items-center gap-2">
+        {count > 0 && <span className="text-xs font-medium text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{count}</span>}
+        {isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/> : <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/>}
+      </div>
+    </div>
+    <hr className="mt-1 mb-2"/>
+  </div>
+);
+
+export function WeekSection({ week, items, onDocumentClick, highlightLabel = null, isLopendeZakenCollapsed, onToggleLopendeZaken }: WeekSectionProps) {
   const weekStartDate = parseDate(week.startDate);
   
   if (week.isVacation) {
@@ -47,24 +75,67 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {items.map((item, index) => {
-            const startDate = parseDate(item.startDate);
-            const endDate = parseDate(item.endDate);
-            
-            let dateDetails;
-            if (weekStartDate && startDate && endDate) {
-              dateDetails = shouldShowDateDetails(startDate, endDate, weekStartDate);
-            }
-            
+          {(() => {
+            const sortedItems = [...items].sort((a, b) => {
+              const priorityA = getItemPriority(a);
+              const priorityB = getItemPriority(b);
+              if (priorityA !== priorityB) return priorityA - priorityB;
+              return a.title.localeCompare(b.title); // Fallback to alphabetical for same priority
+            });
+
+            const actiesEnDeadlines = sortedItems.filter(item => getItemPriority(item) < 5);
+            const lopendeZaken = sortedItems.filter(item => getItemPriority(item) === 5);
+
+            const renderItem = (item: PlanningItem, index: number) => {
+              const startDate = parseDate(item.startDate);
+              const endDate = parseDate(item.endDate);
+              const formattedStartDate = startDate ? `${startDate.getDate()}-${startDate.toLocaleString('nl-NL', { month: 'short' })}` : '';
+              const formattedEndDate = endDate ? `${endDate.getDate()}-${endDate.toLocaleString('nl-NL', { month: 'short' })}` : '';
+              
+              const dateDetails = {
+                showStartDate: true,
+                showEndDate: true,
+                startDateStr: formattedStartDate,
+                endDateStr: formattedEndDate,
+              };
+
+              return (
+                <PlanningCard
+                  key={`${item.title}-${index}`}
+                  item={item}
+                  showDateDetails={dateDetails}
+                  onDocumentClick={onDocumentClick}
+                />
+              );
+            };
+
             return (
-              <PlanningCard
-                key={`${item.title}-${index}`}
-                item={item}
-                showDateDetails={dateDetails}
-                onDocumentClick={onDocumentClick}
-              />
+              <>
+                {lopendeZaken.length > 0 && (
+                  <>
+                    <GroupHeader 
+                      title="Lopende Zaken" 
+                      isCollapsed={isLopendeZakenCollapsed}
+                      onToggle={onToggleLopendeZaken}
+                      count={lopendeZaken.length}
+                    />
+                    {!isLopendeZakenCollapsed && lopendeZaken.map(renderItem)}
+                  </>
+                )}
+                {actiesEnDeadlines.length > 0 && (
+                  <>
+                    <GroupHeader 
+                      title="Acties & Deadlines" 
+                      isCollapsed={false} // This section is never collapsible
+                      onToggle={() => {}} // No-op
+                      count={actiesEnDeadlines.length}
+                    />
+                    {actiesEnDeadlines.map(renderItem)}
+                  </>
+                )}
+              </>
             );
-          })}
+          })()}
         </div>
       )}
     </div>

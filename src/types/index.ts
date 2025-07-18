@@ -12,6 +12,9 @@ export interface PlanningItem {
   startTime?: string;
   endTime?: string;
   deadline?: string | null;
+  isFirstInSeries?: boolean;
+  isLastInSeries?: boolean;
+  seriesLength?: number;
   subjects: {
     [key: string]: boolean; // Add index signature
     waarderen: boolean;
