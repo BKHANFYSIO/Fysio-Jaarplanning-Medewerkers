@@ -10,7 +10,8 @@ import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { HelpModal } from './components/HelpModal';
 
 interface TopWeekInfo {
   key: string;
@@ -46,10 +47,23 @@ function App() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [hasSeenHelp, setHasSeenHelp] = useState(() => {
+    return localStorage.getItem('hasSeenHelp') === 'true';
+  });
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
   const keepInViewWeekKey = useRef<string | null>(null);
+
+  // Show help modal on first visit
+  useLayoutEffect(() => {
+    if (!hasSeenHelp && !loading) {
+      setIsHelpModalOpen(true);
+      setHasSeenHelp(true);
+      localStorage.setItem('hasSeenHelp', 'true');
+    }
+  }, [hasSeenHelp, loading]);
 
   const saveCurrentScrollPosition = () => {
     if (headerRef.current) {
@@ -258,16 +272,27 @@ function App() {
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
             </div>
-            {/* Mobile Filter Toggle */}
-            <div className="lg:hidden">
+            <div className="flex items-center gap-3">
+              {/* Help Button */}
               <button 
-                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800"
+                onClick={() => setIsHelpModalOpen(true)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                title="Uitleg"
               >
-                <Filter size={16}/>
-                <span>Filters & Opties</span>
-                <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
+                <HelpCircle size={16}/>
+                <span className="hidden sm:inline">Uitleg</span>
               </button>
+              {/* Mobile Filter Toggle */}
+              <div className="lg:hidden">
+                <button 
+                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800"
+                >
+                  <Filter size={16}/>
+                  <span>Filters & Opties</span>
+                  <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -363,13 +388,19 @@ function App() {
   );
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoute />}>
-        <Route path="/admin" element={<AdminPage />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
+      </Routes>
+      <HelpModal 
+        isOpen={isHelpModalOpen} 
+        onClose={() => setIsHelpModalOpen(false)} 
+      />
+    </>
   );
 }
 
