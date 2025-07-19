@@ -22,15 +22,15 @@ interface PlanningCardProps {
 }
 
 const subjectColors: { [key: string]: string } = {
-  waarderen: 'bg-yellow-500',
-  juniorstage: 'bg-green-500',
-  ipl: 'bg-blue-500',
-  bvp: 'bg-orange-500',
-  pzw: 'bg-pink-500',
-  minor: 'bg-indigo-500',
-  getuigschriften: 'bg-gray-400',
-  inschrijven: 'bg-teal-500',
-  overig: 'bg-slate-400'
+  waarderen: 'bg-yellow-300',
+  juniorstage: 'bg-green-300',
+  ipl: 'bg-blue-300',
+  bvp: 'bg-orange-300',
+  pzw: 'bg-pink-300',
+  minor: 'bg-indigo-300',
+  getuigschriften: 'bg-gray-300',
+  inschrijven: 'bg-teal-300',
+  overig: 'bg-slate-300'
 };
 
 const phaseColorClasses: { [key: string]: string } = {
@@ -65,12 +65,16 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
     ? phaseFilterConfig.options.filter(option => item.phases[option.value])
     : [];
 
-  const handleCardClick = () => {
-    // For regular cards, or expanded collapsible cards, the whole card opens the link.
-    if (hasLink && (!isMiddleOfLongSeries || isExpanded)) {
+  const handleInstructionsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (item.link) {
       window.open(item.link, '_blank', 'noopener,noreferrer');
-    } else if (isMiddleOfLongSeries && !isExpanded) {
-      // If a collapsed card is clicked anywhere, expand it.
+    }
+  };
+
+  const handleCardClick = () => {
+    // Only handle card clicks for collapsible cards
+    if (isMiddleOfLongSeries && !isExpanded) {
       setIsExpanded(true);
     }
   };
@@ -96,8 +100,7 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
   return (
     <div 
-      className={`bg-white border-l-4 border-han-red rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden ${hasLink ? 'cursor-pointer' : ''}`}
-      onClick={handleCardClick}
+      className="bg-white border-l-4 border-han-red rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden"
     >
       <div className="p-3">
         {/* Top row: dots and phase tags */}
@@ -141,9 +144,6 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
         >
           <div className="flex items-start gap-2">
             <h3 className="font-semibold text-lg leading-tight text-gray-900">{item.title}</h3>
-            {hasLink && !isMiddleOfLongSeries && (
-              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
-            )}
           </div>
           {isMiddleOfLongSeries && (
             <ChevronUp className="w-5 h-5 text-gray-500 transition-transform mt-1 flex-shrink-0" />
@@ -177,10 +177,13 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
             {/* Actions */}
             <div className="flex items-center gap-x-4">
               {item.link && (
-                <div className="flex items-center gap-1.5 font-medium text-blue-600">
+                <button 
+                  onClick={handleInstructionsClick}
+                  className="flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-700 hover:scale-105 transition-all duration-200 cursor-pointer"
+                >
                   <FileText className="w-4 h-4" />
                   <span>Instructies</span>
-                </div>
+                </button>
               )}
               {item.deadline && (
                 <div className="flex items-center gap-1.5 font-medium text-red-600">

@@ -316,7 +316,7 @@ function App() {
                   className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"
                 >
                   <ChevronUp size={16} className={`transition-transform ${areAllLopendeZakenCollapsed ? 'rotate-180' : ''}`}/>
-                  <span>{areAllLopendeZakenCollapsed ? 'Toon alle lopende zaken' : 'Verberg alle lopende zaken'}</span>
+                  <span>{areAllLopendeZakenCollapsed ? 'Toon alle doorlopende activiteiten' : 'Verberg alle doorlopende activiteiten'}</span>
                 </button>
               </div>
             </div>

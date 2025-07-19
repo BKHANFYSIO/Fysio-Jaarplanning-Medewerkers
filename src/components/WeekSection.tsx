@@ -19,19 +19,19 @@ const getItemPriority = (item: PlanningItem): number => {
   if (item.isFirstInSeries && item.isLastInSeries) return 2; 
   if (item.isFirstInSeries) return 3;
   if (item.isLastInSeries) return 4;
-  return 5; // Lopende zaken (ingeklapt)
+  return 5; // Doorlopende Activiteiten (ingeklapt)
 };
 
-const GroupHeader = ({ title, isCollapsed, onToggle, count }: { title: string, isCollapsed: boolean, onToggle: () => void, count: number }) => (
+const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true }: { title: string, isCollapsed: boolean, onToggle: () => void, count: number, showChevron?: boolean }) => (
   <div className="mt-4 first:mt-0">
     <div 
-      className="flex items-center justify-between cursor-pointer group"
-      onClick={onToggle}
+      className={`flex items-center justify-between ${showChevron ? 'cursor-pointer group' : ''}`}
+      onClick={showChevron ? onToggle : undefined}
     >
-      <h4 className="text-xs font-bold tracking-wider text-gray-500 uppercase group-hover:text-gray-700">{title}</h4>
+      <h4 className={`text-xs font-bold tracking-wider text-gray-500 uppercase ${showChevron ? 'group-hover:text-gray-700' : ''}`}>{title}</h4>
       <div className="flex items-center gap-2">
         {count > 0 && <span className="text-xs font-medium text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{count}</span>}
-        {isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/> : <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/>}
+        {showChevron && (isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/> : <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/>)}
       </div>
     </div>
     <hr className="mt-1 mb-2"/>
@@ -83,8 +83,8 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
               return a.title.localeCompare(b.title); // Fallback to alphabetical for same priority
             });
 
-            const actiesEnDeadlines = sortedItems.filter(item => getItemPriority(item) < 5);
-            const lopendeZaken = sortedItems.filter(item => getItemPriority(item) === 5);
+            const startEnEindmomentenActiviteiten = sortedItems.filter(item => getItemPriority(item) < 5);
+            const doorlopendeActiviteiten = sortedItems.filter(item => getItemPriority(item) === 5);
 
             const renderItem = (item: PlanningItem, index: number) => {
               const startDate = parseDate(item.startDate);
@@ -111,26 +111,27 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
 
             return (
               <>
-                {lopendeZaken.length > 0 && (
+                {doorlopendeActiviteiten.length > 0 && (
                   <>
                     <GroupHeader 
-                      title="Lopende Zaken" 
+                      title="Doorlopende Activiteiten" 
                       isCollapsed={isLopendeZakenCollapsed}
                       onToggle={onToggleLopendeZaken}
-                      count={lopendeZaken.length}
+                      count={doorlopendeActiviteiten.length}
                     />
-                    {!isLopendeZakenCollapsed && lopendeZaken.map(renderItem)}
+                    {!isLopendeZakenCollapsed && doorlopendeActiviteiten.map(renderItem)}
                   </>
                 )}
-                {actiesEnDeadlines.length > 0 && (
+                {startEnEindmomentenActiviteiten.length > 0 && (
                   <>
                     <GroupHeader 
-                      title="Acties & Deadlines" 
+                      title="Start- & Eindmomenten Activiteiten" 
                       isCollapsed={false} // This section is never collapsible
                       onToggle={() => {}} // No-op
-                      count={actiesEnDeadlines.length}
+                      count={startEnEindmomentenActiviteiten.length}
+                      showChevron={false}
                     />
-                    {actiesEnDeadlines.map(renderItem)}
+                    {startEnEindmomentenActiviteiten.map(renderItem)}
                   </>
                 )}
               </>

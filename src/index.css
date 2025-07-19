@@ -4,15 +4,17 @@
 
 @layer utilities {
   .animate-heartbeat {
-    animation: heartbeat 2s ease-in-out infinite;
+    animation: heartbeat 1.5s ease-in-out infinite;
   }
 
   @keyframes heartbeat {
     0%, 100% {
       transform: scale(1);
+      color: rgb(220 38 38); /* text-red-600 */
     }
     50% {
-      transform: scale(1.08);
+      transform: scale(1.15);
+      color: rgb(185 28 28); /* text-red-700 - donkerder rood */
     }
   }
 }
