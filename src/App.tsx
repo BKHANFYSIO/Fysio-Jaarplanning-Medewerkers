@@ -267,7 +267,8 @@ function App() {
     <div className="bg-slate-50 min-h-screen">
       <div className="container p-4 mx-auto">
         <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
-          <div className="flex items-center justify-between py-3">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center justify-between py-3">
             <div className="flex items-center gap-4">
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
@@ -280,7 +281,7 @@ function App() {
                 title="Uitleg"
               >
                 <HelpCircle size={16}/>
-                <span className="hidden sm:inline">Uitleg</span>
+                <span>Uitleg</span>
               </button>
               {/* Mobile Filter Toggle */}
               <div className="lg:hidden">
@@ -291,6 +292,33 @@ function App() {
                   <Filter size={16}/>
                   <span>Filters & Opties</span>
                   <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-3">
+                <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
+                <h1 className="text-xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
+              </div>
+              {/* Compact Icon Buttons */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setIsHelpModalOpen(true)}
+                  className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                  title="Uitleg"
+                >
+                  <HelpCircle size={18}/>
+                </button>
+                <button 
+                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                  className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors"
+                  title="Filters & Opties"
+                >
+                  <Filter size={18}/>
                 </button>
               </div>
             </div>
