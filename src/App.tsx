@@ -14,8 +14,6 @@ import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle } fr
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import YearSelector from './components/YearSelector';
-import { YearProvider } from './contexts/YearContext';
 import { ChangesBanner } from './components/ChangesBanner';
 
 interface TopWeekInfo {
@@ -27,24 +25,182 @@ function isSubjects(obj: any): obj is PlanningItem['subjects'] {
   return typeof obj === 'object' && obj !== null;
 }
 
-function findClosestFutureWeek(weeks: WeekInfo[]): WeekInfo | null {
-  const now = new Date();
-  let closestWeek: WeekInfo | null = null;
-  let smallestDiff = Infinity;
+// Home component now defined outside of App
+const Home = ({
+  bannerVisibility,
+  handleCloseDevBanner,
+  handleCloseChangesBanner,
+  headerRef,
+  isMobileFiltersOpen,
+  setIsMobileFiltersOpen,
+  availableOptions,
+  activeFilters,
+  handleToggleFilter,
+  scrollToTargetWeek,
+  targetWeekInfo,
+  handleResetFilters,
+  toggleAllLopendeZaken,
+  areAllLopendeZakenCollapsed,
+  setIsHelpModalOpen,
+  loading,
+  weeks,
+  itemsByWeek,
+  weekRefs,
+  toggleSectionCollapse,
+  collapsedSections,
+}: any) => (
+  <div className="bg-slate-50 min-h-screen">
+    {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
+    {bannerVisibility.changes && <ChangesBanner onClose={handleCloseChangesBanner} />}
+    <div className="container p-4 mx-auto">
+      <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
+        {/* Desktop Layout */}
+        <div className="hidden md:flex items-center justify-between py-3">
+          <div className="flex items-center gap-4">
+            <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Help Button */}
+            <button 
+              onClick={() => setIsHelpModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              title="Uitleg"
+            >
+              <HelpCircle size={16}/>
+              <span>Uitleg</span>
+            </button>
+            {/* Mobile Filter Toggle */}
+            <div className="lg:hidden">
+              <button 
+                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800"
+              >
+                <Filter size={16}/>
+                <span>Filters & Opties</span>
+                <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
+              </button>
+            </div>
+          </div>
+        </div>
 
-  weeks.forEach(week => {
-    const weekStartDate = parseDate(week.startDate);
-    if (weekStartDate && weekStartDate >= now) {
-      const diff = weekStartDate.getTime() - now.getTime();
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closestWeek = week;
-      }
-    }
-  });
+        {/* Mobile Layout */}
+        <div className="md:hidden">
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-3">
+              <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
+              <h1 className="text-xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
+            </div>
+            {/* Compact Icon Buttons */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsHelpModalOpen(true)}
+                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                title="Uitleg"
+              >
+                <HelpCircle size={18}/>
+              </button>
+              <button 
+                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors"
+                title="Filters & Opties"
+              >
+                <Filter size={18}/>
+              </button>
+            </div>
+          </div>
+        </div>
 
-  return closestWeek;
-}
+        {/* Control Bar - now inside the sticky header */}
+        <div className={`
+          ${isMobileFiltersOpen ? 'block' : 'hidden'} 
+          lg:block
+        `}>
+          <div className="p-4 mt-2 bg-white rounded-lg shadow-md">
+            {/* Filters */}
+            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
+              {filterConfig.map(config => (
+                <div key={config.id} className="mr-4">
+                  <h3 className="mb-2 text-base font-semibold text-gray-700">{config.label}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {config.options.map(option => {
+                      if (availableOptions[config.id]?.[option.value] > 0) {
+                        return (
+                          <FilterButton
+                            key={option.value}
+                            label={option.label}
+                            color={option.color}
+                            variant={config.id === 'phase' ? 'outline' : 'solid'}
+                            isActive={activeFilters[config.id]?.includes(option.value)}
+                            onClick={() => handleToggleFilter(config.id, option.value)}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="my-1"/>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col items-start gap-2 sm:flex-row">
+              <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700 disabled:bg-gray-400">
+                <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
+              </button>
+              <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
+              <button 
+                onClick={toggleAllLopendeZaken} 
+                className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"
+              >
+                <ChevronUp size={16} className={`transition-transform ${areAllLopendeZakenCollapsed ? 'rotate-180' : ''}`}/>
+                <span>{areAllLopendeZakenCollapsed ? 'Toon alle doorlopende activiteiten' : 'Verberg alle doorlopende activiteiten'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+       {/* Main Content Grid */}
+       <div className="mt-8"> {/* Added margin-top to the content grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="p-4 space-y-4 bg-white rounded-lg shadow-sm animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="space-y-3">
+                  <div className="h-24 bg-gray-200 rounded"></div>
+                  <div className="h-16 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {weeks.map((week) => {
+              const weekKey = `${week.semester}-${week.weekCode}`;
+              const isTargetWeek = targetWeekInfo.week?.id === week.id;
+              return (
+                <div key={weekKey} ref={el => weekRefs.current.set(weekKey, el)}>
+                  <WeekSection
+                    week={week}
+                    items={itemsByWeek.get(weekKey) || []}
+                    onDocumentClick={() => {}} // Placeholder for now
+                    highlightLabel={isTargetWeek ? targetWeekInfo.label : null}
+                    isLopendeZakenCollapsed={collapsedSections[weekKey] || false}
+                    onToggleLopendeZaken={() => toggleSectionCollapse(weekKey)}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
+       </div>
+    </div>
+  </div>
+);
 
 function App() {
   const { weeks, planningItems, loading, error } = useData();
@@ -52,7 +208,6 @@ function App() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(() => {
-    // Probeer de opgeslagen instelling te laden, standaard op true (ingeklapt)
     const saved = localStorage.getItem('areAllLopendeZakenCollapsed');
     return saved !== null ? saved === 'true' : true;
   });
@@ -60,13 +215,15 @@ function App() {
   const [hasSeenHelp, setHasSeenHelp] = useState(() => {
     return localStorage.getItem('hasSeenHelp') === 'true';
   });
-  const [showBanners, setShowBanners] = useState(true);
+  const [bannerVisibility, setBannerVisibility] = useState({
+    development: true,
+    changes: true,
+  });
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
   const keepInViewWeekKey = useRef<string | null>(null);
 
-  // Show help modal on first visit
   useLayoutEffect(() => {
     if (!hasSeenHelp && !loading) {
       setIsHelpModalOpen(true);
@@ -75,7 +232,6 @@ function App() {
     }
   }, [hasSeenHelp, loading]);
 
-  // Initialiseer collapsedSections op basis van de opgeslagen instelling
   useLayoutEffect(() => {
     if (weeks.length > 0) {
       const newCollapsedSections: Record<string, boolean> = {};
@@ -137,10 +293,8 @@ function App() {
     const nextState = !areAllLopendeZakenCollapsed;
     setAreAllLopendeZakenCollapsed(nextState);
     
-    // Sla de instelling op in localStorage
     localStorage.setItem('areAllLopendeZakenCollapsed', nextState.toString());
     
-    // Create a new object where every weekKey is set to the new state
     const newCollapsedSections: Record<string, boolean> = {};
     weeks.forEach(week => {
       const weekKey = `${week.semester}-${week.weekCode}`;
@@ -149,7 +303,6 @@ function App() {
     setCollapsedSections(newCollapsedSections);
   };
 
-  // Calculate which filter options have corresponding items
   const availableOptions = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
     filterConfig.forEach(config => {
@@ -163,7 +316,6 @@ function App() {
       filterConfig.forEach(config => {
         const itemValue = item[config.dataKey];
         if (config.dataKey === 'semester' && itemValue) {
-            // Not implemented yet, would handle semester counts
         } else if (typeof itemValue === 'object' && itemValue !== null) {
           Object.keys(itemValue).forEach(key => {
             if (itemValue[key] === true && counts[config.id]?.[key] !== undefined) {
@@ -179,12 +331,11 @@ function App() {
   const targetWeekInfo = useMemo(() => {
     const now = new Date();
     
-    // 1. Try to find the current week
     const currentWeek = weeks.find(week => {
       const startDate = parseDate(week.startDate);
       if (!startDate) return false;
       const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 6); // Assuming a week is 7 days
+      endDate.setDate(endDate.getDate() + 6);
       return now >= startDate && now <= endDate;
     });
 
@@ -192,7 +343,6 @@ function App() {
       return { week: currentWeek, label: 'Huidige week' };
     }
 
-    // 2. If no current week, find the closest future week
     let closestFutureWeek: WeekInfo | null = null;
     let smallestDiff = Infinity;
 
@@ -216,7 +366,6 @@ function App() {
 
 
   useLayoutEffect(() => {
-    // After a re-render caused by filtering, scroll the stored week back into view
     if (keepInViewWeekKey.current && headerRef.current) {
       const weekKey = keepInViewWeekKey.current;
       const element = weekRefs.current.get(weekKey);
@@ -224,17 +373,16 @@ function App() {
       if (element) {
         const headerHeight = headerRef.current.offsetHeight;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerHeight - 20; // 20px margin
+        const offsetPosition = elementPosition - headerHeight - 20;
 
         window.scrollTo({
           top: offsetPosition,
-          behavior: 'auto' // Use 'auto' to make it feel instant
+          behavior: 'auto'
         });
       }
-      // Reset the ref so this doesn't run on every render
       keepInViewWeekKey.current = null;
     }
-  }, [activeFilters, areAllLopendeZakenCollapsed]); // This effect runs whenever filters or global collapse change
+  }, [activeFilters, areAllLopendeZakenCollapsed]);
 
 
   const scrollToTargetWeek = () => {
@@ -245,7 +393,7 @@ function App() {
       if (element && headerRef.current) {
         const headerHeight = headerRef.current.offsetHeight;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerHeight - 40; // Increased margin to 40px
+        const offsetPosition = elementPosition - headerHeight - 40;
 
         window.scrollTo({
           top: offsetPosition,
@@ -256,19 +404,15 @@ function App() {
   };
 
   const filteredItems = planningItems.filter(item => {
-    // Return true if all active filter categories are met by the item
     return filterConfig.every(config => {
       const selectedOptions = activeFilters[config.id];
-      // If no options are selected for this filter, it's considered a pass
       if (!selectedOptions || selectedOptions.length === 0) {
         return true;
       }
       
-      // Handle semester filter (direct comparison)
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
       } else {
-        // Handle phases and subjects filters (checking sub-properties)
         const subObject = item[config.dataKey];
         if (isSubjects(subObject)) {
           return selectedOptions.some(option => subObject[option]);
@@ -324,164 +468,40 @@ function App() {
     );
   }
 
-  const Home = () => (
-    <div className="bg-slate-50 min-h-screen">
-      {showBanners && <DevelopmentBanner onClose={() => setShowBanners(false)} />}
-      {showBanners && <ChangesBanner onClose={() => setShowBanners(false)} />}
-      <div className="container p-4 mx-auto">
-        <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
-          {/* Desktop Layout */}
-          <div className="hidden md:flex items-center justify-between py-3">
-            <div className="flex items-center gap-4">
-              <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Help Button */}
-              <button 
-                onClick={() => setIsHelpModalOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                title="Uitleg"
-              >
-                <HelpCircle size={16}/>
-                <span>Uitleg</span>
-              </button>
-              {/* Mobile Filter Toggle */}
-              <div className="lg:hidden">
-                <button 
-                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800"
-                >
-                  <Filter size={16}/>
-                  <span>Filters & Opties</span>
-                  <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Layout */}
-          <div className="md:hidden">
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
-                <h1 className="text-xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
-              </div>
-              {/* Compact Icon Buttons */}
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setIsHelpModalOpen(true)}
-                  className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                  title="Uitleg"
-                >
-                  <HelpCircle size={18}/>
-                </button>
-                <button 
-                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                  className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors"
-                  title="Filters & Opties"
-                >
-                  <Filter size={18}/>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Control Bar - now inside the sticky header */}
-          <div className={`
-            ${isMobileFiltersOpen ? 'block' : 'hidden'} 
-            lg:block
-          `}>
-            <div className="p-4 mt-2 bg-white rounded-lg shadow-md">
-              {/* Filters */}
-              <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
-                {filterConfig.map(config => (
-                  <div key={config.id} className="mr-4">
-                    <h3 className="mb-2 text-base font-semibold text-gray-700">{config.label}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {config.options.map(option => {
-                        if (availableOptions[config.id]?.[option.value] > 0) {
-                          return (
-                            <FilterButton
-                              key={option.value}
-                              label={option.label}
-                              color={option.color}
-                              variant={config.id === 'phase' ? 'outline' : 'solid'}
-                              isActive={activeFilters[config.id]?.includes(option.value)}
-                              onClick={() => handleToggleFilter(config.id, option.value)}
-                            />
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <hr className="my-1"/>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col items-start gap-2 sm:flex-row">
-                <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700 disabled:bg-gray-400">
-                  <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
-                </button>
-                <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
-                <button 
-                  onClick={toggleAllLopendeZaken} 
-                  className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"
-                >
-                  <ChevronUp size={16} className={`transition-transform ${areAllLopendeZakenCollapsed ? 'rotate-180' : ''}`}/>
-                  <span>{areAllLopendeZakenCollapsed ? 'Toon alle doorlopende activiteiten' : 'Verberg alle doorlopende activiteiten'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-         {/* Main Content Grid */}
-         <div className="mt-8"> {/* Added margin-top to the content grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="p-4 space-y-4 bg-white rounded-lg shadow-sm animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                  <div className="space-y-3">
-                    <div className="h-24 bg-gray-200 rounded"></div>
-                    <div className="h-16 bg-gray-200 rounded"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {weeks.map((week) => {
-                const weekKey = `${week.semester}-${week.weekCode}`;
-                const isTargetWeek = targetWeekInfo.week?.id === week.id;
-                return (
-                  <div key={weekKey} ref={el => weekRefs.current.set(weekKey, el)}>
-                    <WeekSection
-                      week={week}
-                      items={itemsByWeek.get(weekKey) || []}
-                      onDocumentClick={() => {}} // Placeholder for now
-                      highlightLabel={isTargetWeek ? targetWeekInfo.label : null}
-                      isLopendeZakenCollapsed={collapsedSections[weekKey] || false}
-                      onToggleLopendeZaken={() => toggleSectionCollapse(weekKey)}
-                    />
-                  </div>
-                )
-              })}
-            </div>
-          )}
-         </div>
-      </div>
-    </div>
-  );
+  const handleCloseDevBanner = () => setBannerVisibility(prev => ({ ...prev, development: false }));
+  const handleCloseChangesBanner = () => setBannerVisibility(prev => ({ ...prev, changes: false }));
 
   return (
     <ErrorBoundary>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route 
+          path="/" 
+          element={
+            <Home 
+              bannerVisibility={bannerVisibility}
+              handleCloseDevBanner={handleCloseDevBanner}
+              handleCloseChangesBanner={handleCloseChangesBanner}
+              headerRef={headerRef}
+              isMobileFiltersOpen={isMobileFiltersOpen}
+              setIsMobileFiltersOpen={setIsMobileFiltersOpen}
+              availableOptions={availableOptions}
+              activeFilters={activeFilters}
+              handleToggleFilter={handleToggleFilter}
+              scrollToTargetWeek={scrollToTargetWeek}
+              targetWeekInfo={targetWeekInfo}
+              handleResetFilters={handleResetFilters}
+              toggleAllLopendeZaken={toggleAllLopendeZaken}
+              areAllLopendeZakenCollapsed={areAllLopendeZakenCollapsed}
+              setIsHelpModalOpen={setIsHelpModalOpen}
+              loading={loading}
+              weeks={weeks}
+              itemsByWeek={itemsByWeek}
+              weekRefs={weekRefs}
+              toggleSectionCollapse={toggleSectionCollapse}
+              collapsedSections={collapsedSections}
+            />
+          } 
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminPage />} />
