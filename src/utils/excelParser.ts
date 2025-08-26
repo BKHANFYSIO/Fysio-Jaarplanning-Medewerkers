@@ -27,12 +27,12 @@ const convertExcelDate = (excelValue: any): string => {
         return excelValue.toString();
       }
       
-      // Format als DD-MMM (zoals in de originele app)
-      const day = date.getDate();
-      const monthNames = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-      const month = monthNames[date.getMonth()];
+      // Format als DD-MM-YYYY voor eenduidigheid
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Maanden zijn 0-based
+      const year = date.getFullYear();
       
-      return `${day}-${month}`;
+      return `${day}-${month}-${year}`;
     } catch (error) {
       console.warn('Kon Excel datum niet converteren:', excelValue, error);
       return excelValue.toString();

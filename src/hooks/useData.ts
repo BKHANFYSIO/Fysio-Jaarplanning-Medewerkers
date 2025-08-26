@@ -143,24 +143,31 @@ export const useData = () => {
         const orphans: PlanningItem[] = [];
 
         allItems.forEach(item => {
-          const startDate = parseDate(item.startDate);
-          const endDate = parseDate(item.endDate);
-          if (!startDate || !endDate) {
-            orphans.push(item);
-            return;
-          }
+          try {
+            const startDate = parseDate(item.startDate);
+            const endDate = parseDate(item.endDate);
+            if (!startDate || !endDate) {
+              console.warn('Orphaned item due to invalid date:', item);
+              orphans.push(item);
+              return;
+            }
 
-          const relevantWeeks = getWeeksForDateRange(startDate, endDate, weekData);
-          if (relevantWeeks.length === 0) {
-            orphans.push(item);
-          } else {
-            relevantWeeks.forEach(week => {
-              enrichedItems.push({
-                ...item,
-                semester: week.semester,
-                weekCode: week.weekCode,
+            const relevantWeeks = getWeeksForDateRange(startDate, endDate, weekData);
+            if (relevantWeeks.length === 0) {
+              console.warn('Orphaned item due to no matching weeks:', item);
+              orphans.push(item);
+            } else {
+              relevantWeeks.forEach(week => {
+                enrichedItems.push({
+                  ...item,
+                  semester: week.semester,
+                  weekCode: week.weekCode,
+                });
               });
-            });
+            }
+          } catch (e) {
+            console.error(`Skipping item due to a critical error during processing:`, item, e);
+            orphans.push(item); // Treat item as an orphan if processing fails
           }
         });
 
