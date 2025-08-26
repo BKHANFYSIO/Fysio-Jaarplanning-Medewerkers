@@ -1,191 +1,256 @@
 import React, { useState } from 'react';
+import { 
+  AlertTriangle, 
+  FileText, 
+  ChevronDown, 
+  ChevronUp, 
+  CalendarPlus, 
+  CalendarCheck2,
+  Link
+} from 'lucide-react';
 import { PlanningItem } from '../types';
-import { ChevronDown, ChevronUp, Link as LinkIcon, Calendar, Clock, Star, Circle, CheckCircle, ExternalLink, FileText, CalendarPlus, CalendarCheck2, AlertTriangle } from 'lucide-react';
 import { filterConfig } from '../config/filters';
-import { Tooltip } from './Tooltip'; // Assuming you have a Tooltip component
-
-type CardVariant = 'default' | 'ongoing';
 
 interface PlanningCardProps {
   item: PlanningItem;
-  showDateDetails: {
+  type: 'event' | 'ongoing'; // <-- Nieuwe prop
+  showDateDetails?: {
     showStartDate: boolean;
     showEndDate: boolean;
-    startDateStr: string;
-    endDateStr: string;
+    startDateStr?: string;
+    endDateStr?: string;
   };
   onDocumentClick?: (documentName: string, activityTitle: string) => void;
-  variant?: CardVariant;
 }
 
-const subjectColors: { [key: string]: string } = {
-  waarderen: 'bg-teal-400',
-  juniorstage: 'bg-cyan-400',
-  ipl: 'bg-sky-400',
-  bvp: 'bg-blue-400',
-  pzw: 'bg-indigo-400',
-  minor: 'bg-purple-400',
-  getuigschriften: 'bg-fuchsia-400',
-  inschrijven: 'bg-pink-400',
-  overig: 'bg-rose-400',
-};
-
-const phaseConfig = filterConfig.find(f => f.id === 'phases');
-const phaseColorClasses: { [key: string]: string } = phaseConfig ? phaseConfig.options.reduce((acc, option) => {
-  acc[option.value] = option.color || 'bg-gray-200 text-gray-800';
-  return acc;
-}, {} as { [key: string]: string }) : {};
-
-
-export const PlanningCard: React.FC<PlanningCardProps> = ({ item, showDateDetails, onDocumentClick, variant = 'default' }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { title, description, instructions, deadline, links, subjects, phases } = item;
-
-  const hasContentToExpand = instructions || (links && links.length > 0);
-
-  const activeSubjects = subjects ? Object.keys(subjects).filter(key => subjects[key]) : [];
-  const activePhases = phases ? Object.keys(phases).filter(key => phases[key]) : [];
-
-  const cardBaseClasses = "relative w-full text-left bg-white rounded-lg shadow-sm transition-shadow duration-200 hover:shadow-md";
-  const cardVariantClasses = {
-    default: "border-l-4 border-blue-500",
-    ongoing: "bg-gray-50 border-none"
-  };
-
-  const toggleExpand = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (hasContentToExpand) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
-  const handleLinkClick = (e: React.MouseEvent<HTMLButtonElement>, url: string) => {
-    e.stopPropagation();
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-  
+// Kleine helper component voor een custom tooltip
+const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
   return (
-    <div className={`${cardBaseClasses} ${cardVariantClasses[variant]}`}>
-      <div className="p-3">
-         {/* Top row: dots and phase tags */}
-         <div className="flex items-center justify-between mb-2">
-           {/* Colored dots for subjects */}
-           <div className="flex items-center gap-1.5 min-h-[10px]">
-             {activeSubjects.slice(0, 6).map((subject) => {
-               const colorClass = subjectColors[subject] || 'bg-gray-400';
-               return (
-                 <div
-                   key={subject}
-                   className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
-                   title={subject.charAt(0).toUpperCase() + subject.slice(1)}
-                 />
-               );
-             })}
-             {activeSubjects.length > 6 && (
-               <div 
-                 className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm" 
-                 title={`+${activeSubjects.length - 6} meer`}
-               />
-             )}
-           </div>
-           {/* Phase tags */}
-           <div className="flex flex-wrap items-center gap-1">
-             {activePhases.map(phaseKey => {
-                const phaseOption = phaseConfig?.options.find(o => o.value === phaseKey);
-                if (!phaseOption) return null;
-                const colorClass = phaseOption.color || 'bg-gray-200 text-gray-800';
-               return (
-                 <span key={phaseKey} className={`${colorClass} px-2 py-0.5 text-xs font-medium rounded`}>
-                   {phaseOption.label}
-                 </span>
-               );
-             })}
-           </div>
-         </div>
-        
-        {/* Title */}
-        <h3 className="font-semibold text-base leading-tight text-gray-900">{title}</h3>
-        
-        {/* Description */}
-        {description && (
-          <p className="text-sm mt-1 text-gray-600">{description}</p>
-        )}
-        
-        {/* Meta Footer */}
-        <div className="text-sm mt-2 pt-2 border-t border-gray-100">
-           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-              {/* Date Range */}
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <span className={`flex items-center gap-1.5 ${item.isFirstInSeries ? 'font-semibold text-green-600' : ''}`}>
-                  <CalendarPlus className="w-4 h-4 flex-shrink-0" />
-                  {showDateDetails.startDateStr}
-                  {item.startTime && <span className="ml-1 text-xs opacity-80">({item.startTime})</span>}
-                </span>
-                <span className="text-gray-400">→</span>
-                <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600' : ''}`}>
-                  <CalendarCheck2 className="w-4 h-4 flex-shrink-0" />
-                  {showDateDetails.endDateStr}
-                  {item.endTime && <span className="ml-1 text-xs opacity-80">({item.endTime})</span>}
-                </span>
-              </div>
-           </div>
-        </div>
+    <div className="relative group flex items-center">
+      {children}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs
+                      px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md shadow-lg
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
+                      z-10">
+        {content}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0
+                        border-x-4 border-x-transparent
+                        border-t-4 border-t-gray-800"></div>
       </div>
-      
-      {/* Expandable Button */}
-      {hasContentToExpand && (
-        <button 
-          onClick={toggleExpand} 
-          className="absolute top-0 right-0 h-full w-10 flex items-center justify-center text-gray-400 hover:bg-gray-100 rounded-r-lg"
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? "Details inklappen" : "Details uitklappen"}
-        >
-          <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-        </button>
-      )}
-
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="px-3 pb-3">
-          <div className="p-3 mt-2 border-t border-gray-200 bg-gray-50/50 rounded-md">
-            {instructions && (
-              <div>
-                <h4 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 mb-1">
-                  <FileText className="w-4 h-4"/>
-                  Instructies
-                </h4>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{instructions}</p>
-              </div>
-            )}
-            {links && links.length > 0 && (
-              <div className={instructions ? 'mt-3' : ''}>
-                <h4 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 mb-1">
-                  <LinkIcon className="w-4 h-4"/>
-                  Links
-                </h4>
-                <div className="flex flex-col items-start gap-1">
-                  {links.map((fullLink, index) => {
-                    const colonIndex = fullLink.indexOf(':');
-                    const hasTitle = colonIndex > -1 && !fullLink.substring(colonIndex + 1).startsWith('//');
-                    const title = hasTitle ? fullLink.substring(0, colonIndex).trim() : 'Externe link';
-                    const url = hasTitle ? fullLink.substring(colonIndex + 1).trim() : fullLink;
-                    return (
-                      <button
-                        key={index}
-                        onClick={(e) => handleLinkClick(e, url)}
-                        className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline hover:text-blue-700"
-                      >
-                        <span>{title}</span>
-                        <ExternalLink className="w-3.5 h-3.5"/>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+
+const subjectColors: { [key: string]: string } = {
+  waarderen: 'bg-yellow-300',
+  juniorstage: 'bg-green-300',
+  ipl: 'bg-blue-300',
+  bvp: 'bg-orange-300',
+  pzw: 'bg-pink-300',
+  minor: 'bg-indigo-300',
+  getuigschriften: 'bg-gray-300',
+  inschrijven: 'bg-teal-300',
+  overig: 'bg-slate-300'
+};
+
+const phaseColorClasses: { [key: string]: string } = {
+  green: 'border border-green-300 bg-green-50 text-green-700',
+  orange: 'border border-orange-300 bg-orange-50 text-orange-700',
+  purple: 'border border-purple-300 bg-purple-50 text-purple-700',
+  gray: 'border border-gray-300 bg-gray-50 text-gray-700',
+};
+
+// Find the phase config from the central configuration
+const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
+
+export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: PlanningCardProps) {
+  const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
+
+  const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
+
+  const handleToggleExpand = (e: React.MouseEvent) => {
+    if (isMiddleOfLongSeries) {
+      e.stopPropagation();
+      setIsExpanded(prev => !prev);
+    }
+  };
+
+  // Get all active subjects
+  const activeSubjects = Object.entries(item.subjects)
+    .filter(([_, value]) => value)
+    .map(([key, _]) => key);
+  
+  // Get active phases IN THE CORRECT ORDER and with correct labels
+  const activePhases = phaseFilterConfig 
+    ? phaseFilterConfig.options.filter(option => item.phases[option.value])
+    : [];
+
+  const handleInstructionsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (item.instructions) {
+      window.open(item.instructions, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleCardClick = () => {
+    // Only handle card clicks for collapsible cards
+    if (isMiddleOfLongSeries && !isExpanded) {
+      setIsExpanded(true);
+    }
+  };
+
+  const hasLink = Boolean(item.instructions || item.link);
+
+  if (isMiddleOfLongSeries && !isExpanded) {
+    // Styling voor ingeklapte doorlopende kaart (blijft neutraal)
+    return (
+      <div
+        className="bg-gray-50 border-l-4 border-gray-300 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
+        onClick={handleToggleExpand}
+      >
+        <div className="p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg text-gray-600">{item.title}</h3>
+            {hasLink && <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+          </div>
+          <ChevronDown className="w-5 h-5 text-gray-500 transition-transform" />
+        </div>
+      </div>
+    );
+  }
+
+  // Bepaal de dynamische classes op basis van het type
+  const cardClasses = type === 'event' 
+    ? "bg-white border-l-4 border-blue-500" // Stijl voor Start- & Eindmomenten
+    : "bg-gray-50/70"; // Stijl voor Doorlopende Activiteiten (geen border)
+
+  return (
+    <div 
+      className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden`}
+    >
+      <div className="p-3">
+        {/* Top row: dots and phase tags */}
+        <div className="flex items-center justify-between mb-2">
+          {/* Colored dots for subjects */}
+          <div className="flex gap-1.5">
+            {activeSubjects.slice(0, 6).map((subject) => {
+              const colorClass = subjectColors[subject] || 'bg-gray-400';
+              return (
+                <div
+                  key={subject}
+                  className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
+                  title={subject.charAt(0).toUpperCase() + subject.slice(1)}
+                />
+              );
+            })}
+            {activeSubjects.length > 6 && (
+              <div 
+                className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm" 
+                title={`+${activeSubjects.length - 6} meer`}
+              />
+            )}
+          </div>
+          {/* Phase tags */}
+          <div className="flex flex-wrap items-center gap-1">
+            {activePhases.map(phase => {
+              const colorClass = phaseColorClasses[phase.color] || phaseColorClasses.gray;
+              return (
+                <span key={phase.value} className={`${colorClass} px-2 py-0.5 text-xs font-medium rounded`}>
+                  {phase.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Title Section */}
+        <div 
+          className={`flex justify-between items-start gap-2 ${isMiddleOfLongSeries ? 'cursor-pointer' : ''}`}
+          onClick={handleToggleExpand}
+        >
+          <div className="flex items-start gap-2">
+            <h3 className="font-semibold text-lg leading-tight text-gray-900">{item.title}</h3>
+          </div>
+          {isMiddleOfLongSeries && (
+            <ChevronUp className="w-5 h-5 text-gray-500 transition-transform mt-1 flex-shrink-0" />
+          )}
+        </div>
+        
+        {item.description && (
+          <p className="text-sm mt-1 mb-2 text-gray-600">{item.description}</p>
+        )}
+        
+        {/* Meta-balk Footer */}
+        <div className="text-sm mt-3 pt-2 border-t border-gray-100">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            {/* Date Range */}
+            <div className="flex items-center gap-1.5 text-gray-600">
+              {/* Start Date & Time */}
+              <span className={`flex items-center gap-1.5 ${item.isFirstInSeries ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
+                <CalendarPlus className="w-4 h-4 flex-shrink-0" />
+                {showDateDetails?.startDateStr}
+                {item.startTime && <span className="ml-1 text-xs opacity-80">({item.startTime})</span>}
+              </span>
+              <span className="text-gray-400">→</span>
+              {/* End Date & Time */}
+              <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600 animate-heartbeat' : 'text-gray-500'}`}>
+                <CalendarCheck2 className="w-4 h-4 flex-shrink-0" />
+                {showDateDetails?.endDateStr}
+                {item.endTime && <span className="ml-1 text-xs opacity-80">({item.endTime})</span>}
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-x-4">
+              {/* Instructies knop */}
+              {(item.instructions || item.link) && (
+                <button 
+                  onClick={handleInstructionsClick}
+                  className="flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-700 hover:scale-105 transition-all duration-200 cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Instructies</span>
+                </button>
+              )}
+              
+              {/* Links weergave */}
+              {item.links && item.links.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  {item.links.map((fullLink, index) => {
+                    // Parse de titel en de URL uit de link-string
+                    const colonIndex = fullLink.indexOf(':');
+                    const hasTitle = colonIndex > -1 && !fullLink.substring(colonIndex + 1).startsWith('//');
+                    
+                    const title = hasTitle ? fullLink.substring(0, colonIndex).trim() : 'Externe link';
+                    const url = hasTitle ? fullLink.substring(colonIndex + 1).trim() : fullLink;
+
+                    return (
+                      <Tooltip key={index} content={title}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 cursor-pointer"
+                        >
+                          <Link className="w-3 h-3" />
+                          <span>{item.links!.length === 1 ? 'link' : `link ${index + 1}`}</span>
+                        </button>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              )}
+              {item.deadline && (
+                <div className="flex items-center gap-1.5 font-medium text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Deadline: {item.deadline}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

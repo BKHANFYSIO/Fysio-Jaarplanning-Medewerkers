@@ -2,7 +2,7 @@ import React from 'react';
 import { PlanningCard } from './PlanningCard';
 import { PlanningItem, WeekInfo } from '../types';
 import { parseDate } from '../utils/dateUtils';
-import { ChevronDown, ChevronUp, Repeat, CalendarDays } from 'lucide-react';
+import { ChevronDown, ChevronUp, CalendarDays, Repeat } from 'lucide-react';
 
 interface WeekSectionProps {
   week: WeekInfo;
@@ -22,22 +22,26 @@ const getItemPriority = (item: PlanningItem): number => {
   return 5; // Doorlopende Activiteiten (ingeklapt)
 };
 
-type GroupVariant = 'default' | 'ongoing';
-
-const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true, variant = 'default', icon: Icon }: { title: string, isCollapsed: boolean, onToggle: (event: React.MouseEvent) => void, count: number, showChevron?: boolean, variant?: GroupVariant, icon?: React.ElementType }) => {
-  const headerBaseClasses = "mt-4 first:mt-0 transition-colors duration-200";
-  const headerVariantClasses = {
-    default: "bg-blue-50/50 p-2 rounded-t-lg border-b-2 border-blue-100",
-    ongoing: ""
-  };
-  const titleBaseClasses = "text-xs font-bold tracking-wider uppercase";
-  const titleVariantClasses = {
-    default: "text-blue-700",
-    ongoing: "text-gray-500 group-hover:text-gray-700"
-  };
+const GroupHeader = ({ 
+  title, 
+  isCollapsed, 
+  onToggle, 
+  count, 
+  showChevron = true,
+  type
+}: { 
+  title: string, 
+  isCollapsed: boolean, 
+  onToggle: (event: React.MouseEvent) => void, 
+  count: number, 
+  showChevron?: boolean,
+  type: 'event' | 'ongoing'
+}) => {
+  const isEvent = type === 'event';
+  const Icon = isEvent ? CalendarDays : Repeat;
 
   return (
-    <div className={`${headerBaseClasses} ${headerVariantClasses[variant]}`}>
+    <div className={`mt-4 first:mt-0 rounded-lg ${isEvent ? 'bg-blue-50/70 p-2' : ''}`}>
       <button
         type="button"
         className={`flex items-center justify-between w-full text-left ${showChevron ? 'cursor-pointer group' : ''}`}
@@ -45,15 +49,15 @@ const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true, 
         disabled={!showChevron}
       >
         <div className="flex items-center gap-2">
-          {Icon && <Icon className={`w-4 h-4 ${variant === 'default' ? 'text-blue-500' : 'text-gray-400'}`} />}
-          <h4 className={`${titleBaseClasses} ${titleVariantClasses[variant]}`}>{title}</h4>
+          <Icon className={`w-4 h-4 ${isEvent ? 'text-blue-600' : 'text-gray-500'}`} />
+          <h4 className={`text-xs font-bold tracking-wider uppercase ${isEvent ? 'text-blue-800' : 'text-gray-500 group-hover:text-gray-700'}`}>{title}</h4>
         </div>
         <div className="flex items-center gap-2">
-          {count > 0 && <span className="text-xs font-medium text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{count}</span>}
+          {count > 0 && <span className="text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-full px-2 py-0.5">{count}</span>}
           {showChevron && (isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/> : <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/>)}
         </div>
       </button>
-      {variant === 'ongoing' && <hr className="mt-1 mb-2"/>}
+      {!isEvent && <hr className="mt-1 mb-2"/>}
     </div>
   );
 };
@@ -120,7 +124,7 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
             const startEnEindmomentenActiviteiten = sortedItems.filter(item => getItemPriority(item) < 5);
             const doorlopendeActiviteiten = sortedItems.filter(item => getItemPriority(item) === 5);
 
-            const renderItem = (item: PlanningItem, index: number, variant: GroupVariant) => {
+            const renderItem = (item: PlanningItem, index: number) => {
               const startDate = parseDate(item.startDate);
               const endDate = parseDate(item.endDate);
               const formattedStartDate = startDate ? `${startDate.getDate()}-${startDate.toLocaleString('nl-NL', { month: 'short' })}` : '';
@@ -133,13 +137,16 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
                 endDateStr: formattedEndDate,
               };
 
+              // Bepaal het type kaart
+              const cardType = getItemPriority(item) < 5 ? 'event' : 'ongoing';
+
               return (
                 <PlanningCard
                   key={`${item.title}-${index}`}
                   item={item}
+                  type={cardType}
                   showDateDetails={dateDetails}
                   onDocumentClick={onDocumentClick}
-                  variant={variant}
                 />
               );
             };
@@ -147,37 +154,29 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
             return (
               <>
                 {doorlopendeActiviteiten.length > 0 && (
-                  <div>
+                  <>
                     <GroupHeader 
                       title="Doorlopende Activiteiten" 
                       isCollapsed={isLopendeZakenCollapsed}
                       onToggle={handleToggle}
                       count={doorlopendeActiviteiten.length}
-                      variant="ongoing"
-                      icon={Repeat}
+                      type="ongoing"
                     />
-                    {!isLopendeZakenCollapsed && 
-                      <div className="flex flex-col gap-3 mt-2">
-                        {doorlopendeActiviteiten.map((item, index) => renderItem(item, index, 'ongoing'))}
-                      </div>
-                    }
-                  </div>
+                    {!isLopendeZakenCollapsed && doorlopendeActiviteiten.map(renderItem)}
+                  </>
                 )}
                 {startEnEindmomentenActiviteiten.length > 0 && (
-                  <div>
+                  <>
                     <GroupHeader 
                       title="Start- & Eindmomenten Activiteiten" 
                       isCollapsed={false} // This section is never collapsible
                       onToggle={() => {}} // No-op
                       count={startEnEindmomentenActiviteiten.length}
                       showChevron={false}
-                      variant="default"
-                      icon={CalendarDays}
+                      type="event"
                     />
-                    <div className="flex flex-col gap-3 mt-2">
-                      {startEnEindmomentenActiviteiten.map((item, index) => renderItem(item, index, 'default'))}
-                    </div>
-                  </div>
+                    {startEnEindmomentenActiviteiten.map(renderItem)}
+                  </>
                 )}
               </>
             );
