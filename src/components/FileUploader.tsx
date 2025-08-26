@@ -7,22 +7,34 @@ import { parseExcel, detectFileType, ExcelParseResult } from '../utils/excelPars
 /**
  * Parse de links kolom met titel:URL format
  * Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"
- * Retourneert array van titels
+ * Retourneert array van strings in "Titel: URL" formaat
  */
 const parseLinksColumn = (linksText: string): string[] => {
   if (!linksText || typeof linksText !== 'string') return [];
   
-  // Split op komma's en filter lege waarden
-  const links = linksText.split(',').map(link => link.trim()).filter(link => link);
+  // Zoek naar URL's (http:// of https://) en split de tekst op basis daarvan.
+  // Dit is robuuster dan splitsen op komma's of newlines.
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = linksText.split(urlRegex);
   
-  // Extraheer alleen de titels (alles voor de :)
-  return links.map(link => {
-    const colonIndex = link.indexOf(':');
-    if (colonIndex > 0) {
-      return link.substring(0, colonIndex).trim();
+  const result: string[] = [];
+  
+  // De `split` met een regex geeft ons [tekst, url, tekst, url, ...].
+  // We moeten deze weer combineren tot "Titel: URL".
+  for (let i = 0; i < parts.length - 1; i += 2) {
+    const title = parts[i].replace(/:$/, '').trim(); // Verwijder de laatste ':' en trim
+    const url = parts[i + 1];
+    if (title && url) {
+      result.push(`${title}: ${url}`);
     }
-    return link; // Fallback als er geen : is
-  });
+  }
+  
+  // Als er geen URL's zijn gevonden, maar wel tekst, behandel de hele tekst als één item (fallback)
+  if (result.length === 0 && linksText.trim()) {
+    return [linksText.trim()];
+  }
+  
+  return result;
 };
 
 interface FileUploaderProps {
@@ -86,8 +98,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
          title: row['Wat?'] || row['Titel (of wat)'] || '', // Support both column names
          description: row['Extra regel'] || '',
                    instructions: row['Instructies'] || row['link'] || null, // Nieuwe instructies kolom
-          links: parseLinksColumn(row['Links'] || ''), // Nieuwe links kolom
-          link: row['Links'] || row['link'] || null, // Behoud voor backward compatibility
+          links: parseLinksColumn(row['Links'] || ''), // Gebruik de nieuwe, robuuste parser
+          // Verwijder de oude 'link' toewijzing om dubbele data te voorkomen
           startDate: row['Startdatum'] || row['startDate'] || '',
           endDate: row['Einddatum'] || row['endDate'] || '',
          startTime: row['Tijd startdatum'] || null,
