@@ -13,6 +13,7 @@ import { filterConfig } from '../config/filters';
 
 interface PlanningCardProps {
   item: PlanningItem;
+  itemType: 'doorlopend' | 'start-eind';
   showDateDetails?: {
     showStartDate: boolean;
     showEndDate: boolean;
@@ -62,7 +63,7 @@ const phaseColorClasses: { [key: string]: string } = {
 // Find the phase config from the central configuration
 const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
 
-export function PlanningCard({ item, showDateDetails, onDocumentClick }: PlanningCardProps) {
+export function PlanningCard({ item, itemType, showDateDetails, onDocumentClick }: PlanningCardProps) {
   const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
 
   const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
@@ -100,6 +101,12 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
   const hasLink = Boolean(item.instructions || item.link);
 
+  const cardClasses = {
+    base: 'rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden',
+    'start-eind': 'bg-white border-l-4 border-blue-500',
+    'doorlopend': 'bg-gray-50/70 border-l-4 border-transparent' // Border transparent om layout gelijk te houden
+  };
+
   if (isMiddleOfLongSeries && !isExpanded) {
     return (
       <div
@@ -119,7 +126,7 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
   return (
     <div 
-      className="bg-white border-l-4 border-han-red rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden"
+      className={`${cardClasses.base} ${cardClasses[itemType]}`}
     >
       <div className="p-3">
         {/* Top row: dots and phase tags */}
