@@ -1,34 +1,59 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { filterConfig } from '../config/filters';
 
-// The state will be an object where keys are filter IDs (e.g., 'phase')
-// and values are arrays of selected option values (e.g., ['p', 'h1']).
-type ActiveFiltersState = Record<string, string[]>;
+// Haal de initiële state op uit localStorage of gebruik een leeg object
+const getInitialState = () => {
+  try {
+    const savedFilters = localStorage.getItem('userFilters');
+    if (savedFilters) {
+      const parsedFilters = JSON.parse(savedFilters);
+      // We willen alleen de 'phase' filter behouden, de rest resetten.
+      return {
+        phase: parsedFilters.phase || [],
+      };
+    }
+  } catch (error) {
+    console.error("Failed to parse filters from localStorage", error);
+  }
+  return {};
+};
 
-const initialState: ActiveFiltersState = filterConfig.reduce((acc, filter) => {
-  acc[filter.id] = [];
-  return acc;
-}, {} as ActiveFiltersState);
 
 export const useFilters = () => {
-  const [activeFilters, setActiveFilters] = useState<ActiveFiltersState>(initialState);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(getInitialState());
 
-  const toggleFilter = useCallback((filterId: string, value: string) => {
-    setActiveFilters(prevState => {
-      const currentFilterValues = prevState[filterId] || [];
-      const newFilterValues = currentFilterValues.includes(value)
-        ? currentFilterValues.filter(v => v !== value)
-        : [...currentFilterValues, value];
+  // Effect om de 'phase' filter op te slaan wanneer deze wijzigt
+  useEffect(() => {
+    try {
+      const filtersToSave = {
+        phase: activeFilters.phase || [],
+      };
+      localStorage.setItem('userFilters', JSON.stringify(filtersToSave));
+    } catch (error) {
+      console.error("Failed to save filters to localStorage", error);
+    }
+  }, [activeFilters.phase]);
+
+
+  const toggleFilter = useCallback((configId: string, optionValue: string) => {
+    setActiveFilters(prevFilters => {
+      const currentSelection = prevFilters[configId] || [];
+      const newSelection = currentSelection.includes(optionValue)
+        ? currentSelection.filter(item => item !== optionValue)
+        : [...currentSelection, optionValue];
       
       return {
-        ...prevState,
-        [filterId]: newFilterValues,
+        ...prevFilters,
+        [configId]: newSelection
       };
     });
   }, []);
 
   const resetFilters = useCallback(() => {
-    setActiveFilters(initialState);
+    // Reset alles behalve de 'phase' filter
+    setActiveFilters(prevFilters => ({
+      phase: prevFilters.phase || []
+    }));
   }, []);
 
   return { activeFilters, toggleFilter, resetFilters };

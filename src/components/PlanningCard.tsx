@@ -181,8 +181,12 @@ export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: P
         )}
         
         {/* Meta-balk Footer */}
-        <div className="text-sm mt-3 pt-2 border-t border-gray-100">
-          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <div className={`text-sm ${
+          item.isLastInSeries 
+            ? 'bg-red-100 rounded-b-lg -mx-3 -mb-3 mt-3 px-3 py-2 border-t border-red-200' 
+            : 'mt-3 pt-2 border-t border-gray-100'
+        }`}>
+          <div className="flex flex-col items-start gap-2">
             {/* Date Range */}
             <div className="flex items-center gap-1.5 text-gray-600">
               {/* Start Date & Time */}
@@ -231,7 +235,7 @@ export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: P
                             e.stopPropagation();
                             window.open(url, '_blank', 'noopener,noreferrer');
                           }}
-                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-blue-600 rounded-md hover:text-blue-700 hover:underline transition-all duration-200 cursor-pointer"
                         >
                           <Link className="w-3 h-3" />
                           <span>{item.links!.length === 1 ? 'link' : `link ${index + 1}`}</span>

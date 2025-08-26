@@ -2,37 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 
-export const DevelopmentBanner: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
+interface BannerProps {
+  onClose: () => void;
+}
+
+export const DevelopmentBanner: React.FC<BannerProps> = ({ onClose }) => {
+  const [internalVisible, setInternalVisible] = useState(true);
   const { settings, loading } = useSettings();
 
   useEffect(() => {
-    if (settings?.developmentBanner.enabled) {
-      const hasSeenBanner = sessionStorage.getItem('hasSeenDevelopmentBanner');
-      if (hasSeenBanner !== 'true') {
-        setIsVisible(true);
-      }
-    } else {
-      setIsVisible(false);
-    }
-  }, [settings]);
-
-  useEffect(() => {
-    if (isVisible && settings?.developmentBanner.autoHideDelay && settings.developmentBanner.autoHideDelay > 0) {
+    if (internalVisible && settings?.developmentBanner.autoHideDelay && settings.developmentBanner.autoHideDelay > 0) {
       const timer = setTimeout(() => {
-        setIsVisible(false);
+        setInternalVisible(false);
       }, settings.developmentBanner.autoHideDelay * 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible, settings]);
+  }, [internalVisible, settings]);
 
   const handleClose = () => {
-    setIsVisible(false);
-    sessionStorage.setItem('hasSeenDevelopmentBanner', 'true');
+    setInternalVisible(false);
+    onClose();
   };
 
-  if (loading || !isVisible || !settings?.developmentBanner.enabled) {
+  if (loading || !settings?.developmentBanner.enabled || !internalVisible) {
     return null;
   }
   

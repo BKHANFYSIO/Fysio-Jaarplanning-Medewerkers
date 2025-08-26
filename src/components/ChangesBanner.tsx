@@ -2,37 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 
-export const ChangesBanner: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
+interface BannerProps {
+  onClose: () => void;
+}
+
+export const ChangesBanner: React.FC<BannerProps> = ({ onClose }) => {
+  const [internalVisible, setInternalVisible] = useState(true);
   const { settings, loading } = useSettings();
 
   useEffect(() => {
-    if (settings?.changesBanner.enabled) {
-      const hasSeenBanner = sessionStorage.getItem('hasSeenChangesBanner');
-      if (hasSeenBanner !== 'true') {
-        setIsVisible(true);
-      }
-    } else {
-      setIsVisible(false);
-    }
-  }, [settings]);
-
-  useEffect(() => {
-    if (isVisible && settings?.changesBanner.autoHideDelay && settings.changesBanner.autoHideDelay > 0) {
+    if (internalVisible && settings?.changesBanner.autoHideDelay && settings.changesBanner.autoHideDelay > 0) {
       const timer = setTimeout(() => {
-        setIsVisible(false);
+        setInternalVisible(false);
       }, settings.changesBanner.autoHideDelay * 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible, settings]);
+  }, [internalVisible, settings]);
 
   const handleClose = () => {
-    setIsVisible(false);
-    sessionStorage.setItem('hasSeenChangesBanner', 'true');
+    setInternalVisible(false);
+    onClose();
   };
 
-  if (loading || !isVisible || !settings?.changesBanner.enabled) {
+  if (loading || !settings?.changesBanner.enabled || !internalVisible) {
     return null;
   }
   

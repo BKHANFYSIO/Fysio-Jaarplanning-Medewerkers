@@ -60,6 +60,7 @@ function App() {
   const [hasSeenHelp, setHasSeenHelp] = useState(() => {
     return localStorage.getItem('hasSeenHelp') === 'true';
   });
+  const [showBanners, setShowBanners] = useState(true);
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
@@ -325,8 +326,8 @@ function App() {
 
   const Home = () => (
     <div className="bg-slate-50 min-h-screen">
-      <DevelopmentBanner />
-      <ChangesBanner />
+      {showBanners && <DevelopmentBanner onClose={() => setShowBanners(false)} />}
+      {showBanners && <ChangesBanner onClose={() => setShowBanners(false)} />}
       <div className="container p-4 mx-auto">
         <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
           {/* Desktop Layout */}
