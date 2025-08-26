@@ -124,6 +124,7 @@ function App() {
   };
 
   const toggleSectionCollapse = (weekKey: string) => {
+    saveCurrentScrollPosition();
     setCollapsedSections(prev => ({
       ...prev,
       [weekKey]: !(prev[weekKey] || false)

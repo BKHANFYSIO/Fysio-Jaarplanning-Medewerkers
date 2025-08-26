@@ -22,18 +22,20 @@ const getItemPriority = (item: PlanningItem): number => {
   return 5; // Doorlopende Activiteiten (ingeklapt)
 };
 
-const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true }: { title: string, isCollapsed: boolean, onToggle: () => void, count: number, showChevron?: boolean }) => (
+const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true }: { title: string, isCollapsed: boolean, onToggle: (event: React.MouseEvent) => void, count: number, showChevron?: boolean }) => (
   <div className="mt-4 first:mt-0">
-    <div 
-      className={`flex items-center justify-between ${showChevron ? 'cursor-pointer group' : ''}`}
+    <button
+      type="button"
+      className={`flex items-center justify-between w-full text-left ${showChevron ? 'cursor-pointer group' : ''}`}
       onClick={showChevron ? onToggle : undefined}
+      disabled={!showChevron}
     >
       <h4 className={`text-xs font-bold tracking-wider text-gray-500 uppercase ${showChevron ? 'group-hover:text-gray-700' : ''}`}>{title}</h4>
       <div className="flex items-center gap-2">
         {count > 0 && <span className="text-xs font-medium text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{count}</span>}
         {showChevron && (isCollapsed ? <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/> : <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600"/>)}
       </div>
-    </div>
+    </button>
     <hr className="mt-1 mb-2"/>
   </div>
 );
@@ -41,6 +43,11 @@ const GroupHeader = ({ title, isCollapsed, onToggle, count, showChevron = true }
 export function WeekSection({ week, items, onDocumentClick, highlightLabel = null, isLopendeZakenCollapsed, onToggleLopendeZaken }: WeekSectionProps) {
   const weekStartDate = parseDate(week.startDate);
   
+  const handleToggle = (event: React.MouseEvent) => {
+    event.preventDefault();
+    onToggleLopendeZaken();
+  };
+
   if (week.isVacation) {
     return (
       <div className="mb-8">
@@ -119,7 +126,7 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
                     <GroupHeader 
                       title="Doorlopende Activiteiten" 
                       isCollapsed={isLopendeZakenCollapsed}
-                      onToggle={onToggleLopendeZaken}
+                      onToggle={handleToggle}
                       count={doorlopendeActiviteiten.length}
                     />
                     {!isLopendeZakenCollapsed && doorlopendeActiviteiten.map(renderItem)}
