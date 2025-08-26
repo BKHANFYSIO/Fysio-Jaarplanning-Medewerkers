@@ -173,8 +173,19 @@ export const useData = () => {
         setOrphanedItems(orphans);
         setError(null);
       } catch (err: any) {
-        setError('Fout bij het laden van de data: ' + err.message);
-        console.error(err);
+        console.error('Error fetching data:', err);
+        
+        // Check if it's an IndexedDB error
+        if (err.message && err.message.includes('IndexedDB')) {
+          setError('Browser storage problem. Probeer de pagina te verversen of gebruik een andere browser.');
+        } else {
+          setError('Fout bij het laden van de data: ' + err.message);
+        }
+        
+        // Set empty data to prevent white screen
+        setWeeks([]);
+        setPlanningItems([]);
+        setOrphanedItems([]);
       } finally {
         setLoading(false);
       }

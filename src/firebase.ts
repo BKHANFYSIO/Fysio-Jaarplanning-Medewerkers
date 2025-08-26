@@ -1,6 +1,20 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+
+// Disable Firebase Remote Config to prevent IndexedDB errors
+const disableFirebaseRemoteConfig = () => {
+  if (typeof window !== 'undefined') {
+    // Override Firebase Remote Config methods to prevent IndexedDB errors
+    (window as any).firebase = (window as any).firebase || {};
+    (window as any).firebase.remoteConfig = {
+      getValue: () => ({ asString: () => '', asNumber: () => 0, asBoolean: () => false }),
+      setDefaults: () => {},
+      fetchAndActivate: () => Promise.resolve(true),
+      activate: () => Promise.resolve(true),
+    };
+  }
+};
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,7 +25,38 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Disable Firebase Remote Config before initialization
+disableFirebaseRemoteConfig();
+
+// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
+// Initialize Auth
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Initialize Firestore with error handling
+let db: any;
+try {
+  db = getFirestore(app);
+  
+  // Add error handling for IndexedDB issues
+  if (typeof window !== 'undefined') {
+    // Check if IndexedDB is available
+    if (!window.indexedDB) {
+      console.warn('IndexedDB is not available in this browser');
+    }
+  }
+} catch (error) {
+  console.error('Failed to initialize Firestore:', error);
+  // Fallback: create a mock db object
+  db = {
+    collection: () => ({
+      getDocs: async () => ({ docs: [] }),
+      addDoc: async () => ({ id: 'mock-id' }),
+      updateDoc: async () => {},
+      deleteDoc: async () => {},
+    }),
+  };
+}
+
+export { db };

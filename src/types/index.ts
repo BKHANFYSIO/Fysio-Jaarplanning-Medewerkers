@@ -6,7 +6,9 @@ export interface PlanningItem {
   weekCode?: string; // Add weekCode
   title: string;
   description: string;
-  link?: string;
+  instructions?: string; // Vervangt de oude 'link' kolom
+  links?: string[]; // Nieuwe kolom voor titel:URL format
+  link?: string; // Behoud voor backward compatibility
   startDate: string;
   endDate: string;
   startTime?: string;

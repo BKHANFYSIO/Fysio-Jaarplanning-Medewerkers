@@ -2,6 +2,7 @@ import { collection, writeBatch, doc, getDocs, deleteDoc, updateDoc, addDoc } fr
 import Papa from 'papaparse';
 import { db } from '../firebase'; // Make sure you have this file exporting your db instance
 import { PlanningItem, WeekInfo } from '../types';
+import { exportToExcel } from '../utils/excelParser';
 
 /**
  * Overwrites all documents in a specific collection with new data.
@@ -141,7 +142,8 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
   const csvData = (data as PlanningItem[]).map(item => ({
     'Titel (of wat)': item.title,
     'Extra regel': item.description,
-    'link': item.link,
+    'Instructies': item.instructions || item.link || '',
+    'Links': item.links ? item.links.join(', ') : '',
     'Waarderen': item.subjects.waarderen ? 'v' : '',
     'Juniorstage': item.subjects.juniorstage ? 'v' : '',
     'IPL': item.subjects.ipl ? 'v' : '',
@@ -179,3 +181,60 @@ const triggerCsvDownload = (csvString: string, fileName: string) => {
     document.body.removeChild(link);
   }
 }
+
+/**
+ * Fetches all documents from a collection and exports as Excel file.
+ * @param collectionName The name of the Firestore collection to export.
+ * @param fileName The desired name for the downloaded Excel file.
+ */
+export const fetchAndExportAsExcel = async (collectionName: string, fileName: string) => {
+  const collectionRef = collection(db, collectionName);
+  const snapshot = await getDocs(collectionRef);
+  
+  if (snapshot.empty) {
+    alert('De collectie is leeg. Er is niets om te exporteren.');
+    return;
+  }
+
+  const data = snapshot.docs.map(doc => doc.data());
+
+  // Check if we are exporting weeks or activities
+  if (collectionName.includes('week-planning')) {
+    const excelData = (data as WeekInfo[]).map(item => ({
+      'Weergave voor in app.': item.weekLabel,
+      'Datum': item.startDate.substring(0, item.startDate.lastIndexOf('-')), // Date without year
+      'Jaar': item.year || new Date(item.startDate.split('-').reverse().join('-')).getFullYear(),
+      'Semester': item.semester,
+      'Is Vakantie': item.isVacation ? 'Ja' : 'Nee'
+    }));
+    exportToExcel(excelData, fileName, 'Lesweekplanning');
+    return;
+  }
+  
+  // Export activities
+  const excelData = (data as PlanningItem[]).map(item => ({
+    'Titel': item.title,
+    'Beschrijving': item.description,
+    'Instructies': item.instructions || item.link || '',
+    'Links': item.links ? item.links.join(', ') : '',
+    'Startdatum': item.startDate,
+    'Einddatum': item.endDate,
+    'Starttijd': item.startTime,
+    'Eindtijd': item.endTime,
+    'Deadline': item.deadline,
+    'Waarderen': item.subjects.waarderen ? 'Ja' : 'Nee',
+    'Juniorstage': item.subjects.juniorstage ? 'Ja' : 'Nee',
+    'IPL': item.subjects.ipl ? 'Ja' : 'Nee',
+    'BVP': item.subjects.bvp ? 'Ja' : 'Nee',
+    'PZW': item.subjects.pzw ? 'Ja' : 'Nee',
+    'Minor': item.subjects.minor ? 'Ja' : 'Nee',
+    'Getuigschriften': item.subjects.getuigschriften ? 'Ja' : 'Nee',
+    'Inschrijven': item.subjects.inschrijven ? 'Ja' : 'Nee',
+    'Overig': item.subjects.overig ? 'Ja' : 'Nee',
+    'Fase P': item.phases.p ? 'Ja' : 'Nee',
+    'Fase H1': item.phases.h1 ? 'Ja' : 'Nee',
+    'Fase H2/3': item.phases.h2h3 ? 'Ja' : 'Nee',
+  }));
+
+  exportToExcel(excelData, fileName, 'Activiteiten');
+};

@@ -12,6 +12,8 @@ import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { HelpModal } from './components/HelpModal';
+import { DevelopmentBanner } from './components/DevelopmentBanner';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface TopWeekInfo {
   key: string;
@@ -46,7 +48,11 @@ function App() {
   const { activeFilters, toggleFilter, resetFilters } = useFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(false);
+  const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(() => {
+    // Probeer de opgeslagen instelling te laden, standaard op true (ingeklapt)
+    const saved = localStorage.getItem('areAllLopendeZakenCollapsed');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [hasSeenHelp, setHasSeenHelp] = useState(() => {
     return localStorage.getItem('hasSeenHelp') === 'true';
@@ -64,6 +70,18 @@ function App() {
       localStorage.setItem('hasSeenHelp', 'true');
     }
   }, [hasSeenHelp, loading]);
+
+  // Initialiseer collapsedSections op basis van de opgeslagen instelling
+  useLayoutEffect(() => {
+    if (weeks.length > 0) {
+      const newCollapsedSections: Record<string, boolean> = {};
+      weeks.forEach(week => {
+        const weekKey = `${week.semester}-${week.weekCode}`;
+        newCollapsedSections[weekKey] = areAllLopendeZakenCollapsed;
+      });
+      setCollapsedSections(newCollapsedSections);
+    }
+  }, [weeks, areAllLopendeZakenCollapsed]);
 
   const saveCurrentScrollPosition = () => {
     if (headerRef.current) {
@@ -113,6 +131,10 @@ function App() {
     saveCurrentScrollPosition();
     const nextState = !areAllLopendeZakenCollapsed;
     setAreAllLopendeZakenCollapsed(nextState);
+    
+    // Sla de instelling op in localStorage
+    localStorage.setItem('areAllLopendeZakenCollapsed', nextState.toString());
+    
     // Create a new object where every weekKey is set to the new state
     const newCollapsedSections: Record<string, boolean> = {};
     weeks.forEach(week => {
@@ -260,11 +282,46 @@ function App() {
     itemsByWeek.get(weekKey)!.push(item);
   });
 
-  if (loading) return <p>Laden...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Er is een fout opgetreden</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <div className="space-y-2">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Probeer opnieuw
+            </button>
+            <button 
+              onClick={() => window.location.href = '/admin'} 
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            >
+              Ga naar Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const Home = () => (
     <div className="bg-slate-50 min-h-screen">
+      <DevelopmentBanner />
       <div className="container p-4 mx-auto">
         <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
           {/* Desktop Layout */}
@@ -416,7 +473,7 @@ function App() {
   );
 
   return (
-    <>
+    <ErrorBoundary>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
@@ -428,7 +485,7 @@ function App() {
         isOpen={isHelpModalOpen} 
         onClose={() => setIsHelpModalOpen(false)} 
       />
-    </>
+    </ErrorBoundary>
   );
 }
 

@@ -5,7 +5,8 @@ import {
   ChevronDown, 
   ChevronUp, 
   CalendarPlus, 
-  CalendarCheck2 
+  CalendarCheck2,
+  Link
 } from 'lucide-react';
 import { PlanningItem } from '../types';
 import { filterConfig } from '../config/filters';
@@ -67,8 +68,8 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
   const handleInstructionsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (item.link) {
-      window.open(item.link, '_blank', 'noopener,noreferrer');
+    if (item.instructions) {
+      window.open(item.instructions, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -79,7 +80,7 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
     }
   };
 
-  const hasLink = Boolean(item.link);
+  const hasLink = Boolean(item.instructions || item.link);
 
   if (isMiddleOfLongSeries && !isExpanded) {
     return (
@@ -176,7 +177,8 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
 
             {/* Actions */}
             <div className="flex items-center gap-x-4">
-              {item.link && (
+              {/* Instructies knop */}
+              {(item.instructions || item.link) && (
                 <button 
                   onClick={handleInstructionsClick}
                   className="flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-700 hover:scale-105 transition-all duration-200 cursor-pointer"
@@ -184,6 +186,29 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
                   <FileText className="w-4 h-4" />
                   <span>Instructies</span>
                 </button>
+              )}
+              
+              {/* Links weergave */}
+              {item.links && item.links.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  {item.links.map((linkTitle, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        // Extract URL from linkTitle (format: "Title: https://example.com")
+                        const urlMatch = linkTitle.match(/https?:\/\/[^\s]+/);
+                        if (urlMatch) {
+                          window.open(urlMatch[0], '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 cursor-pointer"
+                      title={linkTitle}
+                    >
+                      <Link className="w-3 h-3" />
+                      <span>{item.links!.length === 1 ? 'link' : `link${index + 1}`}</span>
+                    </button>
+                  ))}
+                </div>
               )}
               {item.deadline && (
                 <div className="flex items-center gap-1.5 font-medium text-red-600">

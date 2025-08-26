@@ -1,14 +1,94 @@
 import { WeekInfo } from '../types';
 
-export function parseDate(dateStr: string): Date | null {
+/**
+ * Converteer Excel datum serienummer naar leesbare datum string
+ * Excel slaat datums op als aantal dagen sinds 1 januari 1900
+ */
+function convertExcelDateToString(excelValue: number): string {
+  try {
+    // Excel datum is aantal dagen sinds 1 januari 1900
+    // Maar Excel heeft een bug: het denkt dat 1900 een schrikkeljaar was
+    // Dus we moeten 2 dagen aftrekken voor datums na 28 februari 1900
+    const excelEpoch = new Date(1900, 0, 1);
+    const daysSinceEpoch = excelValue - 2; // Compensatie voor Excel bug
+    
+    const date = new Date(excelEpoch.getTime() + daysSinceEpoch * 24 * 60 * 60 * 1000);
+    
+    // Format als DD-MM-YYYY
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}-${month}-${year}`;
+  } catch (error) {
+    console.warn('Kon Excel datum niet converteren:', excelValue, error);
+    return excelValue.toString();
+  }
+}
+
+export function parseDate(dateStr: string | number): Date | null {
   if (!dateStr) {
     console.log('parseDate: Empty date string');
     return null;
   }
   
-  console.log(`parseDate: Parsing "${dateStr}"`);
+  console.log(`parseDate: Parsing "${dateStr}" (type: ${typeof dateStr})`);
   
-  // Handle DD-MMM-YYYY format
+  // Als het een nummer is (Excel datum), converteer naar string
+  if (typeof dateStr === 'number') {
+    console.log(`parseDate: Converting Excel date number ${dateStr} to string`);
+    dateStr = convertExcelDateToString(dateStr);
+    console.log(`parseDate: Converted to "${dateStr}"`);
+  }
+  
+  // Als het nog steeds geen string is, return null
+  if (typeof dateStr !== 'string') {
+    console.log(`parseDate: Invalid date type: ${typeof dateStr}`);
+    return null;
+  }
+  
+  // Handle DD-MM-YYYY format (nieuwe Excel export format)
+  if (dateStr.includes('-') && dateStr.split('-').length === 3) {
+    const parts = dateStr.split('-');
+    console.log(`parseDate: Split into parts:`, parts);
+    
+    const day = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const year = parseInt(parts[2]);
+    
+    console.log(`parseDate: Raw parts - day: ${day}, month: ${month}, year: ${year}`);
+    
+    if (year && month && day && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const date = new Date(year, month - 1, day);
+      console.log(`parseDate: Created date object:`, date);
+      console.log(`parseDate: Date is valid:`, !isNaN(date.getTime()));
+      return date;
+    } else {
+      console.log(`parseDate: Invalid parts - day: ${day}, month: ${month}, year: ${year}`);
+    }
+  }
+  
+  // Handle DD-MMM format (Excel conversie format)
+  if (dateStr.includes('-') && dateStr.split('-').length === 2) {
+    const parts = dateStr.split('-');
+    console.log(`parseDate: DD-MMM format - parts:`, parts);
+    
+    const day = parseInt(parts[0]);
+    const monthStr = parts[1];
+    
+    if (day && monthStr) {
+      const month = getMonthNumber(monthStr);
+      if (month > 0) {
+        // Gebruik huidige jaar als fallback
+        const currentYear = new Date().getFullYear();
+        const date = new Date(currentYear, month - 1, day);
+        console.log(`parseDate: Created date from DD-MMM:`, date);
+        return date;
+      }
+    }
+  }
+  
+  // Handle DD-MMM-YYYY format (oude format)
   const parts = dateStr.split('-');
   console.log(`parseDate: Split into parts:`, parts);
   

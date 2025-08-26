@@ -44,10 +44,13 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
   if (week.isVacation) {
     return (
       <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4 pb-2 border-b-2 text-gray-600 border-gray-300">
+          {week.weekLabel} ({week.startDate})
+        </h2>
         <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-600 mb-2">
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">
             {week.weekLabel}
-          </h2>
+          </h3>
           <p className="text-gray-500">Geen activiteiten gepland</p>
         </div>
       </div>
