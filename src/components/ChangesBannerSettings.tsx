@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Eye, EyeOff } from 'lucide-react';
+import { Settings, Save, Eye, EyeOff, Bell } from 'lucide-react';
 import { useSettings, BannerSettings } from '../hooks/useSettings';
 import { toast } from 'react-hot-toast';
 
-export const DevelopmentBannerSettings: React.FC = () => {
+export const ChangesBannerSettings: React.FC = () => {
   const { settings, updateSettings, loading } = useSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [localConfig, setLocalConfig] = useState<BannerSettings | null>(null);
 
   useEffect(() => {
     if (settings) {
-      setLocalConfig(settings.developmentBanner);
+      setLocalConfig(settings.changesBanner);
     }
   }, [settings]);
 
   const handleSave = async () => {
     if (localConfig) {
       try {
-        await updateSettings({ developmentBanner: localConfig });
-        toast.success('Instellingen opgeslagen!');
+        await updateSettings({ changesBanner: localConfig });
+        toast.success('Instellingen voor wijzigingenbanner opgeslagen!');
         setIsEditing(false);
       } catch (error) {
         toast.error('Fout bij opslaan van instellingen.');
@@ -29,7 +29,7 @@ export const DevelopmentBannerSettings: React.FC = () => {
 
   const handleCancel = () => {
     if (settings) {
-      setLocalConfig(settings.developmentBanner);
+      setLocalConfig(settings.changesBanner);
     }
     setIsEditing(false);
   };
@@ -54,15 +54,15 @@ export const DevelopmentBannerSettings: React.FC = () => {
     return <div>Kon instellingen niet laden.</div>;
   }
 
-  const config = settings.developmentBanner;
+  const config = settings.changesBanner;
 
   return (
     <div className="space-y-4">
       {/* Status Display */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-gray-600" />
-          <span className="font-medium">Ontwikkelingsbanner Instellingen</span>
+          <Bell className="w-5 h-5 text-gray-600" />
+          <span className="font-medium">Wijzigingenbanner Instellingen</span>
         </div>
         {!isEditing && (
           <button
@@ -79,13 +79,13 @@ export const DevelopmentBannerSettings: React.FC = () => {
          <div className="flex items-center gap-2">
            {config.enabled ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-600" />}
            <span className="text-sm font-medium text-gray-700">
-             Ontwikkelingsbanner: {config.enabled ? 'Zichtbaar' : 'Verborgen'}
+             Wijzigingenbanner: {config.enabled ? 'Zichtbaar' : 'Verborgen'}
            </span>
          </div>
          <p className="text-xs text-gray-500 mt-1">
            {config.enabled 
-             ? 'Bezoekers zien de melding dat de app nog in ontwikkeling is' 
-             : 'Bezoekers zien geen ontwikkelingsmelding'
+             ? 'Bezoekers zien de melding over belangrijke wijzigingen.' 
+             : 'Bezoekers zien geen wijzigingenmelding.'
            }
          </p>
        </div>
@@ -101,10 +101,10 @@ export const DevelopmentBannerSettings: React.FC = () => {
                onChange={handleToggleBanner}
                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
              />
-             <span className="text-sm font-medium">Ontwikkelingsbanner tonen</span>
+             <span className="text-sm font-medium">Wijzigingenbanner tonen</span>
            </label>
            <p className="text-xs text-gray-500 ml-6">
-             Schakelt de gele waarschuwingsbanner in/uit die bezoekers informeren dat de app nog in ontwikkeling is
+             Schakelt de banner in/uit die bezoekers informeert over belangrijke wijzigingen.
            </p>
          </div>
 
@@ -146,7 +146,7 @@ export const DevelopmentBannerSettings: React.FC = () => {
                 value={localConfig.autoHideDelay}
                 onChange={(e) => handleDelayChange(e.target.value)}
                 className="w-20 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="10"
+                placeholder="15"
               />
               <span className="text-sm text-gray-600">
                 seconden (0 = geen auto-hide)
@@ -179,9 +179,9 @@ export const DevelopmentBannerSettings: React.FC = () => {
 
       {/* Preview */}
       {config.enabled && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <h4 className="text-sm font-medium text-amber-800 mb-2">Banner Voorvertoning:</h4>
-          <div className="text-amber-800">
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <h4 className="text-sm font-medium text-blue-800 mb-2">Banner Voorvertoning:</h4>
+          <div className="text-blue-800">
             <p className="font-medium text-sm">
               <strong>{config.title}</strong>
             </p>

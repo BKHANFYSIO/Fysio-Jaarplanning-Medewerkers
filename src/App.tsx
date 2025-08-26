@@ -14,6 +14,9 @@ import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle } fr
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import YearSelector from './components/YearSelector';
+import { YearProvider } from './contexts/YearContext';
+import { ChangesBanner } from './components/ChangesBanner';
 
 interface TopWeekInfo {
   key: string;
@@ -322,6 +325,7 @@ function App() {
   const Home = () => (
     <div className="bg-slate-50 min-h-screen">
       <DevelopmentBanner />
+      <ChangesBanner />
       <div className="container p-4 mx-auto">
         <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
           {/* Desktop Layout */}

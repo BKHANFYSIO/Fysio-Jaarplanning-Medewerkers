@@ -12,7 +12,9 @@ import { useWeekData } from '../hooks/useWeekData';
 import { EditWeekModal } from '../components/EditWeekModal';
 import { Accordion } from '../components/Accordion';
 import { DevelopmentBannerSettings } from '../components/DevelopmentBannerSettings';
-import { LogOut, Upload, Download, Edit, Trash2, CheckCircle2, AlertTriangle, PlusCircle } from 'lucide-react';
+import { ChangesBannerSettings } from '../components/ChangesBannerSettings';
+import { LogOut, Upload, Download, Edit, Trash2, CheckCircle2, AlertTriangle, PlusCircle, Settings } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 
 const monthMap: { [key: string]: number } = {
   'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
@@ -212,6 +214,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container p-4 mx-auto md:p-8">
+        <Toaster position="bottom-right" />
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-bold text-gray-800">Admin Dashboard</h1>
           <button
@@ -284,7 +287,9 @@ const AdminPage = () => {
           {/* Algemene Instellingen */}
           <div className="p-6 bg-white rounded-lg shadow">
             <h2 className="p-3 mb-4 -mx-6 -mt-6 text-xl font-semibold text-white bg-amber-700 rounded-t-lg">Algemene Instellingen</h2>
-            <DevelopmentBannerSettings onSettingsChange={handleDevelopmentSettingsChange} />
+             <DevelopmentBannerSettings />
+             <hr className="my-4" />
+             <ChangesBannerSettings />
           </div>
         </div>
         
@@ -295,7 +300,7 @@ const AdminPage = () => {
             <div className="p-6 bg-white rounded-lg shadow">
                 <h2 className="p-3 mb-4 -mx-6 -mt-6 text-2xl font-semibold text-white bg-blue-700 rounded-t-lg">Activiteitenbeheer</h2>
                 <div className="space-y-6">
-                    <div>
+                     <div>
                         <h3 className="font-bold">Stap 1: Maak een backup (Aanbevolen)</h3>
                         <p className="text-sm text-gray-600">Download de huidige planning als CSV of Excel bestand voordat je een nieuw bestand uploadt.</p>
                         <div className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">

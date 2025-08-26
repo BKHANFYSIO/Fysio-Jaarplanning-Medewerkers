@@ -128,21 +128,19 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
           <div className="flex gap-1.5">
             {activeSubjects.slice(0, 6).map((subject) => {
               const colorClass = subjectColors[subject] || 'bg-gray-400';
-              const subjectLabel = subject.charAt(0).toUpperCase() + subject.slice(1);
               return (
-                <Tooltip key={subject} content={subjectLabel}>
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
-                  />
-                </Tooltip>
+                <div
+                  key={subject}
+                  className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
+                  title={subject.charAt(0).toUpperCase() + subject.slice(1)}
+                />
               );
             })}
             {activeSubjects.length > 6 && (
-              <Tooltip content={`+${activeSubjects.length - 6} meer`}>
-                <div 
-                  className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm"
-                />
-              </Tooltip>
+              <div 
+                className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm" 
+                title={`+${activeSubjects.length - 6} meer`}
+              />
             )}
           </div>
           {/* Phase tags */}
