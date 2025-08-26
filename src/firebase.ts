@@ -2,18 +2,11 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
-// Disable Firebase Remote Config to prevent IndexedDB errors
+// Firebase Remote Config is now handled by firebase-blocker.ts
+// This function is kept for backward compatibility but is no longer needed
 const disableFirebaseRemoteConfig = () => {
-  if (typeof window !== 'undefined') {
-    // Override Firebase Remote Config methods to prevent IndexedDB errors
-    (window as any).firebase = (window as any).firebase || {};
-    (window as any).firebase.remoteConfig = {
-      getValue: () => ({ asString: () => '', asNumber: () => 0, asBoolean: () => false }),
-      setDefaults: () => {},
-      fetchAndActivate: () => Promise.resolve(true),
-      activate: () => Promise.resolve(true),
-    };
-  }
+  // Firebase Remote Config blocking is now handled by firebase-blocker.ts
+  // which runs before any Firebase initialization
 };
 
 const firebaseConfig = {
@@ -23,6 +16,11 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  // Disable Firebase services that use IndexedDB
+  measurementId: undefined, // Disable Analytics
+  appCheck: {
+    provider: 'debug', // Use debug provider instead of production
+  },
 };
 
 // Disable Firebase Remote Config before initialization

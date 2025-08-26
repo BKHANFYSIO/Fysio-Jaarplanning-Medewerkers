@@ -21,6 +21,29 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // If it's a Firebase Remote Config error, try to prevent it from happening again
+    if (error.message && error.message.includes('Remote Config')) {
+      console.log('Firebase Remote Config error detected, attempting to block future errors...');
+      
+      // Block Firebase Remote Config more aggressively
+      if (typeof window !== 'undefined') {
+        try {
+          Object.defineProperty(window, 'firebaseRemoteConfig', {
+            value: {
+              getValue: () => ({ asString: () => '', asNumber: () => 0, asBoolean: () => false }),
+              setDefaults: () => {},
+              fetchAndActivate: () => Promise.resolve(true),
+              activate: () => Promise.resolve(true),
+            },
+            writable: false,
+            configurable: false,
+          });
+        } catch (e) {
+          console.log('Could not block firebaseRemoteConfig:', e);
+        }
+      }
+    }
   }
 
   render() {

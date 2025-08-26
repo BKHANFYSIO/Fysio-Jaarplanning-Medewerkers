@@ -5,6 +5,9 @@ import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext.tsx'
 import './index.css'
 
+// Import Firebase Remote Config Blocker - must be imported before any Firebase initialization
+import './firebase-blocker.ts'
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
