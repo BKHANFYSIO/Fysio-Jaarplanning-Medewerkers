@@ -80,4 +80,19 @@
   } catch (error) {
     console.error('Firebase Remote Config Blocker: Error during initialization:', error);
   }
+
+  // Method 5: Catch unhandled promise rejections from rogue scripts (like extensions)
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorReason = event.reason || {};
+    // Specifically target the IndexedDB error caused by faulty Remote Config initialization
+    if (errorReason.code === 'remoteconfig/storage-open' || (typeof errorReason.message === 'string' && errorReason.message.includes('indexedDB'))) {
+      console.warn(
+        'Firebase Blocker: Caught an unhandled promise rejection, likely from a browser extension conflicting with Firebase. ' +
+        'The app will attempt to continue. For a stable experience, consider disabling browser extensions.',
+        errorReason
+      );
+      // Prevent this error from bubbling up and causing a fatal crash
+      event.preventDefault();
+    }
+  });
 })();
