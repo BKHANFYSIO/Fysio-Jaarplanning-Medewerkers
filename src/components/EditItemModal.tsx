@@ -20,7 +20,12 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => prev ? { ...prev, [name]: value } : null);
+    // Special handling for links textarea
+    if (name === 'links') {
+      setFormData(prev => prev ? { ...prev, links: value.split('\n') } : null);
+    } else {
+      setFormData(prev => prev ? { ...prev, [name]: value } : null);
+    }
   };
 
   const handleCheckboxChange = (group: 'phases' | 'subjects', key: string) => {
@@ -61,8 +66,13 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
           </div>
 
           <div>
-            <label htmlFor="link" className="block text-sm font-medium">Link naar document</label>
-            <input type="url" name="link" value={formData.link || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://..."/>
+            <label htmlFor="instructions" className="block text-sm font-medium">Instructies (Link)</label>
+            <input type="url" name="instructions" value={formData.instructions || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://..."/>
+          </div>
+
+          <div>
+            <label htmlFor="links" className="block text-sm font-medium">Links (één per regel)</label>
+            <textarea name="links" value={formData.links?.join('\n') || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="Titel: https://...&#10;Andere Titel: https://..."></textarea>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -73,6 +83,14 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             <div>
               <label htmlFor="endDate" className="block text-sm font-medium">Einddatum</label>
               <input type="text" name="endDate" value={formData.endDate || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="dd-mm-jjjj"/>
+            </div>
+            <div>
+              <label htmlFor="tijd_startdatum" className="block text-sm font-medium">Tijd Startdatum</label>
+              <input type="text" name="tijd_startdatum" value={formData.tijd_startdatum || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="HH:MM"/>
+            </div>
+            <div>
+              <label htmlFor="tijd_einddatum" className="block text-sm font-medium">Tijd Einddatum</label>
+              <input type="text" name="tijd_einddatum" value={formData.tijd_einddatum || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="HH:MM"/>
             </div>
           </div>
 
