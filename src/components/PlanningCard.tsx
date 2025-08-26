@@ -22,6 +22,24 @@ interface PlanningCardProps {
   onDocumentClick?: (documentName: string, activityTitle: string) => void;
 }
 
+// Kleine helper component voor een custom tooltip
+const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
+  return (
+    <div className="relative group flex items-center">
+      {children}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs
+                      px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md shadow-lg
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
+                      z-10">
+        {content}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0
+                        border-x-4 border-x-transparent
+                        border-t-4 border-t-gray-800"></div>
+      </div>
+    </div>
+  );
+};
+
 const subjectColors: { [key: string]: string } = {
   waarderen: 'bg-yellow-300',
   juniorstage: 'bg-green-300',
@@ -191,23 +209,29 @@ export function PlanningCard({ item, showDateDetails, onDocumentClick }: Plannin
               {/* Links weergave */}
               {item.links && item.links.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  {item.links.map((linkTitle, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        // Extract URL from linkTitle (format: "Title: https://example.com")
-                        const urlMatch = linkTitle.match(/https?:\/\/[^\s]+/);
-                        if (urlMatch) {
-                          window.open(urlMatch[0], '_blank', 'noopener,noreferrer');
-                        }
-                      }}
-                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 cursor-pointer"
-                      title={linkTitle}
-                    >
-                      <Link className="w-3 h-3" />
-                      <span>{item.links!.length === 1 ? 'link' : `link${index + 1}`}</span>
-                    </button>
-                  ))}
+                  {item.links.map((fullLink, index) => {
+                    // Parse de titel en de URL uit de link-string
+                    const colonIndex = fullLink.indexOf(':');
+                    const hasTitle = colonIndex > -1 && !fullLink.substring(colonIndex + 1).startsWith('//');
+                    
+                    const title = hasTitle ? fullLink.substring(0, colonIndex).trim() : 'Externe link';
+                    const url = hasTitle ? fullLink.substring(colonIndex + 1).trim() : fullLink;
+
+                    return (
+                      <Tooltip key={index} content={title}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          }}
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 cursor-pointer"
+                        >
+                          <Link className="w-3 h-3" />
+                          <span>{item.links!.length === 1 ? 'link' : `link ${index + 1}`}</span>
+                        </button>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
               )}
               {item.deadline && (
