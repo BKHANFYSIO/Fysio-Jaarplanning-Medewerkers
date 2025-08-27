@@ -51,22 +51,22 @@ const Home = ({
   toggleSectionCollapse,
   collapsedSections,
 }: any) => (
-  <div className="bg-slate-50 min-h-screen">
+  <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
     {bannerVisibility.changes && <ChangesBanner onClose={handleCloseChangesBanner} />}
     <div className="container p-4 mx-auto">
-      <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur-sm">
+      <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 dark:bg-slate-900/90 backdrop-blur-sm">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie</h1>
           </div>
           <div className="flex items-center gap-3">
             {/* Help Button */}
             <button 
               onClick={() => setIsHelpModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               title="Uitleg"
             >
               <HelpCircle size={16}/>
@@ -75,7 +75,7 @@ const Home = ({
             {/* QR Button (desktop only) */}
             <button 
               onClick={() => setIsQrOpen(true)}
-              className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               title="Toon QR"
             >
               <QrCode size={16}/>
@@ -100,20 +100,20 @@ const Home = ({
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
-              <h1 className="text-xl font-bold text-gray-800">Jaarplanning Fysiotherapie</h1>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie</h1>
             </div>
             {/* Compact Icon Buttons */}
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setIsHelpModalOpen(true)}
-                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
                 title="Uitleg"
               >
                 <HelpCircle size={18}/>
               </button>
               <button 
                 onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors"
+                className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
                 title="Filters & Opties"
               >
                 <Filter size={18}/>
@@ -143,11 +143,7 @@ const Home = ({
             }
           }}
         >
-          <div className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative">
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-700">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-              <span>Filters & opties</span>
-            </div>
+          <div className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative dark:bg-slate-800 dark:ring-slate-700 dark:border-blue-500">
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               {filterConfig.map(config => (
