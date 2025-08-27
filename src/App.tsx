@@ -10,11 +10,12 @@ import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode } from 'lucide-react';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ChangesBanner } from './components/ChangesBanner';
+import { QRModal } from './components/QRModal';
 
 interface TopWeekInfo {
   key: string;
@@ -33,6 +34,7 @@ const Home = ({
   headerRef,
   isMobileFiltersOpen,
   setIsMobileFiltersOpen,
+  setIsQrOpen,
   availableOptions,
   activeFilters,
   handleToggleFilter,
@@ -69,6 +71,15 @@ const Home = ({
             >
               <HelpCircle size={16}/>
               <span>Uitleg</span>
+            </button>
+            {/* QR Button (desktop only) */}
+            <button 
+              onClick={() => setIsQrOpen(true)}
+              className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              title="Toon QR"
+            >
+              <QrCode size={16}/>
+              <span>QR</span>
             </button>
             {/* Mobile Filter Toggle */}
             <div className="lg:hidden">
@@ -115,8 +126,9 @@ const Home = ({
         <div className={`
           ${isMobileFiltersOpen ? 'block' : 'hidden'} 
           lg:block
-        `}>
-          <div className="p-4 mt-2 bg-white rounded-lg shadow-md">
+        `}
+        >
+          <div className="p-4 mt-2 bg-white rounded-lg shadow-md z-50 relative">
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               {filterConfig.map(config => (
@@ -162,6 +174,29 @@ const Home = ({
           </div>
         </div>
       </header>
+
+      {/* Overlay (outside header) to close filters via tap or swipe-right on mobile */}
+      {isMobileFiltersOpen && (
+        <div
+          className="fixed inset-0 z-40 lg:hidden bg-black/0"
+          onClick={() => setIsMobileFiltersOpen(false)}
+          onTouchStart={(e) => {
+            (Home as any).touchStartX = e.touches[0].clientX;
+            (Home as any).touchStartY = e.touches[0].clientY;
+          }}
+          onTouchEnd={(e) => {
+            const sx = (Home as any).touchStartX as number | undefined;
+            const sy = (Home as any).touchStartY as number | undefined;
+            if (typeof sx === 'number' && typeof sy === 'number') {
+              const dx = e.changedTouches[0].clientX - sx;
+              const dy = e.changedTouches[0].clientY - sy;
+              if (dx > 60 && Math.abs(dy) < 40) {
+                setIsMobileFiltersOpen(false);
+              }
+            }
+          }}
+        />
+      )}
 
        {/* Main Content Grid */}
        <div className="mt-8"> {/* Added margin-top to the content grid */}
@@ -219,6 +254,7 @@ function App() {
     development: true,
     changes: true,
   });
+  const [isQrOpen, setIsQrOpen] = useState(false);
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
@@ -484,6 +520,7 @@ function App() {
               headerRef={headerRef}
               isMobileFiltersOpen={isMobileFiltersOpen}
               setIsMobileFiltersOpen={setIsMobileFiltersOpen}
+              setIsQrOpen={setIsQrOpen}
               availableOptions={availableOptions}
               activeFilters={activeFilters}
               handleToggleFilter={handleToggleFilter}
@@ -511,6 +548,7 @@ function App() {
         isOpen={isHelpModalOpen} 
         onClose={() => setIsHelpModalOpen(false)} 
       />
+      <QRModal isOpen={isQrOpen} onClose={() => setIsQrOpen(false)} />
     </ErrorBoundary>
   );
 }
