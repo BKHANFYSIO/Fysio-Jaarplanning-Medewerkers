@@ -340,7 +340,7 @@ const AdminPage = () => {
                             <li><strong>Upload het nieuwe bestand.</strong> Gebruik de upload-knop. Bevestig de waarschuwing om de oude weekstructuur te overschrijven.</li>
                           </ol>
                         </div>
-                        <p>Gebruik de bestand upload om de lesweekplanning te importeren. Deze actie <strong>overschrijft de volledige weekstructuur</strong> met de inhoud van het bestand.</p>
+                        <p>Gebruik de bestand upload om de lesweekplanning te importeren. Deze actie <strong>overschrijft de volledige weekstructuur</strong> met de inhoud van het bestand. Voorbeeld: werk je in semester 2 van studiejaar 2025/2026 en wil je semester 1 van 2026/2027 toevoegen? Dat kan. Semester 1 van 2025/2026 is voorbij en hoeft niet langer in de app zichtbaar te zijn; zo kun je alvast het komende studiejaar voorbereiden.</p>
                         <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                           <h4 className="font-bold">Voorbereiden Excel (lesweekplanning)</h4>
                           <ol className="ml-5 list-decimal">
