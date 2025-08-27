@@ -127,6 +127,21 @@ const Home = ({
           ${isMobileFiltersOpen ? 'block' : 'hidden'} 
           lg:block
         `}
+          onTouchStart={(e) => {
+            (Home as any).paneTouchStartX = e.touches[0].clientX;
+            (Home as any).paneTouchStartY = e.touches[0].clientY;
+          }}
+          onTouchEnd={(e) => {
+            const sx = (Home as any).paneTouchStartX as number | undefined;
+            const sy = (Home as any).paneTouchStartY as number | undefined;
+            if (typeof sx === 'number' && typeof sy === 'number') {
+              const dx = e.changedTouches[0].clientX - sx;
+              const dy = e.changedTouches[0].clientY - sy;
+              if (dx > 60 && Math.abs(dy) < 40) {
+                setIsMobileFiltersOpen(false);
+              }
+            }
+          }}
         >
           <div className="p-4 mt-2 bg-white rounded-lg shadow-md z-50 relative">
             {/* Filters */}
