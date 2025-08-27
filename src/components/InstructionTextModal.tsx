@@ -71,6 +71,8 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
             ))}
           </ol>
         );
+        // Als er nog tekst op dezelfde regel direct NA de laatste lijst staat (zonder '#'), toon die doorlopend
+        // Dit wordt al verwerkt in de volgende loop-iteraties als losse paragrafen; niets extra nodig
         continue;
       }
 

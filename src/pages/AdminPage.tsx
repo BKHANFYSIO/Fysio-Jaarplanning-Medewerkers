@@ -296,14 +296,13 @@ const AdminPage = () => {
                                     <li>Kies opleiding</li>
                                     <li>Afronden.</li>
                                   </ol>
-                                  <p className="text-sm mt-3">en doorgaan.</p>
                                   <p className="text-sm mt-3">Dit is een voorbeeld van bullets:</p>
                                   <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
                                     <li>Lees de richtlijn</li>
                                     <li>Volg de stappen</li>
                                     <li><a href="https://www.han.nl/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://www.han.nl/</a></li>
                                   </ul>
-                                  <div className="h-3" />
+                                  <div className="h-6" />
                                   <p className="text-sm">Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.</p>
                                 </div>
                               </div>
@@ -355,8 +354,8 @@ const AdminPage = () => {
                             <li><strong>Bereid je bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen. Zie de instructies hierboven.
                               <ul className="ml-5 list-disc">
                                 <li><strong>Voor Semester-activiteiten:</strong> <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
-                                <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
-                                <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
+                              <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
+                              <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
                               </ul>
                             </li>
                             <li><strong>Upload het nieuwe bestand.</strong> Gebruik de upload-knop voor het juiste semester. Je krijgt een waarschuwing die je moet bevestigen voordat de oude data wordt gewist.</li>
