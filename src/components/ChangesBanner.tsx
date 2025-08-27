@@ -35,7 +35,7 @@ export const ChangesBanner: React.FC<BannerProps> = ({ onClose }) => {
     <div className="bg-blue-50 border-b border-blue-200 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bell className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <Bell className="w-5 h-5 text-blue-600 flex-shrink-0 animate-bell-ring" />
           <div className="text-blue-800">
             <p className="font-medium">
               <strong>{title}</strong>
