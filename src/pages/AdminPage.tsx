@@ -275,6 +275,8 @@ const AdminPage = () => {
                                     <li>Regels die starten met <code>-</code> of <code>*</code> worden bullets.</li>
                                     <li>Regels die starten met <code>1.</code>, <code>2.</code>, … worden een genummerde lijst.</li>
                                     <li>Typ je per ongeluk meerdere lijstitems achter elkaar op één regel (bijv. <code>1. stap 1 2. stap 2</code> of <code>- punt A - punt B</code>), dan splitst de app die automatisch op nieuwe regels in de popup.</li>
+                                    <li>Gebruik <code>#</code> om een nieuwe regel te forceren; gebruik <code>##</code> voor een extra lege witregel.</li>
+                                    <li>Een punt aan het einde van een item heeft geen effect op de regels; gebruik <code>#</code> als je echt wil afbreken.</li>
                                     <li>Webadressen worden automatisch klikbaar gemaakt.</li>
                                   </ul>
                                 </li>
@@ -302,21 +304,29 @@ const AdminPage = () => {
                                 </div>
                               </div>
 
-                              {/* Extra voorbeeld: toelichting na lijstitem wordt paragraaf */}
+                              {/* Extra voorbeeld: geforceerde (lege) regel met # en ## */}
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: extra toelichting na lijstitem</h5>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`1. Inloggen. Gebruik je studentenaccount 2. Kies opleiding 3. Afronden.`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">De tekst na de <em>eerste volledige zin</em> van het eerste item (tot en met de punt) wordt als aparte paragraaf onder de lijst getoond: <em>Gebruik je studentenaccount</em>.</p>
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: # en ## gebruiken</h5>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: # 1. Inloggen 2. Kies opleiding 3. Afronden. ## Dit is een voorbeeld van bullets: # - Lees de richtlijn - Volg de stappen ## En hier een losse alinea na een lege regel.`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">Hier zorgt <code>#</code> voor een nieuwe regel na de titel en vóór de bullets. <code>##</code> voegt een extra lege witregel toe vóór de volgende sectie/tekst.</p>
                                 </div>
                                 <div className="rounded border border-gray-200 bg-white p-3">
                                   <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-2">
-                                    <li>Inloggen.</li>
+                                  <p className="text-sm">Dit zijn voorbeelden van opsommingscijfers:</p>
+                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-1">
+                                    <li>Inloggen</li>
                                     <li>Kies opleiding</li>
                                     <li>Afronden.</li>
                                   </ol>
-                                  <p className="text-sm mt-3">Gebruik je studentenaccount</p>
+                                  <div className="h-3" />
+                                  <p className="text-sm">Dit is een voorbeeld van bullets:</p>
+                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
+                                    <li>Lees de richtlijn</li>
+                                    <li>Volg de stappen</li>
+                                  </ul>
+                                  <div className="h-3" />
+                                  <p className="text-sm">En hier een losse alinea na een lege regel.</p>
                                 </div>
                               </div>
                             </li>

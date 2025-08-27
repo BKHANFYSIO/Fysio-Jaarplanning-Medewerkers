@@ -67,7 +67,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
 
           <div>
             <label htmlFor="instructions" className="block text-sm font-medium">Instructies</label>
-            <input type="text" name="instructions" value={formData.instructions || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://... of korte tekst"/>
+            <textarea name="instructions" value={formData.instructions || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded min-h-[90px]" placeholder="https://... of korte tekst (gebruik # om nieuwe regel te forceren)"></textarea>
           </div>
 
           <div>

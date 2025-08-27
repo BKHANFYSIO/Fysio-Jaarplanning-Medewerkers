@@ -15,6 +15,11 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
   const preprocessText = (raw: string) => {
     if (!raw) return '';
     let normalized = raw;
+    // Forceer nieuwe regels bij custom markers: '#' en '##' overal in de tekst
+    // Eerst '##' -> lege regel ertussen (twee nieuwe regels)
+    normalized = normalized.replace(/##/g, '\n\n');
+    // Dan enkel '#'
+    normalized = normalized.replace(/#/g, '\n');
     // Zet " 1. " of " 2. " middenin een zin om naar een nieuwe regel
     normalized = normalized.replace(/\s(\d+\.)\s/g, '\n$1 ');
     // Zet " - " middenin een zin om naar een nieuwe regel
@@ -45,7 +50,12 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
     let i = 0;
     while (i < lines.length) {
       const line = lines[i];
-      if (/^\s*$/.test(line)) { i++; continue; }
+      if (/^\s*$/.test(line)) { 
+        // Lege regel expliciet tonen als witruimte
+        elements.push(<div key={`blank-${i}`} className="h-3" />);
+        i++; 
+        continue; 
+      }
 
       // Geordende lijst (1. 2. ...)
       if (/^\s*\d+[.)]\s+/.test(line)) {
@@ -54,32 +64,13 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
           items.push(lines[i].replace(/^\s*\d+[.)]\s+/, ''));
           i++;
         }
-        // Splits mogelijke trailing tekst na eerste volledige zin
-        const processed = items.map((raw) => {
-          if (/https?:\/\//i.test(raw)) {
-            return { main: raw.trim(), rest: null as string | null };
-          }
-          const m = raw.match(/^([\s\S]*?\.)\s+(.+)$/);
-          if (m) {
-            return { main: m[1].trim(), rest: m[2].trim() };
-          }
-          return { main: raw.trim(), rest: null as string | null };
-        });
         elements.push(
           <ol key={`ol-${i}`} className="list-decimal ml-6 space-y-1">
-            {processed.map((it, idx) => (
-              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.main)}</li>
+            {items.map((it, idx) => (
+              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.trim())}</li>
             ))}
           </ol>
         );
-        // Eventuele remainders als losse paragrafen erna
-        processed.forEach((it, idx2) => {
-          if (it.rest) {
-            elements.push(
-              <p key={`ol-rest-${i}-${idx2}`} className="text-gray-700">{renderInlineWithLinks(it.rest)}</p>
-            );
-          }
-        });
         continue;
       }
 
@@ -90,30 +81,13 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
           items.push(lines[i].replace(/^\s*[-*]\s+/, ''));
           i++;
         }
-        const processed = items.map((raw) => {
-          if (/https?:\/\//i.test(raw)) {
-            return { main: raw.trim(), rest: null as string | null };
-          }
-          const m = raw.match(/^([\s\S]*?\.)\s+(.+)$/);
-          if (m) {
-            return { main: m[1].trim(), rest: m[2].trim() };
-          }
-          return { main: raw.trim(), rest: null as string | null };
-        });
         elements.push(
           <ul key={`ul-${i}`} className="list-disc ml-6 space-y-1">
-            {processed.map((it, idx) => (
-              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.main)}</li>
+            {items.map((it, idx) => (
+              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.trim())}</li>
             ))}
           </ul>
         );
-        processed.forEach((it, idx2) => {
-          if (it.rest) {
-            elements.push(
-              <p key={`ul-rest-${i}-${idx2}`} className="text-gray-700">{renderInlineWithLinks(it.rest)}</p>
-            );
-          }
-        });
         continue;
       }
 
@@ -123,9 +97,19 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
         para.push(lines[i]);
         i++;
       }
-      elements.push(
-        <p key={`p-${i}`} className="text-gray-700 whitespace-pre-line">{renderInlineWithLinks(para.join('\n'))}</p>
-      );
+      const paragraphText = para.join('\n');
+      // Ondersteun dubbele '#' als lege witregel: vervang '\n\n' bij '##' marker (al omgezet naar nieuwe regels in preprocess)
+      const parts = paragraphText.split(/\n\n/);
+      parts.forEach((part, idxPart) => {
+        if (part.trim().length > 0) {
+          elements.push(
+            <p key={`p-${i}-${idxPart}`} className="text-gray-700 whitespace-pre-line">{renderInlineWithLinks(part)}</p>
+          );
+        } else {
+          // lege regel
+          elements.push(<div key={`spacer-${i}-${idxPart}`} className="h-3" />);
+        }
+      });
     }
     return elements;
   };
