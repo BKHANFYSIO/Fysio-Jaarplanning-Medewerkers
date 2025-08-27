@@ -174,11 +174,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div>
                     <p className="text-gray-800">
-                      Staat er een <strong>v</strong> in de kolom "Deadline", dan is er een echte deadline waarbij actie vereist is. De kaart toont dan:
+                      Een <strong>deadline met actie vereist</strong> wordt extra benadrukt. Je ziet dan:
                     </p>
                     <ul className="list-disc ml-5 text-gray-800 space-y-1">
-                      <li>Een rood waarschuwing-icoon naast de fase-labels bovenin</li>
-                      <li>Een groter pulserend icoon in de footer met een tooltip "Deadline (actie vereist)"</li>
+                      <li>Een duidelijk rood waarschuwing-icoon in de kaart-footer</li>
+                      <li>Een tooltip met de tekst "Deadline (actie vereist)" wanneer je over het icoon beweegt</li>
                     </ul>
                     <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
                       <span className="text-red-600 inline-flex items-center" title="Deadline (actie vereist)">
