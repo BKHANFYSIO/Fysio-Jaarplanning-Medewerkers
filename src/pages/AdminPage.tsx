@@ -267,10 +267,19 @@ const AdminPage = () => {
                             </li>
                             <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
                           </ol>
+                          <div className="mt-3">
+                            <a
+                              href="/data/Aktiviteiten-voorbeeld.xlsx"
+                              download
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"
+                            >
+                              <Download size={16} /> Voorbeeldbestand (activiteiten)
+                            </a>
+                          </div>
                         </div>
                         <Accordion type="single" collapsible className="w-full">
                           <AccordionItem value="links-as-text">
-                            <AccordionTrigger className="font-semibold text-gray-600">Links als tekst plakken in Excel</AccordionTrigger>
+                            <AccordionTrigger className="font-semibold text-gray-600">Links als tekst plakken in Excel (</AccordionTrigger>
                             <AccordionContent>
                               <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                                 <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
@@ -325,6 +334,15 @@ const AdminPage = () => {
                               <li>Sla op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
                               <li>Upload via "Upload Lesweekplanning" hieronder.</li>
                             </ol>
+                            <div className="mt-3">
+                              <a
+                                href="/data/Lesweekplanning-voorbeeld.xlsx"
+                                download
+                                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"
+                              >
+                                <Download size={16} /> Voorbeeldbestand (lesweekplanning)
+                              </a>
+                            </div>
                           </div>
                           <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                             <h4 className="font-bold">Belangrijk: Synchroniseer met het "Moederbestand"</h4>
