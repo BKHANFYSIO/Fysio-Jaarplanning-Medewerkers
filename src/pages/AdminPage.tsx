@@ -267,6 +267,15 @@ const AdminPage = () => {
                             </li>
                             <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
                           </ol>
+                          <div className="mt-3">
+                            <a
+                              href="/data/Aktiviteiten-voorbeeld.xlsx"
+                              download
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"
+                            >
+                              <Download size={16} /> Voorbeeldbestand (activiteiten)
+                            </a>
+                          </div>
                         </div>
                         <Accordion type="single" collapsible className="w-full">
                           <AccordionItem value="links-as-text">
@@ -311,21 +320,38 @@ const AdminPage = () => {
                       </div>
                    </AccordionContent>
                 </AccordionItem>
+                <AccordionItem value="week-upload">
+                   <AccordionTrigger className="font-semibold text-gray-600">Instructies voor bestand upload (lesweekplanning)</AccordionTrigger>
+                   <AccordionContent>
+                      <div className="space-y-4 text-sm mt-2">
+                        <p>Gebruik de bestand upload om de lesweekplanning te importeren. Deze actie <strong>overschrijft de volledige weekstructuur</strong> met de inhoud van het bestand.</p>
+                        <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
+                          <h4 className="font-bold">Voorbereiden Excel (lesweekplanning)</h4>
+                          <ol className="ml-5 list-decimal">
+                            <li>Open het moederbestand en ga naar de lesweekplanning-tab.</li>
+                            <li>Zorg dat de kolommen aanwezig zijn: <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor datum (dd-mmm), en <code>jaar</code>.</li>
+                            <li>Kopieer de rijen en plak deze in een <strong>nieuw</strong> Excel-bestand.</li>
+                            <li>Sla op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
+                            <li>Upload via "Upload Lesweekplanning" hieronder.</li>
+                          </ol>
+                          <div className="mt-3">
+                            <a
+                              href="/data/Lesweekplanning-voorbeeld.xlsx"
+                              download
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"
+                            >
+                              <Download size={16} /> Voorbeeldbestand (lesweekplanning)
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                   </AccordionContent>
+                </AccordionItem>
                 <AccordionItem value="direct-edit">
                    <AccordionTrigger className="font-semibold text-gray-600">Instructies voor Direct Bewerken</AccordionTrigger>
                    <AccordionContent>
                        <div className="space-y-4 text-sm mt-2">
                           <p>Gebruik de "Bewerken" en "Verwijderen" knoppen in de tabellen hieronder voor snelle, individuele aanpassingen. Dit is de veiligste en snelste manier om een typefout te herstellen, een datum aan te passen, of een enkele activiteit/week te verwijderen.</p>
-                          <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
-                            <h4 className="font-bold">Voorbereiden Excel (lesweekplanning)</h4>
-                            <ol className="ml-5 list-decimal">
-                              <li>Open het moederbestand en ga naar de lesweekplanning-tab.</li>
-                              <li>Zorg dat de kolommen aanwezig zijn: <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor datum (dd-mmm), en <code>jaar</code>.</li>
-                              <li>Kopieer de rijen en plak deze in een <strong>nieuw</strong> Excel-bestand.</li>
-                              <li>Sla op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
-                              <li>Upload via "Upload Lesweekplanning" hieronder.</li>
-                            </ol>
-                          </div>
                           <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                             <h4 className="font-bold">Belangrijk: Synchroniseer met het "Moederbestand"</h4>
                             <p>Als je organisatie een centraal Excel- of "moederbestand" gebruikt voor de planning, zorg er dan voor dat je de wijzigingen die je hier doorvoert, ook daar verwerkt. Dit voorkomt dat de data uit elkaar gaat lopen bij een volgende upload.</p>
