@@ -75,6 +75,19 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             <textarea name="links" value={formData.links?.join('\n') || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="Titel: https://...&#10;Andere Titel: https://..."></textarea>
           </div>
           
+          {/* Deadline (actie vereist) */}
+          <div>
+            <label className="block text-sm font-medium">Deadline (actie vereist)</label>
+            <label className="inline-flex items-center gap-2 mt-1">
+              <input
+                type="checkbox"
+                checked={(formData.deadline || '').trim().toLowerCase() === 'v'}
+                onChange={(e) => setFormData(prev => prev ? { ...prev, deadline: e.target.checked ? 'v' : null } : null)}
+              />
+              <span className="text-sm text-gray-700">Toon deadline-icoon en benadrukking</span>
+            </label>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="startDate" className="block text-sm font-medium">Startdatum</label>
