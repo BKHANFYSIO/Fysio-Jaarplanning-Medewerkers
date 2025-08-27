@@ -283,17 +283,19 @@ const AdminPage = () => {
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="rounded border border-gray-200 bg-white p-3">
                                   <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: één Excel-cel (één lap tekst)</h5>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. Dit is een voorbeeld van bullets: - Lees de richtlijn - Volg de stappen`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">Dit staat allemaal in <strong>één cel</strong> op <strong>één regel</strong>. De app herkent <code>1.</code> en <code>-</code> en zet ze in de popup automatisch onder elkaar. De punt achter <em>Afronden.</em> zorgt dat wat daarna komt (de bullets) op een nieuwe regel begint.</p>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: # 1. Inloggen 2. Kies opleiding 3. Afronden. Dit is een voorbeeld van bullets: # - Lees de richtlijn - Volg de stappen`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">Dit staat allemaal in <strong>één cel</strong> op <strong>één regel</strong>. Gebruik <code>#</code> om een nieuwe regel te forceren tussen de titel en het eerste lijstitem. De app herkent <code>1.</code> en <code>-</code> en zet ze in de popup automatisch onder elkaar.</p>
                                 </div>
                                 <div className="rounded border border-gray-200 bg-white p-3">
                                   <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-2">
+                                  <p className="text-sm">Dit zijn voorbeelden van opsommingscijfers:</p>
+                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-1">
                                     <li>Inloggen</li>
                                     <li>Kies opleiding</li>
                                     <li>Afronden.</li>
                                   </ol>
-                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-3">
+                                  <p className="text-sm mt-3">Dit is een voorbeeld van bullets:</p>
+                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
                                     <li>Lees de richtlijn</li>
                                     <li>Volg de stappen</li>
                                   </ul>
