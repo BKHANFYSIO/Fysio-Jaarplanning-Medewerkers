@@ -97,7 +97,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <div className="bg-purple-50 p-4 rounded-lg">
                 <h4 className="font-medium text-purple-900 mb-2">Studiefase Filter</h4>
                 <p className="text-purple-800 text-sm">
-                  Filter op P, H1, H2/3 of algemene activiteiten. Klik op de gekleurde pillen om specifieke fases te tonen.
+                  Filter op <strong>P</strong>, <strong>H1</strong> of <strong>H2/3</strong>. Elke activiteit is altijd aan één of meerdere fases gekoppeld.
                 </p>
               </div>
               
