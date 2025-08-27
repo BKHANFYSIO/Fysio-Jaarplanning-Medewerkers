@@ -267,10 +267,17 @@ const AdminPage = () => {
                             <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases. <a href="/data/Aktiviteiten-voorbeeld.xlsx" download className="text-blue-700 hover:underline">Voorbeeldbestand (activiteiten)</a>.</li>
                             <li>Plak deze kolommen in een <strong>nieuw</strong> Excel-bestand.</li>
                             <li>Sla dit bestand op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
-                            <li>Let op kolom "Instructies":
+                            <li>Kolom <strong>Instructies</strong> (URL of korte tekst):
                               <ul className="ml-5 list-disc">
-                                <li>Staat er een <strong>URL</strong> (https://…), dan opent de kaart een nieuw tabblad.</li>
-                                <li>Staat er <strong>korte tekst</strong>, dan opent de kaart een tekstvenster (popup) met deze instructie.</li>
+                                <li><strong>URL</strong> (begint met <code>http</code> of <code>https</code>): de knop <em>Instructies</em> opent een nieuw tabblad.</li>
+                                <li><strong>Korte tekst</strong>: er verschijnt een duidelijk leesbaar tekstvenster (popup). We ondersteunen eenvoudige opmaak:
+                                  <ul className="ml-5 list-disc mt-1">
+                                    <li>Regels die starten met <code>-</code> of <code>*</code> worden bullets.</li>
+                                    <li>Regels die starten met <code>1.</code>, <code>2.</code>, … worden een genummerde lijst.</li>
+                                    <li>Plak je lijstjes per ongeluk achter elkaar in één regel, dan zetten we ze automatisch op aparte regels.</li>
+                                    <li>Webadressen worden automatisch klikbaar gemaakt.</li>
+                                  </ul>
+                                </li>
                               </ul>
                             </li>
                             <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
