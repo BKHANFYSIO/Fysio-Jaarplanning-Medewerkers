@@ -282,27 +282,39 @@ const AdminPage = () => {
                               {/* Voorbeelden weergave */}
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: inhoud van één Excel-cel (alles op één regel)</h5>
-                                  <p className="text-xs text-gray-600 mb-1 font-medium">Opsommingscijfers</p>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding. 3. Afronden`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2 mb-2 font-medium">Bullets</p>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit is een voorbeeld van bullets: - Lees de richtlijn - Volg de stappen`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">Je typt dit in één cel, op één regel. De app herkent de patronen (<code>1.</code>, <code>-</code>) en zet ze bij het tonen automatisch onder elkaar.</p>
-                                  <p className="text-xs text-gray-600 mt-1">Wil je dat tekst ná het laatste item op een nieuwe regel komt? Eindig het laatste item met een punt. Voorbeeld hierboven: <em>Kies opleiding.</em></p>
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: één Excel-cel (één lap tekst)</h5>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. Dit is een voorbeeld van bullets: - Lees de richtlijn - Volg de stappen`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">Dit staat allemaal in <strong>één cel</strong> op <strong>één regel</strong>. De app herkent <code>1.</code> en <code>-</code> en zet ze in de popup automatisch onder elkaar. De punt achter <em>Afronden.</em> zorgt dat wat daarna komt (de bullets) op een nieuwe regel begint.</p>
                                 </div>
                                 <div className="rounded border border-gray-200 bg-white p-3">
                                   <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <p className="text-xs text-gray-500">De app zet de één-regel-inhoud automatisch om naar:</p>
                                   <ol className="list-decimal ml-5 text-sm space-y-1 mt-2">
                                     <li>Inloggen</li>
-                                    <li>Kies opleiding.</li>
-                                    <li>Afronden</li>
+                                    <li>Kies opleiding</li>
+                                    <li>Afronden.</li>
                                   </ol>
                                   <ul className="list-disc ml-5 text-sm space-y-1 mt-3">
                                     <li>Lees de richtlijn</li>
                                     <li>Volg de stappen</li>
                                   </ul>
-                                  <p className="text-sm mt-3"><a href="https://voorbeeld.nl" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://voorbeeld.nl</a></p>
+                                </div>
+                              </div>
+
+                              {/* Extra voorbeeld: toelichting na lijstitem wordt paragraaf */}
+                              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="rounded border border-gray-200 bg-white p-3">
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: extra toelichting na lijstitem</h5>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`1. Inloggen. Gebruik je studentenaccount 2. Kies opleiding 3. Afronden.`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">De tekst na de <em>eerste volledige zin</em> van het eerste item (tot en met de punt) wordt als aparte paragraaf onder de lijst getoond: <em>Gebruik je studentenaccount</em>.</p>
+                                </div>
+                                <div className="rounded border border-gray-200 bg-white p-3">
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
+                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-2">
+                                    <li>Inloggen.</li>
+                                    <li>Kies opleiding</li>
+                                    <li>Afronden.</li>
+                                  </ol>
+                                  <p className="text-sm mt-3">Gebruik je studentenaccount</p>
                                 </div>
                               </div>
                             </li>
