@@ -282,30 +282,37 @@ const AdminPage = () => {
                                 </li>
                               </ul>
                               {/* Voorbeelden weergave */}
-                              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: één Excel-cel (één lap tekst)</h5>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. en doorgaan. # Dit is een voorbeeld van bullets:  - Lees de richtlijn - Volg de stappen - https://www.han.nl/ ## Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">Alles staat in <strong>één cel</strong> als <strong>één doorlopende regel</strong>. De app maakt hier automatisch een genummerde lijst en bullets van. Gebruik <code>#</code> voor een nieuwe regel en <code>##</code> voor een extra lege witregel.</p>
-                                </div>
-                                <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <p className="text-sm">Dit zijn voorbeelden van opsommingscijfers:</p>
-                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-1">
-                                    <li>Inloggen</li>
-                                    <li>Kies opleiding</li>
-                                    <li>Afronden.</li>
-                                  </ol>
-                                  <p className="text-sm mt-3">Dit is een voorbeeld van bullets:</p>
-                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
-                                    <li>Lees de richtlijn</li>
-                                    <li>Volg de stappen</li>
-                                    <li><a href="https://www.han.nl/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://www.han.nl/</a></li>
-                                  </ul>
-                                  <div className="h-6" />
-                                  <p className="text-sm">Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.</p>
-                                </div>
-                              </div>
+                              <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="instructions-example">
+                                  <AccordionTrigger className="font-semibold text-gray-600">Voorbeeld (klik om te openen)</AccordionTrigger>
+                                  <AccordionContent>
+                                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="rounded border border-gray-200 bg-white p-3">
+                                        <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: één Excel-cel (één lap tekst)</h5>
+                                        <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. en doorgaan. # Dit is een voorbeeld van bullets:  - Lees de richtlijn - Volg de stappen - https://www.han.nl/ ## Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.`}</pre>
+                                        <p className="text-xs text-gray-600 mt-2">Alles staat in <strong>één cel</strong> als <strong>één doorlopende regel</strong>. De app maakt hier automatisch een genummerde lijst en bullets van. Gebruik <code>#</code> voor een nieuwe regel en <code>##</code> voor een extra lege witregel.</p>
+                                      </div>
+                                      <div className="rounded border border-gray-200 bg-white p-3">
+                                        <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
+                                        <p className="text-sm">Dit zijn voorbeelden van opsommingscijfers:</p>
+                                        <ol className="list-decimal ml-5 text-sm space-y-1 mt-1">
+                                          <li>Inloggen</li>
+                                          <li>Kies opleiding</li>
+                                          <li>Afronden.</li>
+                                        </ol>
+                                        <p className="text-sm mt-3">Dit is een voorbeeld van bullets:</p>
+                                        <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
+                                          <li>Lees de richtlijn</li>
+                                          <li>Volg de stappen</li>
+                                          <li><a href="https://www.han.nl/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://www.han.nl/</a></li>
+                                        </ul>
+                                        <div className="h-6" />
+                                        <p className="text-sm">Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.</p>
+                                      </div>
+                                    </div>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
 
                               
                             </li>
