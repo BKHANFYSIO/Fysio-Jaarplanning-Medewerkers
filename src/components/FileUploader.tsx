@@ -22,7 +22,12 @@ const parseLinksColumn = (linksText: string): string[] => {
   // De `split` met een regex geeft ons [tekst, url, tekst, url, ...].
   // We moeten deze weer combineren tot "Titel: URL".
   for (let i = 0; i < parts.length - 1; i += 2) {
-    const title = parts[i].replace(/:$/, '').trim(); // Verwijder de laatste ':' en trim
+    const rawTitle = parts[i];
+    // Verwijder eventuele leidende scheidingstekens en spaties (komma, puntkomma, streepje, pipe)
+    const title = rawTitle
+      .replace(/^[\s,;|\-]+/, '')
+      .replace(/:$/, '')
+      .trim();
     const url = parts[i + 1];
     if (title && url) {
       result.push(`${title}: ${url}`);
