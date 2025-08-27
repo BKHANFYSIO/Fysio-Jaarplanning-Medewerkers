@@ -131,19 +131,21 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           <div className="flex gap-1.5">
             {activeSubjects.slice(0, 6).map((subject) => {
               const colorClass = subjectColors[subject] || 'bg-gray-400';
+              const label = subject.charAt(0).toUpperCase() + subject.slice(1);
               return (
-                <div
-                  key={subject}
-                  className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
-                  title={subject.charAt(0).toUpperCase() + subject.slice(1)}
-                />
+                <Tooltip key={subject} content={label}>
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${colorClass} shadow-sm`}
+                  />
+                </Tooltip>
               );
             })}
             {activeSubjects.length > 6 && (
-              <div 
-                className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm" 
-                title={`+${activeSubjects.length - 6} meer`}
-              />
+              <Tooltip content={`+${activeSubjects.length - 6} meer`}>
+                <div 
+                  className="w-2.5 h-2.5 rounded-full bg-gray-300 shadow-sm" 
+                />
+              </Tooltip>
             )}
           </div>
           {/* Phase tags + hard deadline indicator */}

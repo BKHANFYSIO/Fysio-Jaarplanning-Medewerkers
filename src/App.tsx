@@ -147,7 +147,7 @@ const Home = ({
 
             {/* Action Buttons */}
             <div className="flex flex-col items-start gap-2 sm:flex-row">
-              <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg sm:w-auto hover:bg-blue-700 disabled:bg-gray-400">
+              <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg sm:w-auto hover:bg-green-700 disabled:bg-gray-400">
                 <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
               </button>
               <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
@@ -179,7 +179,7 @@ const Home = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {weeks.map((week) => {
+            {weeks.map((week: WeekInfo) => {
               const weekKey = `${week.semester}-${week.weekCode}`;
               const isTargetWeek = targetWeekInfo.week?.id === week.id;
               return (
