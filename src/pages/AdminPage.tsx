@@ -282,25 +282,27 @@ const AdminPage = () => {
                               {/* Voorbeelden weergave */}
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Voorbeeld: inhoud van Excel-cel</h5>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`1. Inloggen
-2. Kies opleiding
-- Lees de richtlijn
-- Volg de stappen
-https://voorbeeld.nl`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">Alles staat in één cel (meerdere regels toegestaan). De app maakt hier automatisch een genummerde lijst, bullets en een klikbare link van.</p>
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: inhoud van één Excel-cel (alles op één regel)</h5>
+                                  <p className="text-xs text-gray-600 mb-1 font-medium">Opsommingscijfers</p>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding. 3. Afronden`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2 mb-2 font-medium">Bullets</p>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit is een voorbeeld van bullets: - Lees de richtlijn - Volg de stappen`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">Je typt dit in één cel, op één regel. De app herkent de patronen (<code>1.</code>, <code>-</code>) en zet ze bij het tonen automatisch onder elkaar.</p>
+                                  <p className="text-xs text-gray-600 mt-1">Wil je dat tekst ná het laatste item op een nieuwe regel komt? Eindig het laatste item met een punt. Voorbeeld hierboven: <em>Kies opleiding.</em></p>
                                 </div>
                                 <div className="rounded border border-gray-200 bg-white p-3">
                                   <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <ol className="list-decimal ml-5 text-sm space-y-1">
+                                  <p className="text-xs text-gray-500">De app zet de één-regel-inhoud automatisch om naar:</p>
+                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-2">
                                     <li>Inloggen</li>
-                                    <li>Kies opleiding</li>
+                                    <li>Kies opleiding.</li>
+                                    <li>Afronden</li>
                                   </ol>
-                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-2">
+                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-3">
                                     <li>Lees de richtlijn</li>
                                     <li>Volg de stappen</li>
                                   </ul>
-                                  <p className="text-sm mt-2"><a href="https://voorbeeld.nl" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://voorbeeld.nl</a></p>
+                                  <p className="text-sm mt-3"><a href="https://voorbeeld.nl" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://voorbeeld.nl</a></p>
                                 </div>
                               </div>
                             </li>
