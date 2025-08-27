@@ -265,7 +265,7 @@ const AdminPage = () => {
                                 <li>Staat er <strong>korte tekst</strong>, dan opent de kaart een tekstvenster (popup) met deze instructie.</li>
                               </ul>
                             </li>
-                            <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje).</li>
+                            <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
                           </ol>
                         </div>
                         <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
