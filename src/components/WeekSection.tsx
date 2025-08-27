@@ -73,11 +73,11 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
 
   if (week.isVacation) {
     return (
-      <div className={`transition-all duration-300 ${isHighlighted ? 'bg-green-50/70 border-l-4 border-green-400 rounded-r-lg shadow-sm p-4 mb-8' : 'mb-8'}`}>
-        <h2 className={`text-2xl font-bold mb-4 pb-2 border-b-2 ${isHighlighted ? 'text-green-800 border-green-200' : 'text-gray-600 border-gray-300'}`}>
+      <div className={`transition-all duration-300 ${isHighlighted ? 'bg-gradient-to-r from-green-50 via-green-50/60 to-transparent dark:from-green-900/25 dark:via-green-900/10 dark:to-transparent border-l-4 border-green-400 rounded-r-lg shadow-sm p-4 mb-8' : 'mb-8'}`}>
+        <h2 className={`text-2xl font-bold mb-4 pb-2 border-b-2 ${isHighlighted ? 'text-green-800 dark:text-green-200 border-green-200 dark:border-green-800' : 'text-gray-600 border-gray-300'}`}>
           {week.weekLabel} ({week.startDate})
           {highlightLabel && (
-            <span className="ml-3 text-sm font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">
+            <span className="ml-3 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 dark:border dark:border-green-800 px-2 py-1 rounded-full">
               {highlightLabel}
             </span>
           )}
@@ -93,15 +93,15 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
   }
   
   return (
-    <div className={`transition-all duration-300 ${isHighlighted ? 'bg-green-50/70 border-l-4 border-green-400 rounded-r-lg shadow-sm p-4 mb-8' : 'mb-8'}`}>
+    <div className={`transition-all duration-300 ${isHighlighted ? 'bg-gradient-to-r from-green-50 via-green-50/60 to-transparent dark:from-green-900/25 dark:via-green-900/10 dark:to-transparent border-l-4 border-green-400 rounded-r-lg shadow-sm p-4 mb-8' : 'mb-8'}`}>
       <h2 className={`text-2xl font-bold mb-4 pb-2 border-b-2 ${
         isHighlighted 
-          ? 'text-green-800 border-green-200' 
+          ? 'text-green-800 dark:text-green-200 border-green-200 dark:border-green-800' 
           : 'text-blue-600 border-blue-200'
       }`}>
         {week.weekLabel} ({week.startDate})
         {highlightLabel && (
-          <span className="ml-3 text-sm font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">
+          <span className="ml-3 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 dark:border dark:border-green-800 px-2 py-1 rounded-full">
             {highlightLabel}
           </span>
         )}
