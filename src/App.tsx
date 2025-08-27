@@ -150,7 +150,7 @@ const Home = ({
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               {filterConfig.map(config => (
                 <div key={config.id} className="mr-4">
-                  <h3 className="mb-2 text-base font-semibold text-gray-700">{config.label}</h3>
+                  <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
                   <div className="flex flex-wrap gap-2">
                     {config.options.map(option => {
                       if (availableOptions[config.id]?.[option.value] > 0) {
