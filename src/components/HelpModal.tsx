@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, Calendar, Filter, FileText, AlertTriangle } from 'lucide-react';
+import { X, Info, Calendar, Filter, FileText, AlertTriangle, Link } from 'lucide-react';
 import { filterConfig } from '../config/filters';
 
 interface HelpModalProps {
@@ -135,6 +135,17 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <p className="text-gray-700 text-sm">
                   Klik op "Instructies" om naar de bijbehorende documentatie of instructies te gaan. 
                   Deze link opent in een nieuw tabblad.
+                </p>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                  <Link className="w-4 h-4" />
+                  Links
+                </h4>
+                <p className="text-gray-700 text-sm">
+                  Activiteiten kunnen ook één of meer links bevatten, bijvoorbeeld naar extra informatie of een inschrijfformulier. 
+                  Links openen altijd in een nieuw tabblad. Bij meerdere links zie je "link 1", "link 2", enzovoort; de mouse-over toont de titel van de link.
                 </p>
               </div>
               
