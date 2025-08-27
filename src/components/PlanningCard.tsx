@@ -157,9 +157,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               );
             })}
             {isHardDeadline && (
-              <Tooltip content="Deadline (actie vereist)">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-              </Tooltip>
+              <AlertTriangle className="w-4 h-4 text-red-600" />
             )}
           </div>
         </div>
@@ -186,8 +184,15 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           item.isLastInSeries 
             ? 'bg-red-100 rounded-b-lg -mx-3 -mb-3 mt-3 px-3 py-2 border-t border-red-200' 
             : 'mt-3 pt-2 border-t border-gray-100'
-        }`}>
-          <div className="flex flex-col items-start gap-2">
+        } relative`}>
+          {isHardDeadline && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600">
+              <span title="Deadline (actie vereist)">
+                <AlertTriangle className="w-6 h-6 animate-heartbeat" />
+              </span>
+            </div>
+          )}
+          <div className="flex flex-col items-start gap-2 pr-10">
             {/* Date Range */}
             <div className="flex items-center gap-1.5 text-gray-600">
               {/* Start Date & Time */}
