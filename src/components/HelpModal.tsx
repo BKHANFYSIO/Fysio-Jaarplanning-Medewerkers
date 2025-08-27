@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Info, Calendar, Filter, FileText, AlertTriangle } from 'lucide-react';
+import { filterConfig } from '../config/filters';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -115,30 +116,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-2">Kleurcodering</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-yellow-300 rounded-full"></div>
-                    <span>Waarderen</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-300 rounded-full"></div>
-                    <span>Juniorstage</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-300 rounded-full"></div>
-                    <span>IPL</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-orange-300 rounded-full"></div>
-                    <span>BVP</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-pink-300 rounded-full"></div>
-                    <span>PZW</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-indigo-300 rounded-full"></div>
-                    <span>Minor</span>
-                  </div>
+                  {filterConfig
+                    .find(cfg => cfg.id === 'subject')
+                    ?.options.map(opt => (
+                      <div key={opt.value} className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full bg-${opt.color}-300`}></div>
+                        <span>{opt.label}</span>
+                      </div>
+                    ))}
                 </div>
               </div>
               
