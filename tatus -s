@@ -1,0 +1,10 @@
+[33m906532e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m refactor: Extract Home component to prevent remounting issues
+[33m9587b67[m fix: Banners now reappear on refresh, but stay hidden during in-page interactions
+[33m1aceb1c[m feat: Implement 'Reinforced Timeline' UI for planning cards
+[33m84c70ef[m style: Revert PlanningCard to original compact layout
+[33m998b8d7[m feat: Implement 'Enhanced Timeline' design for week sections
+[33m9ea06c6[m fix: Prevent accordion refresh and restore scroll position
+[33m83a4279[m refactor: Re-implement AdminPage with Radix Accordion layout
+[33m2fa7e70[m feat: Add configurable changes banner and refactor to Firestore
+[33mcfebe83[m refactor(ui): Use custom tooltip for subject dots
+[33m46b988f[m feat(ui): Implement custom tooltip for links

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { initializeAuth, browserLocalPersistence, inMemoryPersistence } from "firebase/auth";
+import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 
 // Firebase Remote Config is now handled by firebase-blocker.ts
 // This function is kept for backward compatibility but is no longer needed
@@ -29,13 +29,17 @@ disableFirebaseRemoteConfig();
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
-// Initialize Auth
-export const auth = getAuth(app);
+// Initialize Auth with persistence that avoids IndexedDB to prevent hangs on some browsers
+export const auth = initializeAuth(app, {
+  persistence: [browserLocalPersistence, inMemoryPersistence],
+});
 
-// Initialize Firestore with error handling
+// Initialize Firestore with memory cache to avoid IndexedDB issues on certain devices/browsers
 let db: any;
 try {
-  db = getFirestore(app);
+  db = initializeFirestore(app, {
+    localCache: memoryLocalCache(),
+  });
   
   // Add error handling for IndexedDB issues
   if (typeof window !== 'undefined') {
