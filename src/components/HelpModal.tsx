@@ -17,11 +17,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <Info className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Uitleg Jaarplanning Fysiotherapie</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Uitleg Jaarplanning Fysiotherapie</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
           >
             <X className="w-6 h-6 text-gray-500 dark:text-slate-300" />
           </button>
@@ -158,7 +158,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   Einddatums
                 </h4>
                 <div className="text-sm space-y-3">
-                  <p className="text-red-800">
+                  <p className="text-red-800 dark:text-slate-100">
                     Valt de <strong>einddatum</strong> in deze week, dan wordt de datum rood en pulserend weergegeven en krijgt de footer van de kaart een rode achtergrond.
                   </p>
                   <div className="mt-2 rounded border border-red-200 dark:border-red-800 bg-red-100 dark:bg-red-900/20 px-3 py-2 inline-flex items-center gap-3">
@@ -190,7 +190,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                     <span className="text-red-600 dark:text-red-300 inline-flex items-center" title="Deadline (actie vereist)">
                       <AlertTriangle className="w-5 h-5 animate-heartbeat" />
                     </span>
-                    <span className="text-gray-700">Voorbeeld: deadline met actie</span>
+                    <span className="text-gray-700 dark:text-slate-300">Voorbeeld: deadline met actie</span>
                   </div>
                 </div>
               </div>
