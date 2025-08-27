@@ -54,13 +54,32 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
           items.push(lines[i].replace(/^\s*\d+[.)]\s+/, ''));
           i++;
         }
+        // Splits mogelijke trailing tekst na eerste volledige zin
+        const processed = items.map((raw) => {
+          if (/https?:\/\//i.test(raw)) {
+            return { main: raw.trim(), rest: null as string | null };
+          }
+          const m = raw.match(/^([\s\S]*?\.)\s+(.+)$/);
+          if (m) {
+            return { main: m[1].trim(), rest: m[2].trim() };
+          }
+          return { main: raw.trim(), rest: null as string | null };
+        });
         elements.push(
           <ol key={`ol-${i}`} className="list-decimal ml-6 space-y-1">
-            {items.map((it, idx) => (
-              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it)}</li>
+            {processed.map((it, idx) => (
+              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.main)}</li>
             ))}
           </ol>
         );
+        // Eventuele remainders als losse paragrafen erna
+        processed.forEach((it, idx2) => {
+          if (it.rest) {
+            elements.push(
+              <p key={`ol-rest-${i}-${idx2}`} className="text-gray-700">{renderInlineWithLinks(it.rest)}</p>
+            );
+          }
+        });
         continue;
       }
 
@@ -71,13 +90,30 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
           items.push(lines[i].replace(/^\s*[-*]\s+/, ''));
           i++;
         }
+        const processed = items.map((raw) => {
+          if (/https?:\/\//i.test(raw)) {
+            return { main: raw.trim(), rest: null as string | null };
+          }
+          const m = raw.match(/^([\s\S]*?\.)\s+(.+)$/);
+          if (m) {
+            return { main: m[1].trim(), rest: m[2].trim() };
+          }
+          return { main: raw.trim(), rest: null as string | null };
+        });
         elements.push(
           <ul key={`ul-${i}`} className="list-disc ml-6 space-y-1">
-            {items.map((it, idx) => (
-              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it)}</li>
+            {processed.map((it, idx) => (
+              <li key={idx} className="text-gray-700">{renderInlineWithLinks(it.main)}</li>
             ))}
           </ul>
         );
+        processed.forEach((it, idx2) => {
+          if (it.rest) {
+            elements.push(
+              <p key={`ul-rest-${i}-${idx2}`} className="text-gray-700">{renderInlineWithLinks(it.rest)}</p>
+            );
+          }
+        });
         continue;
       }
 
