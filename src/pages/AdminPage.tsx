@@ -264,7 +264,7 @@ const AdminPage = () => {
                           <h4 className="font-bold">Voorbereiden Excel (semester-activiteiten)</h4>
                           <ol className="ml-5 list-decimal">
                             <li>Open het moederbestand en filter op <strong>studentactiviteiten</strong> (bijv. via kleurselectie).</li>
-                            <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases.</li>
+                            <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases. <a href="/data/Aktiviteiten-voorbeeld.xlsx" download className="text-blue-700 hover:underline">Voorbeeldbestand (activiteiten)</a>.</li>
                             <li>Plak deze kolommen in een <strong>nieuw</strong> Excel-bestand.</li>
                             <li>Sla dit bestand op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
                             <li>Let op kolom "Instructies":
@@ -440,7 +440,7 @@ const AdminPage = () => {
                       </div>
                        <div>
                           <h3 className="font-bold">Stap 2: Importeer een volledige planning</h3>
-                          <p className="text-sm text-gray-600">Deze actie overschrijft alle bestaande activiteiten voor het gekozen semester. Ondersteunde formaten: CSV, Excel (.xlsx, .xls).</p>
+                          <p className="text-sm text-gray-600">Deze actie overschrijft alle bestaande activiteiten voor het gekozen semester. Ondersteunde formaten: CSV, Excel (.xlsx, .xls). Voorbeeld: werk je in semester 2 van studiejaar 2025/2026 en wil je semester 1 van 2026/2027 toevoegen? Dat kan. Semester 1 van 2025/2026 is voorbij en hoeft niet langer in de app zichtbaar te zijn; zo kun je alvast het komende studiejaar voorbereiden.</p>
                           <div className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
                              <FileUploader label="Upload Semester 1" collectionName="planning-items-sem1" />
                              <FileUploader label="Upload Semester 2" collectionName="planning-items-sem2" />
