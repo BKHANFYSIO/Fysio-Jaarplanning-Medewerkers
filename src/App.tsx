@@ -143,7 +143,11 @@ const Home = ({
             }
           }}
         >
-          <div className="p-4 mt-2 bg-white rounded-lg shadow-md z-50 relative">
+          <div className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-700">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+              <span>Filters & opties</span>
+            </div>
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               {filterConfig.map(config => (
@@ -193,7 +197,7 @@ const Home = ({
       {/* Overlay (outside header) to close filters via tap or swipe-right on mobile */}
       {isMobileFiltersOpen && (
         <div
-          className="fixed inset-0 z-40 lg:hidden bg-black/0"
+          className="fixed inset-0 z-40 lg:hidden bg-black/10"
           onClick={() => setIsMobileFiltersOpen(false)}
           onTouchStart={(e) => {
             (Home as any).touchStartX = e.touches[0].clientX;
