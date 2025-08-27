@@ -158,13 +158,35 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   <AlertTriangle className="w-4 h-4" />
                   Deadlines
                 </h4>
-                <div className="text-sm space-y-1">
-                  <p className="text-red-800">
-                    Valt de einddatum in deze week, dan licht de einddatum op (rood, pulserend) en krijgt de footer van de kaart een rode achtergrond.
-                  </p>
-                  <p className="text-gray-700">
-                    De kolom "Deadline" wordt momenteel niet actief gebruikt. Eventuele tekst in deze kolom wordt wel getoond op de kaart.
-                  </p>
+                <div className="text-sm space-y-3">
+                  <div>
+                    <p className="text-red-800">
+                      Valt de <strong>einddatum</strong> in deze week, dan wordt de einddatum rood en pulserend weergegeven en krijgt de footer van de kaart een rode achtergrond.
+                    </p>
+                    <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
+                      <span className="flex items-center gap-1.5 font-semibold text-red-600">
+                        <Calendar className="w-4 h-4" />
+                        3-sep (10:00)
+                      </span>
+                      <span className="text-gray-400">|</span>
+                      <span className="text-gray-700">Voorbeeld: einddatum in deze week</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-800">
+                      Staat er een <strong>v</strong> in de kolom "Deadline", dan is er een echte deadline waarbij actie vereist is. De kaart toont dan:
+                    </p>
+                    <ul className="list-disc ml-5 text-gray-800 space-y-1">
+                      <li>Een rood waarschuwing-icoon naast de fase-labels bovenin</li>
+                      <li>Een groter pulserend icoon in de footer met een tooltip "Deadline (actie vereist)"</li>
+                    </ul>
+                    <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
+                      <span className="text-red-600 inline-flex items-center" title="Deadline (actie vereist)">
+                        <AlertTriangle className="w-5 h-5 animate-heartbeat" />
+                      </span>
+                      <span className="text-gray-700">Voorbeeld: deadline met actie</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

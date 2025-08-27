@@ -124,13 +124,6 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
     <div 
       className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden`}
     >
-      {isHardDeadline && (
-        <Tooltip content="Echte deadline: actie vereist">
-          <div className="absolute top-2 right-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-          </div>
-        </Tooltip>
-      )}
       <div className="p-3">
         {/* Top row: dots and phase tags */}
         <div className="flex items-center justify-between mb-2">
@@ -153,8 +146,8 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               />
             )}
           </div>
-          {/* Phase tags */}
-          <div className="flex flex-wrap items-center gap-1">
+          {/* Phase tags + hard deadline indicator */}
+          <div className="flex flex-wrap items-center gap-1.5">
             {activePhases.map(phase => {
               const colorClass = phaseColorClasses[phase.color] || phaseColorClasses.gray;
               return (
@@ -163,6 +156,11 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                 </span>
               );
             })}
+            {isHardDeadline && (
+              <Tooltip content="Deadline (actie vereist)">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+              </Tooltip>
+            )}
           </div>
         </div>
 
@@ -249,9 +247,10 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                 </div>
               )}
               {isHardDeadline && (
-                <div className="flex items-center gap-1.5 font-medium text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Deadline (actie vereist)</span>
+                <div className="flex items-center gap-1.5 text-red-600">
+                  <span title="Deadline (actie vereist)">
+                    <AlertTriangle className="w-5 h-5 animate-heartbeat" />
+                  </span>
                 </div>
               )}
               {item.deadline && !isHardDeadline && (
