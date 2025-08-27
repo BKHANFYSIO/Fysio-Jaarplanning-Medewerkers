@@ -235,12 +235,25 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               {item.links && item.links.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   {item.links.map((fullLink, index) => {
-                    // Parse de titel en de URL uit de link-string
-                    const colonIndex = fullLink.indexOf(':');
-                    const hasTitle = colonIndex > -1 && !fullLink.substring(colonIndex + 1).startsWith('//');
-                    
-                    const title = hasTitle ? fullLink.substring(0, colonIndex).trim() : 'Externe link';
-                    const url = hasTitle ? fullLink.substring(colonIndex + 1).trim() : fullLink;
+                    // Robuuste parsing: ondersteun "Titel: URL" en fallback naar plain URL
+                    const trimmed = (fullLink || '').trim();
+                    let title = 'Externe link';
+                    let url = trimmed;
+
+                    // Case 1: exact "Titel: URL"
+                    const titleUrlMatch = trimmed.match(/^(.*?):\s*(https?:\/\/.*)$/i);
+                    if (titleUrlMatch) {
+                      title = titleUrlMatch[1].trim() || 'Externe link';
+                      url = titleUrlMatch[2].trim();
+                    } else if (/https?:\/\//i.test(trimmed)) {
+                      // Case 2: bevat ergens een URL, gebruik tekst vóór de URL als titel
+                      const urlMatch = trimmed.match(/https?:\/\/[^\s]+/i);
+                      if (urlMatch) {
+                        url = urlMatch[0];
+                        const before = trimmed.slice(0, trimmed.indexOf(urlMatch[0])).replace(/[:\-–|]+$/, '').trim();
+                        if (before) title = before;
+                      }
+                    }
 
                     return (
                       <Tooltip key={index} content={title}>
