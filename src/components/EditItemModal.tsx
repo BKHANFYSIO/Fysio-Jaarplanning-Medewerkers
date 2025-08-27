@@ -66,8 +66,8 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
           </div>
 
           <div>
-            <label htmlFor="instructions" className="block text-sm font-medium">Instructies (Link)</label>
-            <input type="url" name="instructions" value={formData.instructions || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://..."/>
+            <label htmlFor="instructions" className="block text-sm font-medium">Instructies</label>
+            <input type="text" name="instructions" value={formData.instructions || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="https://... of korte tekst"/>
           </div>
 
           <div>
@@ -102,7 +102,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
                   <label key={option.value} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      checked={!!formData[config.dataKey]?.[option.value]}
+                      checked={!!((formData[config.dataKey as 'phases' | 'subjects'] as Record<string, boolean> | undefined)?.[option.value])}
                       onChange={() => handleCheckboxChange(config.dataKey as 'phases' | 'subjects', option.value)}
                     />
                     <span>{option.label}</span>
