@@ -79,8 +79,9 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-medium text-gray-900 mb-2">Doorlopende Activiteiten</h4>
                 <p className="text-gray-700 text-sm">
-                  Activiteiten die meerdere weken duren. Deze worden ingeklapt weergegeven om de overzichtelijkheid te behouden.
-                  Klik op het driehoekje om ze uit te klappen of gebruik de "Toon alle doorlopende activiteiten" knop.
+                  Dit zijn activiteiten die meerdere weken beslaan. De <strong>tussenliggende weken</strong> worden compacter/ingeklapt getoond om het overzicht te bewaren.
+                  De <strong>eerste</strong> en <strong>laatste</strong> week van zo’n activiteit worden duidelijk weergegeven (met start- en eindmoment) en zijn niet inklapbaar.
+                  Klik op het driehoekje om een doorlopende activiteit open te klappen of gebruik de knop "Toon alle doorlopende activiteiten" om alles in één keer te openen.
                 </p>
               </div>
             </div>
