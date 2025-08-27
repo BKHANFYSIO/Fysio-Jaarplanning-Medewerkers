@@ -138,39 +138,46 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
               
+              {/* Einddatums */}
+              <div className="bg-red-50 p-4 rounded-lg">
+                <h4 className="font-medium text-red-900 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Einddatums
+                </h4>
+                <div className="text-sm space-y-3">
+                  <p className="text-red-800">
+                    Valt de <strong>einddatum</strong> in deze week, dan wordt de datum rood en pulserend weergegeven en krijgt de footer van de kaart een rode achtergrond.
+                  </p>
+                  <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
+                    <span className="flex items-center gap-1.5 font-semibold text-red-600">
+                      <Calendar className="w-4 h-4" />
+                      3-sep (10:00)
+                    </span>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-700">Voorbeeld: einddatum in deze week</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deadlines (actie vereist) */}
               <div className="bg-red-50 p-4 rounded-lg">
                 <h4 className="font-medium text-red-900 mb-2 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
-                  Deadlines
+                  Deadlines (actie vereist)
                 </h4>
                 <div className="text-sm space-y-3">
-                  <div>
-                    <p className="text-red-800">
-                      Valt de <strong>einddatum</strong> in deze week, dan wordt de einddatum rood en pulserend weergegeven en krijgt de footer van de kaart een rode achtergrond.
-                    </p>
-                    <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
-                      <span className="flex items-center gap-1.5 font-semibold text-red-600">
-                        <Calendar className="w-4 h-4" />
-                        3-sep (10:00)
-                      </span>
-                      <span className="text-gray-400">|</span>
-                      <span className="text-gray-700">Voorbeeld: einddatum in deze week</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-gray-800">
-                      Een <strong>deadline met actie vereist</strong> wordt extra benadrukt. Je ziet dan:
-                    </p>
-                    <ul className="list-disc ml-5 text-gray-800 space-y-1">
-                      <li>Een duidelijk rood waarschuwing-icoon in de kaart-footer</li>
-                      <li>Een tooltip met de tekst "Deadline (actie vereist)" wanneer je over het icoon beweegt</li>
-                    </ul>
-                    <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
-                      <span className="text-red-600 inline-flex items-center" title="Deadline (actie vereist)">
-                        <AlertTriangle className="w-5 h-5 animate-heartbeat" />
-                      </span>
-                      <span className="text-gray-700">Voorbeeld: deadline met actie</span>
-                    </div>
+                  <p className="text-gray-800">
+                    Een <strong>deadline met actie vereist</strong> wordt extra benadrukt. Je ziet dan:
+                  </p>
+                  <ul className="list-disc ml-5 text-gray-800 space-y-1">
+                    <li>Een duidelijk rood waarschuwing-icoon in de kaart-footer</li>
+                    <li>Een tooltip met de tekst "Deadline (actie vereist)" wanneer je over het icoon beweegt</li>
+                  </ul>
+                  <div className="mt-2 rounded border border-red-200 bg-red-100 px-3 py-2 inline-flex items-center gap-3">
+                    <span className="text-red-600 inline-flex items-center" title="Deadline (actie vereist)">
+                      <AlertTriangle className="w-5 h-5 animate-heartbeat" />
+                    </span>
+                    <span className="text-gray-700">Voorbeeld: deadline met actie</span>
                   </div>
                 </div>
               </div>
