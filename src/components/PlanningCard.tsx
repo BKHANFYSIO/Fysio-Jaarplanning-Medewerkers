@@ -109,15 +109,15 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
     // Styling voor ingeklapte doorlopende kaart (blijft neutraal)
     return (
       <div
-        className="bg-gray-50 border-l-4 border-gray-300 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
+        className="bg-gray-50 dark:bg-slate-800/60 border-l-4 border-gray-300 dark:border-slate-700 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
         onClick={handleToggleExpand}
       >
         <div className="p-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-lg text-gray-600">{item.title}</h3>
-            {hasLink && <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+            <h3 className="font-semibold text-lg text-gray-600 dark:text-slate-300">{item.title}</h3>
+            {hasLink && <FileText className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />}
           </div>
-          <ChevronDown className="w-5 h-5 text-gray-500 transition-transform" />
+          <ChevronDown className="w-5 h-5 text-gray-500 dark:text-slate-400 transition-transform" />
         </div>
       </div>
     );
