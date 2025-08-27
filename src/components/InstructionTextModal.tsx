@@ -11,6 +11,19 @@ interface InstructionTextModalProps {
 export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOpen, onClose, title, text }) => {
   if (!isOpen) return null;
 
+  // Normaliseer inline opsommingen naar nieuwe regels zodat de parser ze herkent
+  const preprocessText = (raw: string) => {
+    if (!raw) return '';
+    let normalized = raw;
+    // Zet " 1. " of " 2. " middenin een zin om naar een nieuwe regel
+    normalized = normalized.replace(/\s(\d+\.)\s/g, '\n$1 ');
+    // Zet " - " middenin een zin om naar een nieuwe regel
+    normalized = normalized.replace(/\s-\s/g, '\n- ');
+    return normalized;
+  };
+
+  const preparedText = preprocessText(text);
+
   const renderInlineWithLinks = (content: string) => {
     const urlRegex = /(https?:\/\/[\w\-._~:/?#\[\]@!$&'()*+,;=%]+)/gi;
     const parts = content.split(urlRegex);
@@ -96,7 +109,7 @@ export const InstructionTextModal: React.FC<InstructionTextModalProps> = ({ isOp
         <div className="p-5">
           <h4 className="text-base font-medium text-gray-900 mb-2">{title}</h4>
           <div className="text-sm leading-relaxed space-y-2">
-            {renderFormatted(text)}
+            {renderFormatted(preparedText)}
           </div>
         </div>
         <div className="p-4 border-t border-gray-200 bg-gray-50 text-right">
