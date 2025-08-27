@@ -332,6 +332,14 @@ const AdminPage = () => {
                    <AccordionTrigger className="font-semibold text-gray-600">Instructies voor bestand upload (lesweekplanning)</AccordionTrigger>
                    <AccordionContent>
                       <div className="space-y-4 text-sm mt-2">
+                        <div className="p-3 border-l-4 border-yellow-400 bg-yellow-50">
+                          <h4 className="font-bold">Workflow (volg deze stappen altijd)</h4>
+                          <ol className="ml-5 list-decimal">
+                            <li><strong>Download altijd eerst een backup!</strong> Klik op de "Download Backup" knop en bewaar dit bestand veilig.</li>
+                            <li><strong>Bereid je bestand voor.</strong> Zie de instructies hieronder voor het juist opzetten van kolommen.</li>
+                            <li><strong>Upload het nieuwe bestand.</strong> Gebruik de upload-knop. Bevestig de waarschuwing om de oude weekstructuur te overschrijven.</li>
+                          </ol>
+                        </div>
                         <p>Gebruik de bestand upload om de lesweekplanning te importeren. Deze actie <strong>overschrijft de volledige weekstructuur</strong> met de inhoud van het bestand.</p>
                         <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                           <h4 className="font-bold">Voorbereiden Excel (lesweekplanning)</h4>
