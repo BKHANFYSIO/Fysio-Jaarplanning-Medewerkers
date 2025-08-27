@@ -122,7 +122,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
 
   return (
     <div 
-      className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden`}
+      className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative`}
     >
       <div className="p-3">
         {/* Top row: dots and phase tags */}
@@ -182,7 +182,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           item.isLastInSeries 
             ? 'bg-red-100 rounded-b-lg -mx-3 -mb-3 mt-3 px-3 py-2 border-t border-red-200' 
             : 'mt-3 pt-2 border-t border-gray-100'
-        } relative`}>
+        } relative overflow-visible`}>
           {isHardDeadline && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600">
               <Tooltip content="Deadline (actie vereist)">
