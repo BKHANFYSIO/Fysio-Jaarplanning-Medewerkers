@@ -271,11 +271,13 @@ const AdminPage = () => {
                         <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                           <h4 className="font-bold">Links als tekst plakken in Excel</h4>
                           <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                            <img
-                              src="/images/Links-als-tekst-toevoegen.jpg"
-                              alt="Links als tekst toevoegen in Excel"
-                              className="rounded border border-blue-100"
-                            />
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-2 shadow-sm">
+                              <img
+                                src="/images/Links-als-tekst-toevoegen.jpg"
+                                alt="Links als tekst toevoegen in Excel"
+                                className="rounded w-full h-auto"
+                              />
+                            </div>
                             <div>
                               <ol className="ml-5 list-decimal text-sm space-y-1">
                                 <li>Ga in Excel naar <strong>Start</strong> &gt; klik op het pijltje onder <strong>Plakken</strong> &gt; kies <strong>Plakken speciaal</strong> &gt; selecteer <strong>Alleen tekst</strong> (of <strong>Tekst/Values</strong>). De geplakte link wordt dan als tekst ingevoegd, niet als klikbare hyperlink.</li>
