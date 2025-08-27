@@ -64,6 +64,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <p className="text-green-800 text-sm">
                   De app toont automatisch de huidige week of de eerstvolgende week. 
                   Gebruik de "Ga naar huidige week" knop om snel naar de relevante periode te navigeren.
+                  Je herkent de huidige week aan de <strong>groene markering</strong> en het groene label "Huidige week".
                 </p>
               </div>
               
