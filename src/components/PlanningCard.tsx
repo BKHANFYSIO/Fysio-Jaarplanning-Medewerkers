@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PlanningItem } from '../types';
 import { filterConfig } from '../config/filters';
+import { InstructionTextModal } from './InstructionTextModal';
 
 interface PlanningCardProps {
   item: PlanningItem;
@@ -67,6 +68,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
   const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
 
   const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
+  const [isInstructionModalOpen, setIsInstructionModalOpen] = useState(false);
 
   const handleToggleExpand = (e: React.MouseEvent) => {
     if (isMiddleOfLongSeries) {
@@ -85,10 +87,16 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
     ? phaseFilterConfig.options.filter(option => item.phases[option.value])
     : [];
 
+  const instructionValue = (item.instructions || '').trim();
+  const isInstructionUrl = instructionValue.startsWith('http://') || instructionValue.startsWith('https://');
+
   const handleInstructionsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (item.instructions) {
-      window.open(item.instructions, '_blank', 'noopener,noreferrer');
+    if (!instructionValue) return;
+    if (isInstructionUrl) {
+      window.open(instructionValue, '_blank', 'noopener,noreferrer');
+    } else {
+      setIsInstructionModalOpen(true);
     }
   };
 
@@ -120,7 +128,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
     ? "bg-white border-l-4 border-blue-500" // Stijl voor Start- & Eindmomenten
     : "bg-gray-50/70"; // Stijl voor Doorlopende Activiteiten (geen border)
 
-  return (
+  const card = (
     <div 
       className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative`}
     >
@@ -263,5 +271,19 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {card}
+      {(!isInstructionUrl && !!instructionValue) && (
+      <InstructionTextModal
+        isOpen={isInstructionModalOpen}
+        onClose={() => setIsInstructionModalOpen(false)}
+        title={item.title}
+        text={instructionValue}
+      />
+      )}
+    </>
   );
 }

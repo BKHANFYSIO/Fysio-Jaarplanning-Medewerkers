@@ -13,8 +13,8 @@ import { EditWeekModal } from '../components/EditWeekModal';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/Accordion';
 import { DevelopmentBannerSettings } from '../components/DevelopmentBannerSettings';
 import { ChangesBannerSettings } from '../components/ChangesBannerSettings';
-import { LogOut, Upload, Download, Edit, Trash2, CheckCircle2, AlertTriangle, PlusCircle, Settings } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
+import { LogOut, Download, CheckCircle2, AlertTriangle, PlusCircle } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 const monthMap: { [key: string]: number } = {
   'jan': 1, 'feb': 2, 'mrt': 3, 'apr': 4, 'mei': 5, 'jun': 6,
@@ -78,6 +78,7 @@ const AdminPage = () => {
   const { items: planningItems, loading: planningLoading, error: planningError } = useAdminData();
   const { weeks, loading: weeksLoading, error: weeksError } = useWeekData();
   const { orphanedItems, loading: orphanedLoading } = useData(); // Get orphaned items
+  const [openSections, setOpenSections] = useState<string[]>(['instructions']);
   const [sortConfig, setSortConfig] = useState<{ key: keyof PlanningItem; direction: 'ascending' | 'descending' } | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<PlanningItem | null>(null);
@@ -206,10 +207,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleDevelopmentSettingsChange = (newConfig: any) => {
-    // Deze functie kan later worden uitgebreid om instellingen op te slaan in Firestore
-    console.log('Development settings updated:', newConfig);
-  };
+  // Placeholder voor toekomstige instellingenverwerking (momenteel niet gebruikt)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -225,8 +223,23 @@ const AdminPage = () => {
             Uitloggen
           </button>
         </div>
+        {/* Accordion controls */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button
+            onClick={() => setOpenSections(['instructions','status','activities','week-planning'])}
+            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+          >
+            Alles uitklappen
+          </button>
+          <button
+            onClick={() => setOpenSections([])}
+            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+          >
+            Alles inklappen
+          </button>
+        </div>
         
-        <Accordion type="single" collapsible className="w-full space-y-4">
+        <Accordion type="multiple" value={openSections} onValueChange={(v:any)=>setOpenSections(v)} className="w-full space-y-4">
           <AccordionItem value="instructions" className="p-6 mb-8 bg-white rounded-lg shadow">
             <AccordionTrigger>
               <h2 className="text-xl font-semibold text-gray-700">Uitleg & Instructies</h2>
@@ -235,23 +248,38 @@ const AdminPage = () => {
               {/* This is a nested accordion for the instructions */}
               <Accordion type="single" collapsible className="w-full mt-4 space-y-2">
                 <AccordionItem value="csv-upload">
-                   <AccordionTrigger className="font-semibold text-gray-600">Instructies voor CSV Upload</AccordionTrigger>
+                   <AccordionTrigger className="font-semibold text-gray-600">Instructies voor bestand upload (semester-activiteiten)</AccordionTrigger>
                    <AccordionContent>
                       <div className="space-y-4 text-sm mt-2">
-                        <p>Gebruik de CSV-upload om in één keer een volledige planning voor een semester of een complete lesweekplanning voor een nieuw jaar te importeren. Deze actie <strong>overschrijft alle bestaande data</strong> in de betreffende categorie.</p>
+                        <p>Gebruik de bestand upload om in één keer een volledige planning voor een semester te importeren. Deze actie <strong>overschrijft alle bestaande activiteiten</strong> voor het gekozen semester.</p>
+                        <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
+                          <h4 className="font-bold">Voorbereiden Excel (semester-activiteiten)</h4>
+                          <ol className="ml-5 list-decimal">
+                            <li>Open het moederbestand en filter op <strong>studentactiviteiten</strong> (bijv. via kleurselectie).</li>
+                            <li>Selecteer en kopieer de relevante kolommen: <code>Titel</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases.</li>
+                            <li>Plak deze kolommen in een <strong>nieuw</strong> Excel-bestand.</li>
+                            <li>Sla dit bestand op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
+                            <li>Let op kolom "Instructies":
+                              <ul className="ml-5 list-disc">
+                                <li>Staat er een <strong>URL</strong> (https://…), dan opent de kaart een nieuw tabblad.</li>
+                                <li>Staat er <strong>korte tekst</strong>, dan opent de kaart een tekstvenster (popup) met deze instructie.</li>
+                              </ul>
+                            </li>
+                            <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>, meerdere links scheiden met komma's.</li>
+                          </ol>
+                        </div>
                         <div className="p-3 border-l-4 border-yellow-400 bg-yellow-50">
                           <h4 className="font-bold">Workflow (volg deze stappen altijd):</h4>
                           <ol className="ml-5 list-decimal">
                             <li><strong>Download altijd eerst een backup!</strong> Voordat je een nieuw bestand uploadt, klik op de "Download Backup" knop. Sla dit bestand veilig op. Mocht er iets misgaan, dan kun je deze backup gebruiken om de oude staat te herstellen.</li>
                             <li><strong>Bereid je bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen.
                               <ul className="ml-5 list-disc">
-                                                  <li><strong>Voor Activiteiten:</strong> <code>Titel (of wat)</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
-                                                <li><strong>Voor Lesweekplanning:</strong> <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor de datum (dd-mmm), en <code>jaar</code>.</li>
-                              <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
-                              <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
+                                <li><strong>Voor Semester-activiteiten:</strong> <code>Titel (of wat)</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
+                                <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
+                                <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
                               </ul>
                             </li>
-                            <li><strong>Upload het nieuwe bestand.</strong> Gebruik de juiste upload-knop. Je krijgt een waarschuwing die je moet bevestigen voordat de oude data wordt gewist.</li>
+                            <li><strong>Upload het nieuwe bestand.</strong> Gebruik de upload-knop voor het juiste semester. Je krijgt een waarschuwing die je moet bevestigen voordat de oude data wordt gewist.</li>
                           </ol>
                         </div>
                       </div>
@@ -263,8 +291,18 @@ const AdminPage = () => {
                        <div className="space-y-4 text-sm mt-2">
                           <p>Gebruik de "Bewerken" en "Verwijderen" knoppen in de tabellen hieronder voor snelle, individuele aanpassingen. Dit is de veiligste en snelste manier om een typefout te herstellen, een datum aan te passen, of een enkele activiteit/week te verwijderen.</p>
                           <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
+                            <h4 className="font-bold">Voorbereiden Excel (lesweekplanning)</h4>
+                            <ol className="ml-5 list-decimal">
+                              <li>Open het moederbestand en ga naar de lesweekplanning-tab.</li>
+                              <li>Zorg dat de kolommen aanwezig zijn: <code>Weergave voor in app.</code>, een <strong>lege kolom</strong> voor datum (dd-mmm), en <code>jaar</code>.</li>
+                              <li>Kopieer de rijen en plak deze in een <strong>nieuw</strong> Excel-bestand.</li>
+                              <li>Sla op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
+                              <li>Upload via "Upload Lesweekplanning" hieronder.</li>
+                            </ol>
+                          </div>
+                          <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                             <h4 className="font-bold">Belangrijk: Synchroniseer met het "Moederbestand"</h4>
-                            <p>Als je organisatie een centraal Excel- of "moederbestand" gebruikt voor de planning, zorg er dan voor dat je de wijzigingen die je hier doorvoert, ook daar verwerkt. Dit voorkomt dat de data uit elkaar gaat lopen bij een volgende grote CSV-upload.</p>
+                            <p>Als je organisatie een centraal Excel- of "moederbestand" gebruikt voor de planning, zorg er dan voor dat je de wijzigingen die je hier doorvoert, ook daar verwerkt. Dit voorkomt dat de data uit elkaar gaat lopen bij een volgende upload.</p>
                           </div>
                         </div>
                    </AccordionContent>
