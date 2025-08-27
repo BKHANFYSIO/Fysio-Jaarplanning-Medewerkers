@@ -125,8 +125,8 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
 
   // Bepaal de dynamische classes op basis van het type
   const cardClasses = type === 'event' 
-    ? "bg-white border-l-4 border-blue-500" // Stijl voor Start- & Eindmomenten
-    : "bg-gray-50/70"; // Stijl voor Doorlopende Activiteiten (geen border)
+    ? "bg-white dark:bg-slate-800 border-l-4 border-blue-500 dark:border-blue-500/80 text-gray-900 dark:text-slate-100"
+    : "bg-gray-50/70 dark:bg-slate-800/60 text-gray-900 dark:text-slate-100";
 
   const card = (
     <div 
@@ -176,7 +176,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           onClick={handleToggleExpand}
         >
           <div className="flex items-start gap-2">
-            <h3 className="font-semibold text-lg leading-tight text-gray-900">{item.title}</h3>
+            <h3 className="font-semibold text-lg leading-tight text-gray-900 dark:text-slate-100">{item.title}</h3>
           </div>
           {isMiddleOfLongSeries && (
             <ChevronUp className="w-5 h-5 text-gray-500 transition-transform mt-1 flex-shrink-0" />
@@ -184,14 +184,14 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
         </div>
         
         {item.description && (
-          <p className="text-sm mt-1 mb-2 text-gray-600">{item.description}</p>
+          <p className="text-sm mt-1 mb-2 text-gray-600 dark:text-slate-300">{item.description}</p>
         )}
         
         {/* Meta-balk Footer */}
         <div className={`text-sm ${
           item.isLastInSeries 
-            ? 'bg-red-100 rounded-b-lg -mx-3 -mb-3 mt-3 px-3 py-2 border-t border-red-200' 
-            : 'mt-3 pt-2 border-t border-gray-100'
+            ? 'bg-red-100 dark:bg-red-900/20 rounded-b-lg -mx-3 -mb-3 mt-3 px-3 py-2 border-t border-red-200 dark:border-red-800' 
+            : 'mt-3 pt-2 border-t border-gray-100 dark:border-slate-700'
         } relative overflow-visible`}>
           {isHardDeadline && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600">
@@ -202,16 +202,16 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           )}
           <div className="flex flex-col items-start gap-2 pr-10">
             {/* Date Range */}
-            <div className="flex items-center gap-1.5 text-gray-600">
+            <div className="flex items-center gap-1.5 text-gray-600 dark:text-slate-300">
               {/* Start Date & Time */}
               <span className={`flex items-center gap-1.5 ${item.isFirstInSeries ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
                 <CalendarPlus className="w-4 h-4 flex-shrink-0" />
                 {showDateDetails?.startDateStr}
                 {item.startTime && <span className="ml-1 text-xs opacity-80">({item.startTime})</span>}
               </span>
-              <span className="text-gray-400">→</span>
+              <span className="text-gray-400 dark:text-slate-500">→</span>
               {/* End Date & Time */}
-              <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600 animate-heartbeat' : 'text-gray-500'}`}>
+              <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600 dark:text-red-300 animate-heartbeat' : 'text-gray-500 dark:text-slate-400'}`}>
                 <CalendarCheck2 className="w-4 h-4 flex-shrink-0" />
                 {showDateDetails?.endDateStr}
                 {item.endTime && <span className="ml-1 text-xs opacity-80">({item.endTime})</span>}
@@ -224,7 +224,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               {(item.instructions || item.link) && (
                 <button 
                   onClick={handleInstructionsClick}
-                  className="flex items-center gap-1.5 font-medium text-blue-600 hover:text-blue-700 hover:scale-105 transition-all duration-200 cursor-pointer"
+                  className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 hover:scale-105 transition-all duration-200 cursor-pointer"
                 >
                   <FileText className="w-4 h-4" />
                   <span>Instructies</span>
@@ -249,7 +249,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                             e.stopPropagation();
                             window.open(url, '_blank', 'noopener,noreferrer');
                           }}
-                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-blue-600 rounded-md hover:text-blue-700 hover:underline transition-all duration-200 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-300 rounded-md hover:text-blue-700 dark:hover:text-blue-200 hover:underline transition-all duration-200 cursor-pointer"
                         >
                           <Link className="w-3 h-3" />
                           <span>{item.links!.length === 1 ? 'link' : `link ${index + 1}`}</span>
@@ -261,7 +261,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               )}
               {/* Geen extra deadline-icoon in de acties; alleen rechts in de footer */}
               {item.deadline && !isHardDeadline && (
-                <div className="flex items-center gap-1.5 font-medium text-red-600">
+                <div className="flex items-center gap-1.5 font-medium text-red-600 dark:text-red-300">
                   <AlertTriangle className="w-4 h-4" />
                   <span>Deadline: {item.deadline}</span>
                 </div>
