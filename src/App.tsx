@@ -10,7 +10,7 @@ import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon } from 'lucide-react';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -35,6 +35,8 @@ const Home = ({
   isMobileFiltersOpen,
   setIsMobileFiltersOpen,
   setIsQrOpen,
+  isDark,
+  toggleDark,
   availableOptions,
   activeFilters,
   handleToggleFilter,
@@ -185,6 +187,15 @@ const Home = ({
                 <ChevronUp size={16} className={`transition-transform ${areAllLopendeZakenCollapsed ? 'rotate-180' : ''}`}/>
                 <span>{areAllLopendeZakenCollapsed ? 'Toon alle doorlopende activiteiten' : 'Verberg alle doorlopende activiteiten'}</span>
               </button>
+              {/* Dark mode toggle */}
+              <button
+                onClick={toggleDark}
+                className={`flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium rounded-lg sm:w-auto transition-colors ${isDark ? 'text-slate-200 bg-slate-700 hover:bg-slate-600' : 'text-gray-700 bg-gray-200 hover:bg-gray-300'}`}
+                title="Schakel licht/donker"
+              >
+                {isDark ? <Sun size={16}/> : <Moon size={16}/>}
+                <span>{isDark ? 'Lichte modus' : 'Donkere modus'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -256,6 +267,22 @@ function App() {
   const { weeks, planningItems, loading, error } = useData();
   const { activeFilters, toggleFilter, resetFilters } = useFilters();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem('theme');
+    return stored ? stored === 'dark' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  const toggleDark = () => {
+    setIsDark(prev => {
+      const next = !prev;
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      if (next) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return next;
+    });
+  };
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [areAllLopendeZakenCollapsed, setAreAllLopendeZakenCollapsed] = useState(() => {
     const saved = localStorage.getItem('areAllLopendeZakenCollapsed');
@@ -282,6 +309,15 @@ function App() {
       localStorage.setItem('hasSeenHelp', 'true');
     }
   }, [hasSeenHelp, loading]);
+
+  useLayoutEffect(() => {
+    // Apply initial theme class
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   useLayoutEffect(() => {
     if (weeks.length > 0) {
@@ -536,6 +572,8 @@ function App() {
               isMobileFiltersOpen={isMobileFiltersOpen}
               setIsMobileFiltersOpen={setIsMobileFiltersOpen}
               setIsQrOpen={setIsQrOpen}
+              isDark={isDark}
+              toggleDark={toggleDark}
               availableOptions={availableOptions}
               activeFilters={activeFilters}
               handleToggleFilter={handleToggleFilter}
