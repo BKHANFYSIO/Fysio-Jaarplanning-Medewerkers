@@ -304,31 +304,7 @@ const AdminPage = () => {
                                 </div>
                               </div>
 
-                              {/* Extra voorbeeld: geforceerde (lege) regel met # en ## */}
-                              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: # en ## gebruiken</h5>
-                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: # 1. Inloggen 2. Kies opleiding 3. Afronden. ## Dit is een voorbeeld van bullets: # - Lees de richtlijn - Volg de stappen ## En hier een losse alinea na een lege regel.`}</pre>
-                                  <p className="text-xs text-gray-600 mt-2">Hier zorgt <code>#</code> voor een nieuwe regel na de titel en vóór de bullets. <code>##</code> voegt een extra lege witregel toe vóór de volgende sectie/tekst.</p>
-                                </div>
-                                <div className="rounded border border-gray-200 bg-white p-3">
-                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
-                                  <p className="text-sm">Dit zijn voorbeelden van opsommingscijfers:</p>
-                                  <ol className="list-decimal ml-5 text-sm space-y-1 mt-1">
-                                    <li>Inloggen</li>
-                                    <li>Kies opleiding</li>
-                                    <li>Afronden.</li>
-                                  </ol>
-                                  <div className="h-3" />
-                                  <p className="text-sm">Dit is een voorbeeld van bullets:</p>
-                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
-                                    <li>Lees de richtlijn</li>
-                                    <li>Volg de stappen</li>
-                                  </ul>
-                                  <div className="h-3" />
-                                  <p className="text-sm">En hier een losse alinea na een lege regel.</p>
-                                </div>
-                              </div>
+                              
                             </li>
                             <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
                           </ol>
