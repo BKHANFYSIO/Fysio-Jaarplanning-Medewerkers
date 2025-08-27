@@ -251,12 +251,20 @@ const AdminPage = () => {
                    <AccordionTrigger className="font-semibold text-gray-600">Instructies voor bestand upload (semester-activiteiten)</AccordionTrigger>
                    <AccordionContent>
                       <div className="space-y-4 text-sm mt-2">
+                        <div className="p-3 border-l-4 border-yellow-400 bg-yellow-50">
+                          <h4 className="font-bold">Workflow (volg deze stappen altijd)</h4>
+                          <ol className="ml-5 list-decimal">
+                            <li><strong>Download altijd eerst een backup!</strong> Klik op de "Download Backup" knop en bewaar dit bestand veilig.</li>
+                            <li><strong>Bereid je bestand voor.</strong> Zie de instructies hieronder voor het juist opzetten van kolommen en links.</li>
+                            <li><strong>Upload het nieuwe bestand.</strong> Gebruik de upload-knop voor het juiste semester. Bevestig de waarschuwing om de oude data te overschrijven.</li>
+                          </ol>
+                        </div>
                         <p>Gebruik de bestand upload om in één keer een volledige planning voor een semester te importeren. Deze actie <strong>overschrijft alle bestaande activiteiten</strong> voor het gekozen semester.</p>
                         <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
                           <h4 className="font-bold">Voorbereiden Excel (semester-activiteiten)</h4>
                           <ol className="ml-5 list-decimal">
                             <li>Open het moederbestand en filter op <strong>studentactiviteiten</strong> (bijv. via kleurselectie).</li>
-                            <li>Selecteer en kopieer de relevante kolommen: <code>Titel</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases.</li>
+                            <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases.</li>
                             <li>Plak deze kolommen in een <strong>nieuw</strong> Excel-bestand.</li>
                             <li>Sla dit bestand op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
                             <li>Let op kolom "Instructies":
@@ -307,9 +315,9 @@ const AdminPage = () => {
                           <h4 className="font-bold">Workflow (volg deze stappen altijd):</h4>
                           <ol className="ml-5 list-decimal">
                             <li><strong>Download altijd eerst een backup!</strong> Voordat je een nieuw bestand uploadt, klik op de "Download Backup" knop. Sla dit bestand veilig op. Mocht er iets misgaan, dan kun je deze backup gebruiken om de oude staat te herstellen.</li>
-                            <li><strong>Bereid je bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen.
+                            <li><strong>Bereid je bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen. Zie de instructies hierboven.
                               <ul className="ml-5 list-disc">
-                                <li><strong>Voor Semester-activiteiten:</strong> <code>Titel (of wat)</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
+                                <li><strong>Voor Semester-activiteiten:</strong> <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
                                 <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
                                 <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
                               </ul>
