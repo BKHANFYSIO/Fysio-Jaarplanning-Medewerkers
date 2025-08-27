@@ -265,8 +265,26 @@ const AdminPage = () => {
                                 <li>Staat er <strong>korte tekst</strong>, dan opent de kaart een tekstvenster (popup) met deze instructie.</li>
                               </ul>
                             </li>
-                            <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>, meerdere links scheiden met komma's.</li>
+                            <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje).</li>
                           </ol>
+                        </div>
+                        <div className="p-3 border-l-4 border-blue-400 bg-blue-50">
+                          <h4 className="font-bold">Links als tekst plakken in Excel</h4>
+                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                            <img
+                              src="/images/Links-als-tekst-toevoegen.jpg"
+                              alt="Links als tekst toevoegen in Excel"
+                              className="rounded border border-blue-100"
+                            />
+                            <div>
+                              <ol className="ml-5 list-decimal text-sm space-y-1">
+                                <li>Ga in Excel naar <strong>Start</strong> &gt; klik op het pijltje onder <strong>Plakken</strong> &gt; kies <strong>Plakken speciaal</strong> &gt; selecteer <strong>Alleen tekst</strong> (of <strong>Tekst/Values</strong>). De geplakte link wordt dan als tekst ingevoegd, niet als klikbare hyperlink.</li>
+                                <li>Of plak de link in de <strong>formulebalk</strong>. Excel zet deze dan ook als tekst in de cel.</li>
+                                <li>Als extra optie kun je eerst een <strong>apostrof (')</strong> typen en daarna de link plakken om tekst te forceren.</li>
+                              </ol>
+                              <p className="mt-2 text-xs text-blue-900">Gebruik bij voorkeur het formaat <code>Titel: URL</code>. Voor meerdere links zet je items achter elkaar, gescheiden door een spatie of leesteken. Controleer dat elke URL met <code>http(s)</code> begint.</p>
+                            </div>
+                          </div>
                         </div>
                         <div className="p-3 border-l-4 border-yellow-400 bg-yellow-50">
                           <h4 className="font-bold">Workflow (volg deze stappen altijd):</h4>
