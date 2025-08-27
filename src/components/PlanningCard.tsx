@@ -156,9 +156,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                 </span>
               );
             })}
-            {isHardDeadline && (
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-            )}
+            {/* Geen extra icoon hier; alleen in de footer rechts zichtbaar */}
           </div>
         </div>
 
@@ -187,9 +185,9 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
         } relative`}>
           {isHardDeadline && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600">
-              <span title="Deadline (actie vereist)">
+              <Tooltip content="Deadline (actie vereist)">
                 <AlertTriangle className="w-6 h-6 animate-heartbeat" />
-              </span>
+              </Tooltip>
             </div>
           )}
           <div className="flex flex-col items-start gap-2 pr-10">
@@ -251,13 +249,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                   })}
                 </div>
               )}
-              {isHardDeadline && (
-                <div className="flex items-center gap-1.5 text-red-600">
-                  <span title="Deadline (actie vereist)">
-                    <AlertTriangle className="w-5 h-5 animate-heartbeat" />
-                  </span>
-                </div>
-              )}
+              {/* Geen extra deadline-icoon in de acties; alleen rechts in de footer */}
               {item.deadline && !isHardDeadline && (
                 <div className="flex items-center gap-1.5 font-medium text-red-600">
                   <AlertTriangle className="w-4 h-4" />
