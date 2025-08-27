@@ -63,7 +63,7 @@ const phaseColorClasses: { [key: string]: string } = {
 // Find the phase config from the central configuration
 const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
 
-export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: PlanningCardProps) {
+export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps) {
   const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
 
   const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
@@ -92,14 +92,10 @@ export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: P
     }
   };
 
-  const handleCardClick = () => {
-    // Only handle card clicks for collapsible cards
-    if (isMiddleOfLongSeries && !isExpanded) {
-      setIsExpanded(true);
-    }
-  };
+  // Klikken op de kaart wordt alleen gebruikt om ingeklapte doorlopende kaarten te openen
 
   const hasLink = Boolean(item.instructions || item.link);
+  const isHardDeadline = (item.deadline || '').trim().toLowerCase() === 'v';
 
   if (isMiddleOfLongSeries && !isExpanded) {
     // Styling voor ingeklapte doorlopende kaart (blijft neutraal)
@@ -128,6 +124,13 @@ export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: P
     <div 
       className={`${cardClasses} rounded-lg shadow-sm transition-all duration-200 hover:shadow-md relative overflow-hidden`}
     >
+      {isHardDeadline && (
+        <Tooltip content="Echte deadline: actie vereist">
+          <div className="absolute top-2 right-2">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          </div>
+        </Tooltip>
+      )}
       <div className="p-3">
         {/* Top row: dots and phase tags */}
         <div className="flex items-center justify-between mb-2">
@@ -245,7 +248,13 @@ export function PlanningCard({ item, type, showDateDetails, onDocumentClick }: P
                   })}
                 </div>
               )}
-              {item.deadline && (
+              {isHardDeadline && (
+                <div className="flex items-center gap-1.5 font-medium text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Deadline (actie vereist)</span>
+                </div>
+              )}
+              {item.deadline && !isHardDeadline && (
                 <div className="flex items-center gap-1.5 font-medium text-red-600">
                   <AlertTriangle className="w-4 h-4" />
                   <span>Deadline: {item.deadline}</span>

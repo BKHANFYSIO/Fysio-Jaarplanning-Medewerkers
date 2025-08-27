@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, Calendar, Filter, ChevronDown, ChevronUp, FileText, AlertTriangle } from 'lucide-react';
+import { X, Info, Calendar, Filter, FileText, AlertTriangle } from 'lucide-react';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -58,25 +58,25 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               Navigatie en Weergave
             </h3>
             <div className="space-y-3">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Huidige Week</h4>
-                <p className="text-blue-800 text-sm">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-2">Huidige Week</h4>
+                <p className="text-green-800 text-sm">
                   De app toont automatisch de huidige week of de eerstvolgende week. 
                   Gebruik de "Ga naar huidige week" knop om snel naar de relevante periode te navigeren.
                 </p>
               </div>
               
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h4 className="font-medium text-green-900 mb-2">Start- & Eindmomenten Activiteiten</h4>
-                <p className="text-green-800 text-sm">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Start- & Eindmomenten Activiteiten</h4>
+                <p className="text-blue-800 text-sm">
                   Activiteiten die in deze week beginnen of eindigen. Deze worden altijd getoond en zijn niet inklapbaar.
                   Eindmomenten hebben een pulserende animatie om extra aandacht te trekken.
                 </p>
               </div>
               
-              <div className="bg-orange-50 p-4 rounded-lg">
-                <h4 className="font-medium text-orange-900 mb-2">Doorlopende Activiteiten</h4>
-                <p className="text-orange-800 text-sm">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Doorlopende Activiteiten</h4>
+                <p className="text-gray-700 text-sm">
                   Activiteiten die meerdere weken duren. Deze worden ingeklapt weergegeven om de overzichtelijkheid te behouden.
                   Klik op het driehoekje om ze uit te klappen of gebruik de "Toon alle doorlopende activiteiten" knop.
                 </p>
@@ -158,9 +158,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   <AlertTriangle className="w-4 h-4" />
                   Deadlines
                 </h4>
-                <p className="text-red-800 text-sm">
-                  Belangrijke deadlines worden duidelijk gemarkeerd met een waarschuwingsicoon en rode tekst.
-                </p>
+                <div className="text-sm space-y-1">
+                  <p className="text-red-800">
+                    Valt de einddatum in deze week, dan licht de einddatum op (rood, pulserend) en krijgt de footer van de kaart een rode achtergrond.
+                  </p>
+                  <p className="text-gray-700">
+                    De kolom "Deadline" wordt momenteel niet actief gebruikt. Eventuele tekst in deze kolom wordt wel getoond op de kaart.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
