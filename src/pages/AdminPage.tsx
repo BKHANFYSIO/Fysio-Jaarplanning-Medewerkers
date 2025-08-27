@@ -274,11 +274,35 @@ const AdminPage = () => {
                                   <ul className="ml-5 list-disc mt-1">
                                     <li>Regels die starten met <code>-</code> of <code>*</code> worden bullets.</li>
                                     <li>Regels die starten met <code>1.</code>, <code>2.</code>, … worden een genummerde lijst.</li>
-                                    <li>Plak je lijstjes per ongeluk achter elkaar in één regel, dan zetten we ze automatisch op aparte regels.</li>
+                                    <li>Typ je per ongeluk meerdere lijstitems achter elkaar op één regel (bijv. <code>1. stap 1 2. stap 2</code> of <code>- punt A - punt B</code>), dan splitst de app die automatisch op nieuwe regels in de popup.</li>
                                     <li>Webadressen worden automatisch klikbaar gemaakt.</li>
                                   </ul>
                                 </li>
                               </ul>
+                              {/* Voorbeelden weergave */}
+                              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="rounded border border-gray-200 bg-white p-3">
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Voorbeeld: inhoud van Excel-cel</h5>
+                                  <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`1. Inloggen
+2. Kies opleiding
+- Lees de richtlijn
+- Volg de stappen
+https://voorbeeld.nl`}</pre>
+                                  <p className="text-xs text-gray-600 mt-2">Alles staat in één cel (meerdere regels toegestaan). De app maakt hier automatisch een genummerde lijst, bullets en een klikbare link van.</p>
+                                </div>
+                                <div className="rounded border border-gray-200 bg-white p-3">
+                                  <h5 className="font-semibold text-gray-700 text-sm mb-1">Weergave in de app (popup)</h5>
+                                  <ol className="list-decimal ml-5 text-sm space-y-1">
+                                    <li>Inloggen</li>
+                                    <li>Kies opleiding</li>
+                                  </ol>
+                                  <ul className="list-disc ml-5 text-sm space-y-1 mt-2">
+                                    <li>Lees de richtlijn</li>
+                                    <li>Volg de stappen</li>
+                                  </ul>
+                                  <p className="text-sm mt-2"><a href="https://voorbeeld.nl" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://voorbeeld.nl</a></p>
+                                </div>
+                              </div>
                             </li>
                             <li>Kolom "Links": gebruik het formaat <code>Titel: URL</code>. URL's moeten met <code>http</code> of <code>https</code> beginnen. Je kunt meerdere links achter elkaar plaatsen, gescheiden door een spatie of leesteken (bijv. komma, puntkomma, pipe of streepje). Begin bij elke volgende link <strong>opnieuw met een titel</strong> (dus <code>Titel: URL</code>), deze titel verschijnt als <strong>tooltip</strong> wanneer studenten met de muis over de link bewegen.</li>
                           </ol>
