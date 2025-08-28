@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import RichTextEditor from './RichTextEditor';
+import DOMPurify from 'dompurify';
 import { Settings, Save, Eye, EyeOff } from 'lucide-react';
 import { useSettings, BannerSettings } from '../hooks/useSettings';
 import { toast } from 'react-hot-toast';
@@ -45,6 +47,8 @@ export const DevelopmentBannerSettings: React.FC = () => {
   const handleDelayChange = (value: string) => {
     setLocalConfig(prev => prev ? { ...prev, autoHideDelay: parseInt(value, 10) || 0 } : null);
   }
+
+  // Quill toolbar geconfigureerd in StrictMode-veilige wrapper
 
   if (loading) {
     return <div>Instellingen laden...</div>;
@@ -125,13 +129,13 @@ export const DevelopmentBannerSettings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700">
               Banner Beschrijving
             </label>
-            <textarea
-              value={localConfig.description}
-              onChange={(e) => handleTextChange('description', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Voer de banner beschrijving in"
-            />
+            <div className="border border-gray-300 rounded-md">
+              <RichTextEditor
+                value={localConfig.description}
+                onChange={(value) => handleTextChange('description', value)}
+              />
+            </div>
+            <p className="text-xs text-gray-500">Gebruik de knoppen om opmaak toe te passen of plak opgemaakte tekst rechtstreeks.</p>
           </div>
 
           <div className="space-y-2">
@@ -185,9 +189,9 @@ export const DevelopmentBannerSettings: React.FC = () => {
             <p className="font-medium text-sm">
               <strong>{config.title}</strong>
             </p>
-            <p className="text-xs mt-1">
-              {config.description}
-            </p>
+            <div className="text-xs mt-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-semibold [&_em]:italic [&_a]:underline [&_a]:text-amber-700">
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(config.description, { USE_PROFILES: { html: true }, ALLOWED_ATTR: ['href','target','rel','style'] }) }} />
+            </div>
           </div>
         </div>
       )}

@@ -2,11 +2,20 @@ import { useState, useEffect } from 'react';
 import { doc, onSnapshot, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
+export interface ChangeItem {
+  id: string;
+  title: string;
+  content: string; // HTML (WYSIWYG-output)
+  visibleUntil: string; // ISO datetime string
+  visibleFrom?: string; // optional ISO datetime string
+}
+
 export interface BannerSettings {
   enabled: boolean;
   title: string;
   description: string;
   autoHideDelay: number; // in seconds
+  items?: ChangeItem[]; // alleen gebruikt door changesBanner
 }
 
 export interface AllBannerSettings {
@@ -26,6 +35,7 @@ const defaultSettings: AllBannerSettings = {
     title: 'Belangrijke Wijziging',
     description: 'Er is een belangrijke wijziging doorgevoerd.',
     autoHideDelay: 15,
+    items: [],
   },
 };
 

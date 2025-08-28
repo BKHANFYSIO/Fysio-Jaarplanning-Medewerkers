@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { AlertTriangle, X } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 
@@ -30,6 +31,10 @@ export const DevelopmentBanner: React.FC<BannerProps> = ({ onClose }) => {
   }
   
   const { title, description } = settings.developmentBanner;
+  const safeHtml = DOMPurify.sanitize(description, {
+    USE_PROFILES: { html: true },
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'style'],
+  });
 
   return (
     <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
@@ -40,9 +45,9 @@ export const DevelopmentBanner: React.FC<BannerProps> = ({ onClose }) => {
             <p className="font-medium">
               <strong>{title}</strong>
             </p>
-            <p className="text-sm mt-1">
-              {description}
-            </p>
+            <div className="text-sm mt-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-semibold [&_em]:italic [&_a]:underline [&_a]:text-amber-700">
+              <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
+            </div>
           </div>
         </div>
         <button

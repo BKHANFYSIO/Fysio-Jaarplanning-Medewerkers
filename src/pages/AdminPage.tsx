@@ -78,7 +78,7 @@ const AdminPage = () => {
   const { items: planningItems, loading: planningLoading, error: planningError } = useAdminData();
   const { weeks, loading: weeksLoading, error: weeksError } = useWeekData();
   const { orphanedItems, loading: orphanedLoading } = useData(); // Get orphaned items
-  const [openSections, setOpenSections] = useState<string[]>(['instructions']);
+  const [openSections, setOpenSections] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof PlanningItem; direction: 'ascending' | 'descending' } | null>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<PlanningItem | null>(null);
@@ -289,7 +289,7 @@ const AdminPage = () => {
                                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div className="rounded border border-gray-200 bg-white p-3">
                                         <h5 className="font-semibold text-gray-700 text-sm mb-2">Voorbeeld: één Excel-cel (één lap tekst)</h5>
-                                        <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. en doorgaan. # Dit is een voorbeeld van bullets:  - Lees de richtlijn - Volg de stappen - https://www.han.nl/ ## Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.`}</pre>
+                                        <pre className="text-xs bg-gray-50 p-2 rounded whitespace-pre-wrap">{`Dit zijn voorbeelden van opsommingscijfers: 1. Inloggen 2. Kies opleiding 3. Afronden. en doorgaan. # Dit is een voorbeeld van bullets:  - Lees de richtlijn - Volg de stappen - https://www.han.nl/ ## Deze komt dus met een witregel om dat ik de hashtag twee keer heb gebruikt.`}</pre>
                                         <p className="text-xs text-gray-600 mt-2">Alles staat in <strong>één cel</strong> als <strong>één doorlopende regel</strong>. De app maakt hier automatisch een genummerde lijst en bullets van. Gebruik <code>#</code> voor een nieuwe regel en <code>##</code> voor een extra lege witregel.</p>
                                       </div>
                                       <div className="rounded border border-gray-200 bg-white p-3">
@@ -307,7 +307,7 @@ const AdminPage = () => {
                                           <li><a href="https://www.han.nl/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">https://www.han.nl/</a></li>
                                         </ul>
                                         <div className="h-6" />
-                                        <p className="text-sm">Deze komt dus met een witregel om dat ik de hashdek twee keer heb gebruikt.</p>
+                                        <p className="text-sm">Deze komt dus met een witregel om dat ik de hashtag twee keer heb gebruikt.</p>
                                       </div>
                                     </div>
                                   </AccordionContent>
