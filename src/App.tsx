@@ -37,6 +37,7 @@ const Home = ({
   setIsQrOpen,
   isDark,
   toggleDark,
+  effectiveFilterConfig,
   availableOptions,
   activeFilters,
   handleToggleFilter,
@@ -62,7 +63,7 @@ const Home = ({
         <div className="hidden md:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie (Medewerkers)</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
           </div>
           <div className="flex items-center gap-3">
             {/* Help Button */}
@@ -102,7 +103,7 @@ const Home = ({
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie (Medewerkers)</h1>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
             </div>
             {/* Compact Icon Buttons */}
             <div className="flex items-center gap-2">
@@ -148,11 +149,11 @@ const Home = ({
           <div className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative dark:bg-slate-800 dark:ring-slate-700 dark:border-blue-500">
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
-              {filterConfig.map(config => (
+              {effectiveFilterConfig.map((config: any) => (
                 <div key={config.id} className="mr-4">
                   <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {config.options.map(option => {
+                    {config.options.map((option: any) => {
                       if (availableOptions[config.id]?.[option.value] > 0) {
                         return (
                           <FilterButton
@@ -390,9 +391,30 @@ function App() {
     setCollapsedSections(newCollapsedSections);
   };
 
+  // Dynamische filterconfig: vul 'Rol' opties op basis van aanwezige data
+  const effectiveFilterConfig = useMemo(() => {
+    const cloned = filterConfig.map(cfg => ({ ...cfg, options: [...cfg.options] }));
+    const roleIdx = cloned.findIndex(c => c.id === 'role');
+    if (roleIdx !== -1) {
+      const roles = new Set<string>();
+      planningItems.forEach(item => {
+        const role = (item.role || '').toString().trim().toLowerCase();
+        if (role) roles.add(role);
+      });
+      const palette = ['blue','indigo','teal','yellow','pink','purple','green','orange','slate','gray'];
+      const options = Array.from(roles).sort().map((r, i) => ({
+        value: r,
+        label: r.charAt(0).toUpperCase() + r.slice(1),
+        color: palette[i % palette.length],
+      }));
+      cloned[roleIdx] = { ...cloned[roleIdx], options };
+    }
+    return cloned;
+  }, [planningItems]);
+
   const availableOptions = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
-    filterConfig.forEach(config => {
+    effectiveFilterConfig.forEach(config => {
       counts[config.id] = {};
       config.options.forEach(option => {
         counts[config.id][option.value] = 0;
@@ -400,9 +422,15 @@ function App() {
     });
 
     planningItems.forEach(item => {
-      filterConfig.forEach(config => {
-        const itemValue = item[config.dataKey];
+      effectiveFilterConfig.forEach(config => {
+        const itemValue: any = (item as any)[config.dataKey];
         if (config.dataKey === 'semester' && itemValue) {
+          // nog geen semester-filter UI actief
+        } else if (config.dataKey === 'role') {
+          const role = (item.role || '').toString().toLowerCase();
+          if (role && counts[config.id] && counts[config.id][role] !== undefined) {
+            counts[config.id][role]++;
+          }
         } else if (typeof itemValue === 'object' && itemValue !== null) {
           Object.keys(itemValue).forEach(key => {
             if (itemValue[key] === true && counts[config.id]?.[key] !== undefined) {
@@ -413,7 +441,7 @@ function App() {
       });
     });
     return counts;
-  }, [planningItems]);
+  }, [planningItems, effectiveFilterConfig]);
 
   const targetWeekInfo = useMemo(() => {
     const now = new Date();
@@ -491,7 +519,7 @@ function App() {
   };
 
   const filteredItems = planningItems.filter(item => {
-    return filterConfig.every(config => {
+    return effectiveFilterConfig.every(config => {
       const selectedOptions = activeFilters[config.id];
       if (!selectedOptions || selectedOptions.length === 0) {
         return true;
@@ -499,10 +527,13 @@ function App() {
       
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
+      } else if (config.dataKey === 'role') {
+        const role = (item.role || '').toString().toLowerCase();
+        return selectedOptions.includes(role);
       } else {
-        const subObject = item[config.dataKey];
+        const subObject = (item as any)[config.dataKey];
         if (isSubjects(subObject)) {
-          return selectedOptions.some(option => subObject[option]);
+          return selectedOptions.some(option => (subObject as any)[option]);
         }
         return false;
       }
@@ -574,6 +605,7 @@ function App() {
               setIsQrOpen={setIsQrOpen}
               isDark={isDark}
               toggleDark={toggleDark}
+              effectiveFilterConfig={effectiveFilterConfig}
               availableOptions={availableOptions}
               activeFilters={activeFilters}
               handleToggleFilter={handleToggleFilter}

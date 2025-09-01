@@ -9,7 +9,7 @@ interface QRModalProps {
 export const QRModal: React.FC<QRModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
-  const targetUrl = 'https://jaarplanning-han-fysio.vercel.app';
+  const targetUrl = 'https://fysio-jaarplanning-medewerkers.vercel.app/';
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(targetUrl)}`;
 
   return (

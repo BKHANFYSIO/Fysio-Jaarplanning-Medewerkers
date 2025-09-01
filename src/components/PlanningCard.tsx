@@ -12,6 +12,29 @@ import { PlanningItem } from '../types';
 import { filterConfig } from '../config/filters';
 import { InstructionTextModal } from './InstructionTextModal';
 
+// Kleur mapping voor rol-badge op basis van beschikbare kleuren in FilterButton
+const roleTextColor: Record<string, string> = {
+  blue: 'text-blue-700',
+  indigo: 'text-indigo-700',
+  teal: 'text-teal-700',
+  yellow: 'text-yellow-700',
+  pink: 'text-pink-700',
+  purple: 'text-purple-700',
+  green: 'text-green-700',
+  orange: 'text-orange-700',
+  slate: 'text-slate-700',
+  gray: 'text-gray-700',
+};
+
+const getRoleBadgeClasses = (role: string): string => {
+  const roleCfg = filterConfig.find(c => c.id === 'role');
+  if (!roleCfg) return 'text-gray-700';
+  const opt = roleCfg.options.find(o => o.value === role.toLowerCase());
+  const color = opt?.color || 'gray';
+  const cls = roleTextColor[color] || roleTextColor.gray;
+  return `${cls} font-semibold`;
+}
+
 interface PlanningCardProps {
   item: PlanningItem;
   type: 'event' | 'ongoing'; // <-- Nieuwe prop
@@ -166,6 +189,11 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                 </span>
               );
             })}
+            {item.role && (
+              <span className={`px-2 py-0.5 text-xs rounded ${getRoleBadgeClasses(String(item.role))}`}>
+                {String(item.role).charAt(0).toUpperCase() + String(item.role).slice(1)}
+              </span>
+            )}
             {/* Geen extra icoon hier; alleen in de footer rechts zichtbaar */}
           </div>
         </div>

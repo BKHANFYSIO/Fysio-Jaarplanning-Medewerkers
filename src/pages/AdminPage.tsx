@@ -169,8 +169,8 @@ const AdminPage = () => {
     let sortableItems = [...planningItems];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
+        const aValue = (a as any)[sortConfig.key] ?? '';
+        const bValue = (b as any)[sortConfig.key] ?? '';
         
         if (aValue === null || bValue === null) return 0;
 
@@ -183,7 +183,7 @@ const AdminPage = () => {
             return 0;
         }
 
-        // Handle generic strings
+        // Handle generic strings (including role)
         if (typeof aValue === 'string' && typeof bValue === 'string') {
             if (aValue.toLowerCase() < bValue.toLowerCase()) {
                 return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -231,33 +231,40 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container p-4 mx-auto md:p-8">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-50 bg-gray-50 border-b border-gray-200 shadow-sm">
+        <div className="container p-4 mx-auto md:p-8">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-4xl font-bold text-gray-800">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 font-bold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700"
+            >
+              <LogOut size={18} />
+              Uitloggen
+            </button>
+          </div>
+          {/* Accordion controls */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button
+              onClick={() => setOpenSections(['instructions','status','activities','week-planning'])}
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Alles uitklappen
+            </button>
+            <button
+              onClick={() => setOpenSections([])}
+              className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Alles inklappen
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Scrollable Content */}
+      <div className="container p-4 mx-auto md:p-8 pt-0">
         <Toaster position="bottom-right" />
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Jaarplanning Fysiotherapie (Medewerkers)</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 font-bold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700"
-          >
-            <LogOut size={18} />
-            Uitloggen
-          </button>
-        </div>
-        {/* Accordion controls */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <button
-            onClick={() => setOpenSections(['instructions','status','activities','week-planning'])}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-          >
-            Alles uitklappen
-          </button>
-          <button
-            onClick={() => setOpenSections([])}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-          >
-            Alles inklappen
-          </button>
-        </div>
         
         <Accordion type="multiple" value={openSections} onValueChange={(v:any)=>setOpenSections(v)} className="w-full space-y-4">
           <AccordionItem value="instructions" className="p-6 mb-8 bg-white rounded-lg shadow">
@@ -530,6 +537,11 @@ const AdminPage = () => {
                               </button>
                             </th>
                             <th scope="col" className="px-6 py-3">
+                              <button onClick={() => requestSort('role' as keyof PlanningItem)} className="flex items-center">
+                                Rol {sortConfig?.key === 'role' && (sortConfig.direction === 'ascending' ? '🔼' : '🔽')}
+                              </button>
+                            </th>
+                            <th scope="col" className="px-6 py-3">
                               <button onClick={() => requestSort('startDate')} className="flex items-center">
                                 Startdatum {sortConfig?.key === 'startDate' && (sortConfig.direction === 'ascending' ? '🔼' : '🔽')}
                               </button>
@@ -546,6 +558,7 @@ const AdminPage = () => {
                           {sortedItems.map((item: PlanningItem) => (
                             <tr key={item.id} className="bg-white border-b hover:bg-gray-50">
                               <td className="px-6 py-4 font-medium">{item.title}</td>
+                              <td className="px-6 py-4">{item.role ? String(item.role).charAt(0).toUpperCase() + String(item.role).slice(1) : '-'}</td>
                               <td className="px-6 py-4">{item.startDate}</td>
                               <td className="px-6 py-4">{item.endDate}</td>
                               <td className="px-6 py-4 text-right">

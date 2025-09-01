@@ -105,6 +105,11 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
                    instructions: row['Instructies'] || row['link'] || null, // Nieuwe instructies kolom
           links: parseLinksColumn(row['Links'] || ''), // Gebruik de nieuwe, robuuste parser
           // Verwijder de oude 'link' toewijzing om dubbele data te voorkomen
+          role: (() => {
+            const raw = (row['rol'] ?? row['Rol'] ?? row['gebruiker'] ?? row['Gebruiker'] ?? '').toString().trim();
+            if (!raw) return null; // nooit undefined schrijven
+            return raw.toLowerCase();
+          })(),
           startDate: row['Startdatum'] || row['startDate'] || '',
           endDate: row['Einddatum'] || row['endDate'] || '',
          startTime: row['Tijd startdatum'] || null,

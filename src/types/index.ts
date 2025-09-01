@@ -4,6 +4,7 @@ export interface PlanningItem {
   collection?: string;
   semester?: number; // Add semester
   weekCode?: string; // Add weekCode
+  role?: string; // Nieuwe optionele kolom voor rol/gebruiker
   title: string;
   description: string;
   instructions?: string; // Vervangt de oude 'link' kolom

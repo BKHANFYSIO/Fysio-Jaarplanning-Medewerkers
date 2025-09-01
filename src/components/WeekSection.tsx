@@ -11,6 +11,7 @@ interface WeekSectionProps {
   highlightLabel?: string | null;
   isLopendeZakenCollapsed: boolean;
   onToggleLopendeZaken: () => void;
+  roleColorMap?: Record<string, string>;
 }
 
 const getItemPriority = (item: PlanningItem): number => {

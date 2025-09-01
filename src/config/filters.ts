@@ -9,10 +9,22 @@ export type FilterConfig = {
   label: string;
   type: 'pills' | 'dropdown';
   options: FilterOption[];
-  dataKey: 'phases' | 'subjects' | 'semester';
+  dataKey: 'phases' | 'subjects' | 'semester' | 'role';
 };
 
 export const filterConfig: FilterConfig[] = [
+  {
+    id: 'role',
+    label: 'Rol',
+    type: 'pills',
+    dataKey: 'role',
+    options: [
+      { value: 'student', label: 'Student', color: 'blue' },
+      { value: 'docent', label: 'Docent', color: 'indigo' },
+      { value: 'medewerker', label: 'Medewerker', color: 'teal' },
+      { value: 'overig', label: 'Overig', color: 'gray' },
+    ],
+  },
   {
     id: 'phase',
     label: 'Studiefase',
