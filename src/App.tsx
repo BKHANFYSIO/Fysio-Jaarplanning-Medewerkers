@@ -518,6 +518,30 @@ function App() {
     }
   };
 
+  // Automatisch scrollen naar huidige week bij laden van de app
+  useLayoutEffect(() => {
+    if (!loading && weeks.length > 0 && targetWeekInfo.week) {
+      // Wacht even tot de DOM volledig geladen is
+      const timer = setTimeout(() => {
+        const weekKey = `${targetWeekInfo.week!.semester}-${targetWeekInfo.week!.weekCode}`;
+        const element = weekRefs.current.get(weekKey);
+        
+        if (element && headerRef.current) {
+          const headerHeight = headerRef.current.offsetHeight;
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - headerHeight - 20;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'auto'
+          });
+        }
+      }, 300); // Wacht tot de DOM volledig geladen is
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading, weeks, targetWeekInfo.week]);
+
   const filteredItems = planningItems.filter(item => {
     return effectiveFilterConfig.every(config => {
       const selectedOptions = activeFilters[config.id];
