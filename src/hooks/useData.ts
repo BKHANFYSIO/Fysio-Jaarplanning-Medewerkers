@@ -124,8 +124,10 @@ export const useData = () => {
               const parts = dateStr.split('-');
               if (parts.length < 3) return new Date(0); // Invalid date
               const day = parseInt(parts[0]);
-              const month = getMonthNumberFromString(parts[1]);
+              // Probeer de maand als nummer te parsen; als dat niet lukt, gebruik de string-naar-nummer conversie
+              const month = !isNaN(parseInt(parts[1])) ? parseInt(parts[1]) : getMonthNumberFromString(parts[1]);
               const year = parseInt(parts[2]);
+              // Maanden zijn 0-based in JavaScript's Date object
               return new Date(year, month - 1, day);
           };
           const dateA = parseDateString(a.startDate);

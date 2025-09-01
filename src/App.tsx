@@ -62,7 +62,7 @@ const Home = ({
         <div className="hidden md:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie (Medewerkers)</h1>
           </div>
           <div className="flex items-center gap-3">
             {/* Help Button */}
@@ -102,7 +102,7 @@ const Home = ({
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie</h1>
+              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie (Medewerkers)</h1>
             </div>
             {/* Compact Icon Buttons */}
             <div className="flex items-center gap-2">

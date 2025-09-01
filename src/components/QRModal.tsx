@@ -26,7 +26,7 @@ export const QRModal: React.FC<QRModalProps> = ({ isOpen, onClose }) => {
         </div>
         <div className="p-5 flex flex-col items-center gap-3">
           <img src={qrUrl} alt="QR code jaarplanning" className="w-60 h-60"/>
-          <p className="text-sm text-gray-600 text-center">Scan de QR-code om de Jaarplanning Fysiotherapie op je telefoon te openen.</p>
+          <p className="text-sm text-gray-600 text-center">Scan de QR-code om de Jaarplanning Fysiotherapie (Medewerkers) op je telefoon te openen.</p>
         </div>
       </div>
     </div>

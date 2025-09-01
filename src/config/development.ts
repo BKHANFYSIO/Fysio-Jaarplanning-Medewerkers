@@ -8,7 +8,7 @@ export const developmentConfig = {
   
   // Tekst voor de ontwikkelingsbanner
   bannerText: {
-    title: "Let op: Deze Jaarplanning Fysiotherapie app is nog in ontwikkeling",
+    title: "Let op: Deze Jaarplanning Fysiotherapie (Medewerkers) app is nog in ontwikkeling",
     description: "De meeste data staat er inmiddels in, maar wordt nog aangevuld met instructies en links. Wijzigingen voorbehouden."
   }
 };

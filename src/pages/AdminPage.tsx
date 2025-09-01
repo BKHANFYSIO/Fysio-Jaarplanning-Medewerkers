@@ -27,14 +27,29 @@ const getMonthNumberFromString = (monthStr: string): number => {
     return monthMap[lowerMonth] || 0;
 };
 
+// Helper function to robustly get values from a row object
+const getValueFromRow = (row: any, potentialKeys: string[]): any => {
+  const rowKeys = Object.keys(row);
+  for (const pKey of potentialKeys) {
+    const potentialKey = pKey.toLowerCase();
+    for (const key of rowKeys) {
+      if (key.trim().toLowerCase() === potentialKey) {
+        return row[key];
+      }
+    }
+  }
+  return null;
+};
+
 // Custom parser for Week CSV, different from the one in useData
 const parseWeekCsvForUpload = (results: any): WeekInfo[] => {
   let currentSemester: 1 | 2 = 1;
   const weeks: WeekInfo[] = [];
 
   results.data.forEach((row: any) => {
-    const label = row['Weergave voor in app.'] || '';
-    const dateStr = row[''] || ''; // Second column is often unnamed
+    const label = getValueFromRow(row, ['Weergave voor in app.', 'Lesweek']) || '';
+    const dateStr = getValueFromRow(row, ['Datum', '']) || ''; // Support 'Datum' or unnamed column
+    const yearValue = getValueFromRow(row, ['jaar', 'Jaar']);
 
     if (label.includes('Semester 1')) {
       currentSemester = 1;
@@ -49,20 +64,25 @@ const parseWeekCsvForUpload = (results: any): WeekInfo[] => {
         const isVacation = label.toLowerCase().includes('vakantie') || label.toLowerCase().includes('afsluiting');
         
         let year;
-        if (row['jaar'] && !isNaN(parseInt(row['jaar']))) {
-          year = parseInt(row['jaar']);
+        if (yearValue && !isNaN(parseInt(yearValue))) {
+          year = parseInt(yearValue);
         } else {
           // Fallback to old logic if 'jaar' column is missing
           const month = getMonthNumberFromString(dateStr.split('-')[1]);
           year = (month >= 8 && month <= 12) ? 2025 : 2026;
         }
 
-        const fullDate = `${dateStr}-${year}`;
+        let fullDate = dateStr;
+        // Voeg alleen het jaar toe als het nog niet in de datumstring zit
+        // Dit voorkomt "dd-mm-yyyy-yyyy" bij Excel-imports
+        if (!/\d{4}/.test(fullDate)) {
+          fullDate = `${fullDate}-${year}`;
+        }
 
         weeks.push({
           weekCode: label.includes('.') ? label.split(' ')[0] : label,
           weekLabel: label,
-          startDate: fullDate, // Correctly use the full date with year
+          startDate: fullDate, // Gebruik de gecorrigeerde volledige datum
           year: year,
           semester: currentSemester,
           isVacation,
@@ -214,7 +234,7 @@ const AdminPage = () => {
       <div className="container p-4 mx-auto md:p-8">
         <Toaster position="bottom-right" />
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Admin Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Jaarplanning Fysiotherapie (Medewerkers)</h1>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-4 py-2 font-bold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700"

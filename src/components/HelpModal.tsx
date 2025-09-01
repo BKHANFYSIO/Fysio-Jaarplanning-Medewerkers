@@ -17,7 +17,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <Info className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Uitleg Jaarplanning Fysiotherapie</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Uitleg Jaarplanning Fysiotherapie (Medewerkers)</h2>
           </div>
           <button
             onClick={onClose}
@@ -45,7 +45,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
           {/* Welkom */}
           <section>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-3">Welkom bij de Jaarplanning Fysiotherapie</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-3">Welkom bij de Jaarplanning Fysiotherapie (Medewerkers)</h3>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
               Deze applicatie biedt een overzicht van alle activiteiten en deadlines voor de Fysiotherapie opleiding. 
               Hier vind je alles wat je moet weten over je studiejaar, van deadlines tot doorlopende activiteiten.
