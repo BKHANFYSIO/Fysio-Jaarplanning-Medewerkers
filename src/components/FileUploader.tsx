@@ -52,6 +52,111 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
 
+  // Helper functie voor uitgebreide validatie
+  const validateFile = (file: File): string | null => {
+    // Controleer bestandsgrootte (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      return '❌ Fout: Bestand is te groot (maximaal 10MB toegestaan).';
+    }
+    
+    // Controleer bestandsextensie
+    const validExtensions = ['.csv', '.xlsx', '.xls'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    if (!validExtensions.includes(fileExtension)) {
+      return `❌ Fout: Ongeldig bestandsformaat. Ondersteunde formaten: ${validExtensions.join(', ')}.`;
+    }
+    
+    return null; // Geen fout
+  };
+
+  // Helper functie voor header validatie
+  const validateHeaders = (headers: string[]): { isValid: boolean; missingColumns: string[]; message: string } => {
+    const requiredColumns = ['Wat?', 'Titel (of wat)', 'Startdatum', 'Einddatum'];
+    const missingColumns: string[] = [];
+    
+    // Controleer of er een titel kolom is
+    const hasTitleColumn = headers.some(header => 
+      header === 'Wat?' || header === 'Titel (of wat)'
+    );
+    
+    if (!hasTitleColumn) {
+      missingColumns.push('Wat? of Titel (of wat)');
+    }
+    
+    // Controleer of er een startdatum kolom is
+    const hasStartDateColumn = headers.some(header => 
+      header === 'Startdatum' || header === 'startDate'
+    );
+    
+    if (!hasStartDateColumn) {
+      missingColumns.push('Startdatum');
+    }
+    
+    // Controleer of er een einddatum kolom is
+    const hasEndDateColumn = headers.some(header => 
+      header === 'Einddatum' || header === 'endDate'
+    );
+    
+    if (!hasEndDateColumn) {
+      missingColumns.push('Einddatum');
+    }
+    
+    // Controleer of er een rol kolom is
+    const hasRoleColumn = headers.some(header => 
+      header.toLowerCase() === 'rol' || header.toLowerCase() === 'role'
+    );
+    
+    if (!hasRoleColumn) {
+      missingColumns.push('rol of Rol');
+    }
+    
+    const isValid = missingColumns.length === 0;
+    const message = isValid 
+      ? '✅ Alle verplichte kolommen zijn aanwezig.'
+      : `❌ Fout: Het bestand mist verplichte kolommen: ${missingColumns.join(', ')}.`;
+    
+    return { isValid, missingColumns, message };
+  };
+
+  // Helper functie voor data validatie
+  const validateData = (data: any[], headers: string[]): { isValid: boolean; message: string; validRows: number } => {
+    if (!data || data.length === 0) {
+      return { 
+        isValid: false, 
+        message: '❌ Fout: Het bestand bevat geen data of alleen lege rijen.',
+        validRows: 0
+      };
+    }
+    
+    // Tel rijen met ten minste een titel
+    const rowsWithTitle = data.filter(row => {
+      const title = row['Wat?'] || row['Titel (of wat)'];
+      return title && title.toString().trim() !== '';
+    });
+    
+    if (rowsWithTitle.length === 0) {
+      return {
+        isValid: false,
+        message: '❌ Fout: Alle rijen zijn weggefilterd omdat ze geen geldige titel hebben.',
+        validRows: 0
+      };
+    }
+    
+    if (rowsWithTitle.length < data.length) {
+      return {
+        isValid: true,
+        message: `⚠️ Waarschuwing: ${data.length - rowsWithTitle.length} van de ${data.length} rijen hebben geen geldige titel en worden overgeslagen.`,
+        validRows: rowsWithTitle.length
+      };
+    }
+    
+    return {
+      isValid: true,
+      message: `✅ ${rowsWithTitle.length} geldige rijen gevonden.`,
+      validRows: rowsWithTitle.length
+    };
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -60,34 +165,83 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
     setFeedback('');
 
     try {
+      // Pre-upload validatie
+      const fileValidationError = validateFile(file);
+      if (fileValidationError) {
+        setFeedback(fileValidationError);
+        setLoading(false);
+        return;
+      }
+
       const fileType = detectFileType(file.name);
       let parsedData: any[];
+      let headers: string[] = [];
 
       if (fileType === 'excel') {
-        // Parse Excel bestand
-        const excelResult: ExcelParseResult = await parseExcel(file);
-        parsedData = excelResult.data;
-        console.log('Excel headers:', excelResult.headers);
-        console.log('Excel data:', parsedData);
+        try {
+          // Parse Excel bestand
+          const excelResult: ExcelParseResult = await parseExcel(file);
+          parsedData = excelResult.data;
+          headers = excelResult.headers;
+          console.log('Excel headers:', excelResult.headers);
+          console.log('Excel data:', parsedData);
+        } catch (excelError) {
+          setFeedback('❌ Fout: Excel bestand kan niet worden gelezen. Controleer of het bestand niet beschadigd is.');
+          setLoading(false);
+          return;
+        }
       } else {
-        // Parse CSV bestand (bestaande functionaliteit)
-        const csvResult = await new Promise<any[]>((resolve, reject) => {
-          Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-              resolve(results.data);
-            },
-            error: (error) => {
-              reject(error);
-            }
+        try {
+          // Parse CSV bestand (bestaande functionaliteit)
+          const csvResult = await new Promise<any[]>((resolve, reject) => {
+            Papa.parse(file, {
+              header: true,
+              skipEmptyLines: true,
+              complete: (results) => {
+                resolve(results.data);
+              },
+              error: (error) => {
+                reject(error);
+              }
+            });
           });
-        });
-        parsedData = csvResult;
+          parsedData = csvResult;
+          // Voor CSV bestanden halen we de headers uit de eerste rij
+          if (parsedData.length > 0) {
+            headers = Object.keys(parsedData[0]);
+          }
+        } catch (csvError) {
+          setFeedback('❌ Fout: CSV bestand kan niet worden gelezen. Controleer of het bestand niet beschadigd is.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Header validatie
+      const headerValidation = validateHeaders(headers);
+      if (!headerValidation.isValid) {
+        setFeedback(headerValidation.message);
+        setLoading(false);
+        return;
+      }
+
+      // Data validatie
+      const dataValidation = validateData(parsedData, headers);
+      if (!dataValidation.isValid) {
+        setFeedback(dataValidation.message);
+        setLoading(false);
+        return;
+      }
+
+      // Toon waarschuwing als er rijen worden overgeslagen
+      if (dataValidation.message.includes('Waarschuwing')) {
+        setFeedback(dataValidation.message);
+        // Wacht even zodat gebruiker de waarschuwing kan lezen
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
 
       const confirmation = window.confirm(
-        `Weet je zeker dat je alle bestaande data voor "${collectionName}" wilt vervangen door de inhoud van '${file.name}'? Deze actie kan niet ongedaan worden gemaakt.`
+        `Weet je zeker dat je alle bestaande data voor "${collectionName}" wilt vervangen door de inhoud van '${file.name}'? Deze actie kan niet ongedaan worden gemaakt.\n\n${dataValidation.message}`
       );
 
       if (!confirmation) {
@@ -132,13 +286,20 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
            h2h3: row['H2/3'] === 'v' || row['H2/3'] === true,
          },
        })).filter(item => (item as PlanningItem).title); // Filter out items without a title
+
+      // Post-processing validatie
+      if (finalData.length === 0) {
+        setFeedback('❌ Fout: Na het verwerken van de data zijn er geen geldige items over. Controleer de kolomnamen en data inhoud.');
+        setLoading(false);
+        return;
+      }
       
       await bulkOverwrite(collectionName, finalData);
-      setFeedback(`'${file.name}' succesvol geüpload! ${finalData.length} items verwerkt.`);
+      setFeedback(`✅ '${file.name}' succesvol geüpload! ${finalData.length} items verwerkt.`);
       
     } catch (error) {
       console.error("Error uploading file: ", error);
-      setFeedback(`Fout bij het verwerken van '${file.name}': ${error instanceof Error ? error.message : 'Onbekende fout'}`);
+      setFeedback(`❌ Fout bij het verwerken van '${file.name}': ${error instanceof Error ? error.message : 'Onbekende fout'}`);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlanningItem } from '../types';
-import { filterConfig } from '../config/filters';
+import { useDynamicFilters } from '../hooks/useDynamicFilters';
+import { useRoles } from '../hooks/useRoles';
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface EditItemModalProps {
 
 export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, onSave, item }) => {
   const [formData, setFormData] = useState<PlanningItem | null>(null);
+  const { roles, loading: rolesLoading } = useRoles();
+  const { filterConfig } = useDynamicFilters();
 
   useEffect(() => {
     setFormData(item);
@@ -18,7 +21,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
 
   if (!isOpen || !formData) return null;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // Special handling for links textarea
     if (name === 'links') {
@@ -74,6 +77,28 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             <label htmlFor="links" className="block text-sm font-medium">Links (één per regel)</label>
             <textarea name="links" value={formData.links?.join('\n') || ''} onChange={handleChange} className="w-full p-2 mt-1 border rounded" placeholder="Titel: https://...&#10;Andere Titel: https://..."></textarea>
           </div>
+
+          {/* Rol selectie */}
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium">Rol</label>
+            {rolesLoading ? (
+              <div className="p-2 mt-1 text-sm text-gray-500 bg-gray-100 rounded">Rollen laden...</div>
+            ) : (
+              <select
+                name="role"
+                value={formData.role || ''}
+                onChange={handleChange}
+                className="w-full p-2 mt-1 border rounded"
+              >
+                <option value="">Selecteer een rol</option>
+                {roles.map((role) => (
+                  <option key={role.id} value={role.name.toLowerCase()}>
+                    {role.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           
           {/* Deadline (actie vereist) */}
           <div>
@@ -107,7 +132,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {filterConfig.filter(c => c.id !== 'semester').map(config => (
+          {filterConfig.filter(c => c.id !== 'semester' && c.id !== 'role').map(config => (
             <div key={config.id}>
               <h4 className="font-semibold">{config.label}</h4>
               <div className="grid grid-cols-3 gap-2 mt-2">

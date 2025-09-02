@@ -104,6 +104,8 @@ const AdminPage = () => {
   const [currentItem, setCurrentItem] = useState<PlanningItem | null>(null);
   const [isWeekModalOpen, setIsWeekModalOpen] = useState(false);
   const [currentWeek, setCurrentWeek] = useState<WeekInfo | null>(null);
+  const [showAllItemsWithoutRole, setShowAllItemsWithoutRole] = useState(false);
+  const [showAllOrphanedItems, setShowAllOrphanedItems] = useState(false);
 
   const handleEditClick = (item: PlanningItem) => {
     setCurrentItem(item);
@@ -291,7 +293,7 @@ const AdminPage = () => {
                           <h4 className="font-bold">Voorbereiden Excel (semester-activiteiten)</h4>
                           <ol className="ml-5 list-decimal">
                             <li>Open het moederbestand en filter op <strong>studentactiviteiten</strong> (bijv. via kleurselectie).</li>
-                            <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, onderwerpen en fases. <a href="/data/Aktiviteiten-voorbeeld.xlsx" download className="text-blue-700 hover:underline">Voorbeeldbestand (activiteiten)</a>.</li>
+                            <li>Selecteer en kopieer de relevante kolommen: <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, <code>rol</code>, onderwerpen en fases. <a href="/data/Aktiviteiten-voorbeeld.xlsx" download className="text-blue-700 hover:underline">Voorbeeldbestand (activiteiten)</a>.</li>
                             <li>Plak deze kolommen in een <strong>nieuw</strong> Excel-bestand.</li>
                             <li>Sla dit bestand op als <strong>CSV</strong> of <strong>Excel (.xlsx)</strong>.</li>
                             <li>Kolom <strong>Instructies</strong> (URL of korte tekst):
@@ -353,6 +355,10 @@ const AdminPage = () => {
                             >
                               <Download size={16} /> Voorbeeldbestand (activiteiten)
                             </a>
+                            <p className="text-xs text-blue-600 mt-2">
+                              <strong>Let op:</strong> Dit voorbeeldbestand bevat nog niet alle verplichte kolommen. 
+                              Voeg een <code>rol</code> kolom toe met de verantwoordelijke persoon voor elke activiteit.
+                            </p>
                           </div>
                         </div>
                         <Accordion type="single" collapsible className="w-full">
@@ -387,7 +393,7 @@ const AdminPage = () => {
                             <li><strong>Download altijd eerst een backup!</strong> Voordat je een nieuw bestand uploadt, klik op de "Download Backup" knop. Sla dit bestand veilig op. Mocht er iets misgaan, dan kun je deze backup gebruiken om de oude staat te herstellen.</li>
                             <li><strong>Bereid je bestand voor.</strong> Zorg ervoor dat je bestand de juiste kolommen heeft. De kolomkoppen moeten exact overeenkomen. Zie de instructies hierboven.
                               <ul className="ml-5 list-disc">
-                                <li><strong>Voor Semester-activiteiten:</strong> <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
+                                <li><strong>Voor Semester-activiteiten:</strong> <code>Wat</code>, <code>Extra regel</code>, <code>Instructies</code>, <code>Links</code>, <code>Startdatum</code>, <code>Einddatum</code>, <code>rol</code>, en de kolommen voor onderwerpen (<code>BVP</code>, <code>PZW</code>, etc.) en fases (<code>P</code>, <code>H1</code>, etc.).</li>
                               <li><strong>Links kolom formaat:</strong> Gebruik "Titel: URL" formaat, gescheiden door komma's. Bijv: "Inschrijflijst stage: https://example.com, KNGF site: https://defysiotherapeut.com/"</li>
                               <li><strong>Bestandsformaten:</strong> CSV (.csv) en Excel (.xlsx, .xls) worden ondersteund.</li>
                               </ul>
@@ -467,7 +473,29 @@ const AdminPage = () => {
                                   <>
                                       <h4 className="flex items-center font-bold"><AlertTriangle size={20} className="mr-2"/>{orphanedItems.length} Wees-Activiteit(en)</h4>
                                       <ul className="mt-2 ml-5 text-sm list-disc">
-                                          {orphanedItems.map(item => <li key={item.id}>{item.title} (Start: {item.startDate}, Eind: {item.endDate})</li>)}
+                                          {(showAllOrphanedItems ? orphanedItems : orphanedItems.slice(0, 7)).map(item => 
+                                            <li key={item.id}>{item.title} (Start: {item.startDate}, Eind: {item.endDate})</li>
+                                          )}
+                                          {orphanedItems.length > 7 && !showAllOrphanedItems && (
+                                            <li className="text-xs">
+                                              <button 
+                                                onClick={() => setShowAllOrphanedItems(true)}
+                                                className="text-orange-700 hover:text-orange-900 underline cursor-pointer font-medium"
+                                              >
+                                                ... en {orphanedItems.length - 7} meer (klik om alle te tonen)
+                                              </button>
+                                            </li>
+                                          )}
+                                          {showAllOrphanedItems && orphanedItems.length > 7 && (
+                                            <li className="text-xs mt-2">
+                                              <button 
+                                                onClick={() => setShowAllOrphanedItems(false)}
+                                                className="text-orange-700 hover:text-orange-900 underline cursor-pointer font-medium"
+                                              >
+                                                Toon minder
+                                              </button>
+                                            </li>
+                                          )}
                                       </ul>
                                   </>
                               ) : (
@@ -476,6 +504,51 @@ const AdminPage = () => {
                           </div>
                       )}
                     </div>
+
+                    {/* Rol Validatie Status */}
+                    {!planningLoading && (
+                        <div className={`p-4 border-l-4 rounded-md ${(() => {
+                          const itemsWithoutRole = planningItems.filter(item => !item.role || item.role.trim() === '');
+                          return itemsWithoutRole.length > 0 ? 'bg-yellow-100 border-yellow-500 text-yellow-800' : 'bg-green-100 border-green-500 text-green-800';
+                        })()}`}>
+                            {(() => {
+                              const itemsWithoutRole = planningItems.filter(item => !item.role || item.role.trim() === '');
+                              return itemsWithoutRole.length > 0 ? (
+                                  <>
+                                      <h4 className="flex items-center font-bold"><AlertTriangle size={20} className="mr-2"/>{itemsWithoutRole.length} Activiteit(en) zonder rol</h4>
+                                      <p className="text-sm mt-1">Deze activiteiten hebben geen rol toegewezen gekregen.</p>
+                                      <ul className="mt-2 ml-5 text-sm list-disc">
+                                          {(showAllItemsWithoutRole ? itemsWithoutRole : itemsWithoutRole.slice(0, 5)).map(item => 
+                                            <li key={item.id}>{item.title} (Start: {item.startDate}, Eind: {item.endDate})</li>
+                                          )}
+                                          {itemsWithoutRole.length > 5 && !showAllItemsWithoutRole && (
+                                            <li className="text-xs">
+                                              <button 
+                                                onClick={() => setShowAllItemsWithoutRole(true)}
+                                                className="text-yellow-700 hover:text-yellow-900 underline cursor-pointer font-medium"
+                                              >
+                                                ... en {itemsWithoutRole.length - 5} meer (klik om alle te tonen)
+                                              </button>
+                                            </li>
+                                          )}
+                                          {showAllItemsWithoutRole && itemsWithoutRole.length > 5 && (
+                                            <li className="text-xs mt-2">
+                                              <button 
+                                                onClick={() => setShowAllItemsWithoutRole(false)}
+                                                className="text-yellow-700 hover:text-yellow-900 underline cursor-pointer font-medium"
+                                              >
+                                                Toon minder
+                                              </button>
+                                            </li>
+                                          )}
+                                      </ul>
+                                  </>
+                              ) : (
+                                  <h4 className="flex items-center font-bold"><CheckCircle2 size={20} className="mr-2"/>Alle activiteiten hebben een rol toegewezen.</h4>
+                              );
+                            })()}
+                        </div>
+                    )}
 
                     {/* Algemene Instellingen */}
                     <div className="p-4 border rounded-lg">
@@ -510,7 +583,24 @@ const AdminPage = () => {
                       </div>
                        <div>
                           <h3 className="font-bold">Stap 2: Importeer een volledige planning</h3>
-                          <p className="text-sm text-gray-600">Deze actie overschrijft alle bestaande activiteiten voor het gekozen semester. Ondersteunde formaten: CSV, Excel (.xlsx, .xls). Voorbeeld: werk je in semester 2 van studiejaar 2025/2026 en wil je semester 1 van 2026/2027 toevoegen? Dat kan. Semester 1 van 2025/2026 is voorbij en hoeft niet langer in de app zichtbaar te zijn; zo kun je alvast het komende studiejaar voorbereiden.</p>
+                          <p className="text-sm text-gray-600">Deze actie overschrijft alle bestaande activiteiten voor het gekozen semester. Ondersteunde formaten: CSV, Excel (.xlsx, .xls).</p>
+                          
+                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <h4 className="font-semibold text-blue-800 mb-2">📋 Verplichte Kolommen:</h4>
+                            <ul className="text-sm text-blue-700 space-y-1">
+                              <li>• <strong>Titel:</strong> "Wat?" of "Titel (of wat)" - De naam van de activiteit</li>
+                              <li>• <strong>Startdatum:</strong> "Startdatum" - Wanneer de activiteit begint</li>
+                              <li>• <strong>Einddatum:</strong> "Einddatum" - Wanneer de activiteit eindigt</li>
+                              <li>• <strong>Rol:</strong> "rol" of "Rol" - Wie verantwoordelijk is voor de activiteit</li>
+                            </ul>
+                            <p className="text-xs text-blue-600 mt-2">
+                              <strong>Let op:</strong> Kolomnamen zijn hoofdlettergevoelig (behalve de rol kolom). 
+                              Zorg ervoor dat de kolomnamen exact overeenkomen.
+                            </p>
+                          </div>
+
+                          <p className="text-sm text-gray-600 mt-3">Voorbeeld: werk je in semester 2 van studiejaar 2025/2026 en wil je semester 1 van 2026/2027 toevoegen? Dat kan. Semester 1 van 2025/2026 is voorbij en hoeft niet langer in de app zichtbaar te zijn; zo kun je alvast het komende studiejaar voorbereiden.</p>
+                          
                           <div className="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
                              <FileUploader label="Upload Semester 1" collectionName="planning-items-sem1" />
                              <FileUploader label="Upload Semester 2" collectionName="planning-items-sem2" />

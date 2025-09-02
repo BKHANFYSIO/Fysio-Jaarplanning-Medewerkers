@@ -1,0 +1,10 @@
+[33m165e5b9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Voeg automatische scroll naar huidige week toe bij laden van de app
+[33m5574427[m Fix rol sortering in admin en rol badge kleuren zonder achtergrond
+[33me8f5b67[m Setup: Firebase koppeling, titel wijzigingen en Excel upload verbeteringen
+[33me050548[m Changes banner overhaul: items-only with per-item scheduling, WYSIWYG editor in settings, direct item save, sanitized rendering, responsive card layout; add RichTextEditor; improve Development/Changes rich text support
+[33m4e85d57[m Admin: voorbeeldblok opsommingen/bullets inklapbaar gemaakt (standaard ingeklapt)
+[33m5116d6d[m Admin voorbeeldweergave: 'en doorgaan.' niet als aparte sectie; extra witregel zichtbaar gemaakt; formatter laat tekst na lijsten ongemoeid (geen punt-splitting)
+[33mc814c91[m Admin instructies: voorbeeld vervangen door opgegeven tekst en correcte popup-weergave (lijsten, # en ##, link)
+[33m70c1cda[m Admin: voorbeeldblok met '#' en '##' verwijderd op verzoek
+[33m4cea1ed[m Instructies: admintekst bijgewerkt voor '#' en '##' regels; voorbeelden aangepast; popup formatter fixed (geen punt-splitting, lege regels zichtbaar); admin 'Instructies' is nu textarea
+[33m5f299c5[m Admin instructies: voeg '#' als expliciete nieuwe-regel marker toe in voorbeelden en toon kopregels 'opsommingscijfers' en 'bullets' in popup-voorbeeld

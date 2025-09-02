@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { filterConfig } from '../config/filters';
+import { useDynamicFilters } from './useDynamicFilters';
 
 // Haal de initiële state op uit localStorage of gebruik een leeg object
 const getInitialState = () => {
@@ -7,9 +7,10 @@ const getInitialState = () => {
     const savedFilters = localStorage.getItem('userFilters');
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
-      // We willen alleen de 'phase' filter behouden, de rest resetten.
+      // Behoud phase en role filters
       return {
         phase: parsedFilters.phase || [],
+        role: parsedFilters.role || [],
       };
     }
   } catch (error) {
@@ -18,22 +19,22 @@ const getInitialState = () => {
   return {};
 };
 
-
 export const useFilters = () => {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(getInitialState());
+  const { filterConfig } = useDynamicFilters();
 
-  // Effect om de 'phase' filter op te slaan wanneer deze wijzigt
+  // Effect om de filters op te slaan wanneer deze wijzigen
   useEffect(() => {
     try {
       const filtersToSave = {
         phase: activeFilters.phase || [],
+        role: activeFilters.role || [],
       };
       localStorage.setItem('userFilters', JSON.stringify(filtersToSave));
     } catch (error) {
       console.error("Failed to save filters to localStorage", error);
     }
-  }, [activeFilters.phase]);
-
+  }, [activeFilters.phase, activeFilters.role]);
 
   const toggleFilter = useCallback((configId: string, optionValue: string) => {
     setActiveFilters(prevFilters => {
@@ -50,11 +51,12 @@ export const useFilters = () => {
   }, []);
 
   const resetFilters = useCallback(() => {
-    // Reset alles behalve de 'phase' filter
+    // Reset alles behalve de 'phase' en 'role' filters
     setActiveFilters(prevFilters => ({
-      phase: prevFilters.phase || []
+      phase: prevFilters.phase || [],
+      role: prevFilters.role || []
     }));
   }, []);
 
-  return { activeFilters, toggleFilter, resetFilters };
+  return { activeFilters, toggleFilter, resetFilters, filterConfig };
 };

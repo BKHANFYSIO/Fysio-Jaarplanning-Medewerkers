@@ -1,36 +1,34 @@
 import React, { useState } from 'react';
-import { 
-  AlertTriangle, 
-  FileText, 
-  ChevronDown, 
-  ChevronUp, 
-  CalendarPlus, 
-  CalendarCheck2,
-  Link
-} from 'lucide-react';
 import { PlanningItem } from '../types';
-import { filterConfig } from '../config/filters';
+import { useDynamicFilters } from '../hooks/useDynamicFilters';
+import { useRoles } from '../hooks/useRoles';
 import { InstructionTextModal } from './InstructionTextModal';
+import { CalendarWarningModal } from './CalendarWarningModal';
+import { downloadICSFile } from '../utils/icsGenerator';
+import { Calendar, Clock, AlertCircle, ChevronDown, ChevronUp, ExternalLink, FileText } from 'lucide-react';
 
-// Kleur mapping voor rol-badge op basis van beschikbare kleuren in FilterButton
-const roleTextColor: Record<string, string> = {
+const roleTextColor: { [key: string]: string } = {
   blue: 'text-blue-700',
   indigo: 'text-indigo-700',
   teal: 'text-teal-700',
-  yellow: 'text-yellow-700',
-  pink: 'text-pink-700',
-  purple: 'text-purple-700',
   green: 'text-green-700',
   orange: 'text-orange-700',
+  purple: 'text-purple-700',
+  yellow: 'text-yellow-700',
+  pink: 'text-pink-700',
   slate: 'text-slate-700',
   gray: 'text-gray-700',
+  red: 'text-red-700',
+  emerald: 'text-emerald-700',
 };
 
-const getRoleBadgeClasses = (role: string): string => {
-  const roleCfg = filterConfig.find(c => c.id === 'role');
-  if (!roleCfg) return 'text-gray-700';
-  const opt = roleCfg.options.find(o => o.value === role.toLowerCase());
-  const color = opt?.color || 'gray';
+const getRoleBadgeClasses = (role: string, roles: any[]): string => {
+  if (!role || !roles.length) return 'text-gray-700';
+  
+  const roleData = roles.find(r => r.name.toLowerCase() === role.toLowerCase());
+  if (!roleData) return 'text-gray-700';
+  
+  const color = roleData.color || 'gray';
   const cls = roleTextColor[color] || roleTextColor.gray;
   return `${cls} font-semibold`;
 }
@@ -84,14 +82,18 @@ const phaseColorClasses: { [key: string]: string } = {
   gray: 'border border-gray-300 bg-gray-50 text-gray-700',
 };
 
-// Find the phase config from the central configuration
-const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
-
 export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps) {
+  const { roles } = useRoles();
+  const { filterConfig } = useDynamicFilters();
+  
+  // Find the phase config from the dynamic configuration
+  const phaseFilterConfig = filterConfig.find(f => f.id === 'phase');
+  
   const isMiddleOfLongSeries = item.seriesLength && item.seriesLength >= 3 && !item.isFirstInSeries && !item.isLastInSeries;
 
   const [isExpanded, setIsExpanded] = useState(!isMiddleOfLongSeries);
   const [isInstructionModalOpen, setIsInstructionModalOpen] = useState(false);
+  const [isCalendarWarningOpen, setIsCalendarWarningOpen] = useState(false);
 
   const handleToggleExpand = (e: React.MouseEvent) => {
     if (isMiddleOfLongSeries) {
@@ -121,6 +123,16 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
     } else {
       setIsInstructionModalOpen(true);
     }
+  };
+
+  const handleCalendarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsCalendarWarningOpen(true);
+  };
+
+  const handleCalendarConfirm = () => {
+    setIsCalendarWarningOpen(false);
+    downloadICSFile(item);
   };
 
   // Klikken op de kaart wordt alleen gebruikt om ingeklapte doorlopende kaarten te openen
@@ -190,7 +202,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               );
             })}
             {item.role && (
-              <span className={`px-2 py-0.5 text-xs rounded ${getRoleBadgeClasses(String(item.role))}`}>
+              <span className={`px-2 py-0.5 text-xs rounded ${getRoleBadgeClasses(String(item.role), roles)}`}>
                 {String(item.role).charAt(0).toUpperCase() + String(item.role).slice(1)}
               </span>
             )}
@@ -224,7 +236,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
           {isHardDeadline && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600">
               <Tooltip content="Deadline (actie vereist)">
-                <AlertTriangle className="w-6 h-6 animate-heartbeat" />
+                <AlertCircle className="w-6 h-6 animate-heartbeat" />
               </Tooltip>
             </div>
           )}
@@ -233,14 +245,14 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
             <div className="flex items-center gap-1.5 text-gray-600 dark:text-slate-300">
               {/* Start Date & Time */}
               <span className={`flex items-center gap-1.5 ${item.isFirstInSeries ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
-                <CalendarPlus className="w-4 h-4 flex-shrink-0" />
+                <Calendar className="w-4 h-4 flex-shrink-0" />
                 {showDateDetails?.startDateStr}
                 {item.startTime && <span className="ml-1 text-xs opacity-80">({item.startTime})</span>}
               </span>
               <span className="text-gray-400 dark:text-slate-500">→</span>
               {/* End Date & Time */}
               <span className={`flex items-center gap-1.5 ${item.isLastInSeries ? 'font-semibold text-red-600 dark:text-red-300 animate-heartbeat' : 'text-gray-500 dark:text-slate-400'}`}>
-                <CalendarCheck2 className="w-4 h-4 flex-shrink-0" />
+                <Clock className="w-4 h-4 flex-shrink-0" />
                 {showDateDetails?.endDateStr}
                 {item.endTime && <span className="ml-1 text-xs opacity-80">({item.endTime})</span>}
               </span>
@@ -248,6 +260,26 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
 
             {/* Actions */}
             <div className="flex items-center gap-x-4">
+              {/* Agenda knop */}
+              <div className="relative group">
+                <button 
+                  onClick={handleCalendarClick}
+                  className="flex items-center gap-1.5 font-medium text-green-600 dark:text-green-300 hover:text-green-700 dark:hover:text-green-200 hover:scale-105 transition-all duration-200 cursor-pointer"
+                  title="Toevoegen aan agenda"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Agenda</span>
+                </button>
+                
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-1.5 bg-gray-800 text-white text-xs font-medium rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                  Zet activiteit in je eigen agenda
+                  <br />
+                  <span className="text-yellow-300">⚠️ Wordt niet gesynchroniseerd</span>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-800"></div>
+                </div>
+              </div>
+
               {/* Instructies knop */}
               {(item.instructions || item.link) && (
                 <button 
@@ -292,7 +324,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
                           }}
                           className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-300 rounded-md hover:text-blue-700 dark:hover:text-blue-200 hover:underline transition-all duration-200 cursor-pointer"
                         >
-                          <Link className="w-3 h-3" />
+                          <ExternalLink className="w-3 h-3" />
                           <span>{item.links!.length === 1 ? 'link' : `link ${index + 1}`}</span>
                         </button>
                       </Tooltip>
@@ -303,7 +335,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
               {/* Geen extra deadline-icoon in de acties; alleen rechts in de footer */}
               {item.deadline && !isHardDeadline && (
                 <div className="flex items-center gap-1.5 font-medium text-red-600 dark:text-red-300">
-                  <AlertTriangle className="w-4 h-4" />
+                  <AlertCircle className="w-4 h-4" />
                   <span>Deadline: {item.deadline}</span>
                 </div>
               )}
@@ -325,6 +357,12 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
         text={instructionValue}
       />
       )}
+      <CalendarWarningModal
+        isOpen={isCalendarWarningOpen}
+        onClose={() => setIsCalendarWarningOpen(false)}
+        onConfirm={handleCalendarConfirm}
+        activityTitle={item.title}
+      />
     </>
   );
 }

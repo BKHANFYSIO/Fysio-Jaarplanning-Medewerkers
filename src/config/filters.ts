@@ -1,16 +1,4 @@
-export type FilterOption = {
-  value: string;
-  label: string;
-  color: string;
-};
-
-export type FilterConfig = {
-  id: string;
-  label: string;
-  type: 'pills' | 'dropdown';
-  options: FilterOption[];
-  dataKey: 'phases' | 'subjects' | 'semester' | 'role';
-};
+import { FilterConfig } from './types';
 
 export const filterConfig: FilterConfig[] = [
   {
@@ -18,12 +6,7 @@ export const filterConfig: FilterConfig[] = [
     label: 'Rol',
     type: 'pills',
     dataKey: 'role',
-    options: [
-      { value: 'student', label: 'Student', color: 'blue' },
-      { value: 'docent', label: 'Docent', color: 'indigo' },
-      { value: 'medewerker', label: 'Medewerker', color: 'teal' },
-      { value: 'overig', label: 'Overig', color: 'gray' },
-    ],
+    options: [], // Deze worden dynamisch gevuld door de useRoles hook
   },
   {
     id: 'phase',
