@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlanningCard } from './PlanningCard';
 import { PlanningItem, WeekInfo } from '../types';
-import { parseDate } from '../utils/dateUtils';
+import { parseDate, isDateInWeek } from '../utils/dateUtils';
 import { ChevronDown, ChevronUp, CalendarDays, Repeat } from 'lucide-react';
 
 interface WeekSectionProps {
@@ -115,15 +115,44 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
       ) : (
         <div className="flex flex-col gap-4">
           {(() => {
-            const sortedItems = [...items].sort((a, b) => {
-              const priorityA = getItemPriority(a);
-              const priorityB = getItemPriority(b);
-              if (priorityA !== priorityB) return priorityA - priorityB;
-              return a.title.localeCompare(b.title); // Fallback to alphabetical for same priority
-            });
+            // Bepaal week-einde (start + 6 dagen)
+            const weekEndDate = new Date(weekStartDate as Date);
+            weekEndDate.setDate(weekEndDate.getDate() + 6);
 
-            const startEnEindmomentenActiviteiten = sortedItems.filter(item => getItemPriority(item) < 5);
-            const doorlopendeActiviteiten = sortedItems.filter(item => getItemPriority(item) === 5);
+            // Split naar doorlopende vs start/eindmomenten
+            const doorlopendeActiviteiten = items.filter(item => getItemPriority(item) === 5);
+            const startEnEindmomenten = items.filter(item => getItemPriority(item) < 5);
+
+            // 1) Eerst: einddatum in deze week (chronologisch op einddatum)
+            const eindigtInDezeWeek = startEnEindmomenten
+              .filter(item => {
+                const endDate = parseDate(item.endDate);
+                return !!(endDate && weekStartDate && isDateInWeek(endDate, weekStartDate));
+              })
+              .sort((a, b) => {
+                const endA = parseDate(a.endDate)?.getTime() ?? 0;
+                const endB = parseDate(b.endDate)?.getTime() ?? 0;
+                if (endA !== endB) return endA - endB;
+                // Fallbacks
+                const prioDiff = getItemPriority(a) - getItemPriority(b);
+                if (prioDiff !== 0) return prioDiff;
+                return a.title.localeCompare(b.title);
+              });
+
+            // 2) Daarna: einddatum buiten de week (chronologisch op startdatum)
+            const eindigtNaDezeWeek = startEnEindmomenten
+              .filter(item => {
+                const endDate = parseDate(item.endDate);
+                return !!(endDate && weekEndDate && endDate > weekEndDate);
+              })
+              .sort((a, b) => {
+                const startA = parseDate(a.startDate)?.getTime() ?? 0;
+                const startB = parseDate(b.startDate)?.getTime() ?? 0;
+                if (startA !== startB) return startA - startB;
+                const prioDiff = getItemPriority(a) - getItemPriority(b);
+                if (prioDiff !== 0) return prioDiff;
+                return a.title.localeCompare(b.title);
+              });
 
             const renderItem = (item: PlanningItem, index: number) => {
               const startDate = parseDate(item.startDate);
@@ -166,17 +195,18 @@ export function WeekSection({ week, items, onDocumentClick, highlightLabel = nul
                     {!isLopendeZakenCollapsed && doorlopendeActiviteiten.map(renderItem)}
                   </>
                 )}
-                {startEnEindmomentenActiviteiten.length > 0 && (
+                {(eindigtInDezeWeek.length + eindigtNaDezeWeek.length) > 0 && (
                   <>
                     <GroupHeader 
                       title="Start- & Eindmomenten Activiteiten" 
                       isCollapsed={false} // This section is never collapsible
                       onToggle={() => {}} // No-op
-                      count={startEnEindmomentenActiviteiten.length}
+                      count={eindigtInDezeWeek.length + eindigtNaDezeWeek.length}
                       showChevron={false}
                       type="event"
                     />
-                    {startEnEindmomentenActiviteiten.map(renderItem)}
+                    {eindigtInDezeWeek.map(renderItem)}
+                    {eindigtNaDezeWeek.map(renderItem)}
                   </>
                 )}
               </>

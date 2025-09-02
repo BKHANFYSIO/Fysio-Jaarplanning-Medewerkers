@@ -49,11 +49,17 @@ const processSeries = (items: PlanningItem[], weeks: WeekInfo[]): PlanningItem[]
 
       let isConsecutive = false;
       if (currentWeek && nextWeek) {
-        // Find all weeks between the two items
-        const weeksBetween = weeks.slice(currentWeek.index + 1, nextWeek.index);
-        // If all weeks in between are vacation weeks, they are consecutive
-        if (weeksBetween.every(w => w.isVacation)) {
-          isConsecutive = true;
+        // Only consider items as part of the same series when they fall in DIFFERENT weeks.
+        // Items within the SAME week (same weekCode/index) should be treated as standalone
+        // activities, even if they share the same title. This ensures both dates render
+        // with start=green and end=red for each separate activity in that week.
+        if (nextWeek.index > currentWeek.index) {
+          // Find all weeks between the two items
+          const weeksBetween = weeks.slice(currentWeek.index + 1, nextWeek.index);
+          // If all weeks in between are vacation weeks, they are consecutive
+          if (weeksBetween.every(w => w.isVacation)) {
+            isConsecutive = true;
+          }
         }
       }
 
