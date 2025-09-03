@@ -41,7 +41,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
       quill.clipboard.dangerouslyPasteHTML(value);
     }
 
-    const handler = () => {
+    const handler = (_delta: any, _old: any, source: string) => {
+      if (source !== 'user') return; // Alleen user-input doorgeven
       const html = quill.root.innerHTML;
       if (onChangeRef.current) {
         onChangeRef.current(html);
@@ -57,6 +58,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
   useEffect(() => {
     const quill = quillRef.current;
     if (!quill) return;
+    // Als de gebruiker aan het typen is, niet forceren om de content te vervangen
+    if (quill.hasFocus()) return;
     const current = quill.root.innerHTML;
     if (value !== current) {
       const selection = quill.getSelection();

@@ -12,10 +12,12 @@ export const DevelopmentBannerSettings: React.FC = () => {
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   useEffect(() => {
-    if (settings && !hasLocalChanges) {
+    if (!settings) return;
+    // Pas alleen serverstate toe als we NIET aan het bewerken zijn, of als er geen lokale wijzigingen zijn
+    if (!isEditing || !hasLocalChanges) {
       setLocalConfig(settings.developmentBanner);
     }
-  }, [settings, hasLocalChanges]);
+  }, [settings, isEditing, hasLocalChanges]);
 
   const cleanHtml = (html: string): string => {
     // Verwijder Quill-artefacten
