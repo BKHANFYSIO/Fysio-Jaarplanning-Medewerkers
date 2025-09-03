@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export interface ChangeItem {
@@ -16,6 +16,8 @@ export interface BannerSettings {
   description: string;
   autoHideDelay: number; // in seconds
   items?: ChangeItem[]; // alleen gebruikt door changesBanner
+  version?: number;
+  updatedAt?: string;
 }
 
 export interface AllBannerSettings {
@@ -29,6 +31,8 @@ const defaultSettings: AllBannerSettings = {
     title: 'App in Ontwikkeling',
     description: 'Deze applicatie is momenteel in actieve ontwikkeling. Functionaliteiten kunnen veranderen.',
     autoHideDelay: 10,
+    version: 1,
+    updatedAt: '',
   },
   changesBanner: {
     enabled: false,
@@ -36,6 +40,8 @@ const defaultSettings: AllBannerSettings = {
     description: 'Er is een belangrijke wijziging doorgevoerd.',
     autoHideDelay: 15,
     items: [],
+    version: 1,
+    updatedAt: '',
   },
 };
 
@@ -80,20 +86,89 @@ export const useSettings = () => {
 
   const updateSettings = async (newSettings: Partial<AllBannerSettings>) => {
     const settingsRef = doc(db, 'settings', 'banners');
+    
     try {
-      // Use getDoc to check if the document exists before updating
-      const docSnap = await getDoc(settingsRef);
-      if (docSnap.exists()) {
-        await updateDoc(settingsRef, newSettings);
-      } else {
-        // If it still doesn't exist (edge case), use setDoc with merge option
-        await setDoc(settingsRef, newSettings, { merge: true });
-      }
+      await runTransaction(db, async (transaction) => {
+        const docSnap = await transaction.get(settingsRef);
+        
+        if (!docSnap.exists()) {
+          // Document doesn't exist, create it with defaults
+          const initialData = { ...defaultSettings, ...newSettings };
+          transaction.set(settingsRef, initialData);
+          return;
+        }
+        
+        const currentData = docSnap.data() as Partial<AllBannerSettings>;
+        
+        // Check for version conflicts and update versions
+        const updatedData: Partial<AllBannerSettings> = {};
+        
+        if (newSettings.developmentBanner) {
+          const currentDev = currentData.developmentBanner || defaultSettings.developmentBanner;
+          const newDev = newSettings.developmentBanner;
+          
+          if (currentDev.version && newDev.version && currentDev.version !== newDev.version) {
+            throw new Error('Wijzigingsconflict: De ontwikkelingsbanner is door iemand anders gewijzigd. Herlaad de pagina en probeer opnieuw.');
+          }
+          
+          updatedData.developmentBanner = {
+            ...newDev,
+            version: (currentDev.version || 1) + 1,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        
+        if (newSettings.changesBanner) {
+          const currentChanges = currentData.changesBanner || defaultSettings.changesBanner;
+          const newChanges = newSettings.changesBanner;
+          
+          if (currentChanges.version && newChanges.version && currentChanges.version !== newChanges.version) {
+            throw new Error('Wijzigingsconflict: De wijzigingsbanner is door iemand anders gewijzigd. Herlaad de pagina en probeer opnieuw.');
+          }
+          
+          updatedData.changesBanner = {
+            ...newChanges,
+            version: (currentChanges.version || 1) + 1,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        
+        transaction.update(settingsRef, updatedData);
+      });
     } catch (err) {
       console.error("Error updating settings:", err);
+      if (err instanceof Error) {
+        throw err;
+      }
       throw new Error('Kon de instellingen niet bijwerken.');
     }
   };
 
-  return { settings, loading, error, updateSettings };
+  const forceUpdateDevelopmentBanner = async (banner: BannerSettings) => {
+    const settingsRef = doc(db, 'settings', 'banners');
+    try {
+      await setDoc(settingsRef, { 
+        developmentBanner: {
+          ...banner,
+          version: (banner.version || 1) + 1,
+          updatedAt: new Date().toISOString(),
+        }
+      }, { merge: true });
+      
+      // Reload settings after force update
+      const docSnap = await getDoc(settingsRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data() as Partial<AllBannerSettings>;
+        setSettings({
+          developmentBanner: { ...defaultSettings.developmentBanner, ...data.developmentBanner },
+          changesBanner: { ...defaultSettings.changesBanner, ...data.changesBanner },
+        });
+      }
+    } catch (err) {
+      console.error("Error force updating development banner:", err);
+      throw new Error('Kon de ontwikkelingsbanner niet forceren bij te werken.');
+    }
+  };
+
+  return { settings, loading, error, updateSettings, forceUpdateDevelopmentBanner };
 };

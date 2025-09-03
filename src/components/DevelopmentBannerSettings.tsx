@@ -6,25 +6,70 @@ import { useSettings, BannerSettings } from '../hooks/useSettings';
 import { toast } from 'react-hot-toast';
 
 export const DevelopmentBannerSettings: React.FC = () => {
-  const { settings, updateSettings, loading } = useSettings();
+  const { settings, updateSettings, forceUpdateDevelopmentBanner, loading } = useSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [localConfig, setLocalConfig] = useState<BannerSettings | null>(null);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   useEffect(() => {
-    if (settings) {
+    if (settings && !hasLocalChanges) {
       setLocalConfig(settings.developmentBanner);
     }
-  }, [settings]);
+  }, [settings, hasLocalChanges]);
+
+  const cleanHtml = (html: string): string => {
+    // Verwijder Quill-artefacten
+    let cleaned = html
+      .replace(/<span class="ql-ui"[^>]*><\/span>/g, '') // Verwijder ql-ui spans
+      .replace(/contenteditable="[^"]*"/g, '') // Verwijder contenteditable attributen
+      .replace(/data-list="[^"]*"/g, ''); // Verwijder data-list attributen
+    
+    // Normaliseer anchors
+    cleaned = cleaned.replace(/<a([^>]*)>/g, (match, attrs) => {
+      // Voeg target="_blank" en rel="noopener noreferrer" toe als ze er niet zijn
+      let newAttrs = attrs;
+      if (!newAttrs.includes('target=')) {
+        newAttrs += ' target="_blank"';
+      }
+      if (!newAttrs.includes('rel=')) {
+        newAttrs += ' rel="noopener noreferrer"';
+      }
+      return `<a${newAttrs}>`;
+    });
+    
+    return cleaned;
+  };
 
   const handleSave = async () => {
     if (localConfig) {
       try {
-        await updateSettings({ developmentBanner: localConfig });
+        const cleanedConfig = {
+          ...localConfig,
+          description: cleanHtml(localConfig.description)
+        };
+        
+        await updateSettings({ developmentBanner: cleanedConfig });
         toast.success('Instellingen opgeslagen!');
         setIsEditing(false);
+        setHasLocalChanges(false);
       } catch (error) {
-        toast.error('Fout bij opslaan van instellingen.');
-        console.error(error);
+        console.error('Primary save failed, trying fallback:', error);
+        
+        // Fallback: gebruik forceUpdateDevelopmentBanner
+        try {
+          const cleanedConfig = {
+            ...localConfig,
+            description: cleanHtml(localConfig.description)
+          };
+          
+          await forceUpdateDevelopmentBanner(cleanedConfig);
+          toast.success('Instellingen opgeslagen (fallback)!');
+          setIsEditing(false);
+          setHasLocalChanges(false);
+        } catch (fallbackError) {
+          toast.error('Fout bij opslaan van instellingen.');
+          console.error('Fallback save also failed:', fallbackError);
+        }
       }
     }
   };
@@ -34,18 +79,22 @@ export const DevelopmentBannerSettings: React.FC = () => {
       setLocalConfig(settings.developmentBanner);
     }
     setIsEditing(false);
+    setHasLocalChanges(false);
   };
 
   const handleToggleBanner = () => {
     setLocalConfig(prev => prev ? { ...prev, enabled: !prev.enabled } : null);
+    setHasLocalChanges(true);
   };
 
   const handleTextChange = (field: 'title' | 'description', value: string) => {
     setLocalConfig(prev => prev ? { ...prev, [field]: value } : null);
+    setHasLocalChanges(true);
   };
   
   const handleDelayChange = (value: string) => {
     setLocalConfig(prev => prev ? { ...prev, autoHideDelay: parseInt(value, 10) || 0 } : null);
+    setHasLocalChanges(true);
   }
 
   // Quill toolbar geconfigureerd in StrictMode-veilige wrapper

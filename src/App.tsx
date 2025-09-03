@@ -32,6 +32,7 @@ const Home = ({
   handleCloseDevBanner,
   handleCloseChangesBanner,
   headerRef,
+  bannersRef,
   isMobileFiltersOpen,
   setIsMobileFiltersOpen,
   setIsQrOpen,
@@ -55,10 +56,12 @@ const Home = ({
   collapsedSections,
 }: any) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-    {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
-    {bannerVisibility.changes && <ChangesBanner onClose={handleCloseChangesBanner} />}
+    <div ref={bannersRef} className="sticky top-0 z-50">
+      {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
+      {bannerVisibility.changes && <ChangesBanner onClose={handleCloseChangesBanner} />}
+    </div>
     <div className="container p-4 mx-auto">
-      <header ref={headerRef} className="sticky top-0 z-50 bg-slate-50/95 dark:bg-slate-900/90 backdrop-blur-sm">
+      <header ref={headerRef} className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-900/90 backdrop-blur-sm">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
@@ -301,6 +304,7 @@ function App() {
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
+  const bannersRef = useRef<HTMLDivElement | null>(null);
   const keepInViewWeekKey = useRef<string | null>(null);
 
   useLayoutEffect(() => {
@@ -332,8 +336,10 @@ function App() {
   }, [weeks, areAllLopendeZakenCollapsed]);
 
   const saveCurrentScrollPosition = () => {
-    if (headerRef.current) {
+    if (headerRef.current && bannersRef.current) {
       const headerHeight = headerRef.current.offsetHeight;
+      const bannersHeight = bannersRef.current.offsetHeight;
+      const totalOffset = headerHeight + bannersHeight;
       
       const weekElements = Array.from(weekRefs.current.entries())
         .map(([key, element]) => ({ key, element }))
@@ -344,7 +350,7 @@ function App() {
       for (const { key, element } of weekElements) {
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top >= headerHeight) {
+          if (rect.top >= totalOffset) {
             if (!topWeek || rect.top < topWeek.position) {
               topWeek = { key, position: rect.top };
             }
@@ -481,14 +487,15 @@ function App() {
 
 
   useLayoutEffect(() => {
-    if (keepInViewWeekKey.current && headerRef.current) {
+    if (keepInViewWeekKey.current && headerRef.current && bannersRef.current) {
       const weekKey = keepInViewWeekKey.current;
       const element = weekRefs.current.get(weekKey);
       
       if (element) {
         const headerHeight = headerRef.current.offsetHeight;
+        const bannersHeight = bannersRef.current.offsetHeight;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerHeight - 20;
+        const offsetPosition = elementPosition - headerHeight - bannersHeight - 20;
 
         window.scrollTo({
           top: offsetPosition,
@@ -505,10 +512,11 @@ function App() {
       const weekKey = `${targetWeekInfo.week.semester}-${targetWeekInfo.week.weekCode}`;
       const element = weekRefs.current.get(weekKey);
       
-      if (element && headerRef.current) {
+      if (element && headerRef.current && bannersRef.current) {
         const headerHeight = headerRef.current.offsetHeight;
+        const bannersHeight = bannersRef.current.offsetHeight;
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerHeight - 40;
+        const offsetPosition = elementPosition - headerHeight - bannersHeight - 40;
 
         window.scrollTo({
           top: offsetPosition,
@@ -526,10 +534,11 @@ function App() {
         const weekKey = `${targetWeekInfo.week!.semester}-${targetWeekInfo.week!.weekCode}`;
         const element = weekRefs.current.get(weekKey);
         
-        if (element && headerRef.current) {
+        if (element && headerRef.current && bannersRef.current) {
           const headerHeight = headerRef.current.offsetHeight;
+          const bannersHeight = bannersRef.current.offsetHeight;
           const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          const offsetPosition = elementPosition - headerHeight - 20;
+          const offsetPosition = elementPosition - headerHeight - bannersHeight - 20;
 
           window.scrollTo({
             top: offsetPosition,
@@ -624,6 +633,7 @@ function App() {
               handleCloseDevBanner={handleCloseDevBanner}
               handleCloseChangesBanner={handleCloseChangesBanner}
               headerRef={headerRef}
+              bannersRef={bannersRef}
               isMobileFiltersOpen={isMobileFiltersOpen}
               setIsMobileFiltersOpen={setIsMobileFiltersOpen}
               setIsQrOpen={setIsQrOpen}
