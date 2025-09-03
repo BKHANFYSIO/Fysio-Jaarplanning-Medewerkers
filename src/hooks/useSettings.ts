@@ -135,6 +135,21 @@ export const useSettings = () => {
         
         transaction.update(settingsRef, updatedData);
       });
+
+      // Forceer een directe herlaad zodat de UI meteen de serverwaarde toont
+      try {
+        const docSnap = await getDoc(settingsRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data() as Partial<AllBannerSettings>;
+          setSettings({
+            developmentBanner: { ...defaultSettings.developmentBanner, ...data.developmentBanner },
+            changesBanner: { ...defaultSettings.changesBanner, ...data.changesBanner },
+          });
+        }
+      } catch (refetchErr) {
+        // Niet fataal; onSnapshot vangt de update in de meeste gevallen al op
+        console.warn('Kon settings niet direct herladen na update. Snapshot zal waarschijnlijk volgen.', refetchErr);
+      }
     } catch (err) {
       console.error("Error updating settings:", err);
       if (err instanceof Error) {
