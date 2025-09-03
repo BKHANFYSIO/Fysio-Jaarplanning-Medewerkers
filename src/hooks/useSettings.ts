@@ -185,5 +185,17 @@ export const useSettings = () => {
     }
   };
 
-  return { settings, loading, error, updateSettings, forceUpdateDevelopmentBanner };
+  const reloadSettings = async () => {
+    const settingsRef = doc(db, 'settings', 'banners');
+    const snap = await getDoc(settingsRef);
+    if (snap.exists()) {
+      const data = snap.data() as Partial<AllBannerSettings>;
+      setSettings({
+        developmentBanner: { ...defaultSettings.developmentBanner, ...data.developmentBanner },
+        changesBanner: { ...defaultSettings.changesBanner, ...data.changesBanner },
+      });
+    }
+  };
+
+  return { settings, loading, error, updateSettings, forceUpdateDevelopmentBanner, reloadSettings };
 };

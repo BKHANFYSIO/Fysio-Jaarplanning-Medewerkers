@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import RichTextEditor from './RichTextEditor';
 import DOMPurify from 'dompurify';
 import { Settings, Save, Eye, EyeOff } from 'lucide-react';
@@ -42,6 +44,19 @@ export const DevelopmentBannerSettings: React.FC = () => {
     
     return cleaned;
   };
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ color: [] }],
+      ['link'],
+      ['clean'],
+    ],
+  } as const;
+
+  const quillFormats = ['header','bold','italic','underline','list','bullet','color','link'];
 
   const handleSave = async () => {
     if (localConfig) {
@@ -183,10 +198,12 @@ export const DevelopmentBannerSettings: React.FC = () => {
               Banner Beschrijving
             </label>
             <div className="border border-gray-300 rounded-md">
-              <RichTextEditor
+              <ReactQuill
+                theme="snow"
                 value={localConfig.description}
                 onChange={(value) => handleTextChange('description', value)}
-                htmlRef={descriptionHtmlRef}
+                modules={quillModules}
+                formats={quillFormats}
               />
             </div>
             <p className="text-xs text-gray-500">Gebruik de knoppen om opmaak toe te passen of plak opgemaakte tekst rechtstreeks.</p>
