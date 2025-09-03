@@ -6,9 +6,10 @@ interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
+  htmlRef?: React.MutableRefObject<string | null>;
 }
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder }) => {
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder, htmlRef }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<Quill | null>(null);
   const onChangeRef = useRef(onChange);
@@ -40,10 +41,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     if (value) {
       quill.clipboard.dangerouslyPasteHTML(value);
     }
+    // Zet initiële waarde in ref
+    if (htmlRef) {
+      htmlRef.current = quill.root.innerHTML;
+    }
 
     const handler = (_delta: any, _old: any, source: string) => {
       if (source !== 'user') return; // Alleen user-input doorgeven
       const html = quill.root.innerHTML;
+      if (htmlRef) {
+        htmlRef.current = html;
+      }
       if (onChangeRef.current) {
         onChangeRef.current(html);
       }
@@ -64,6 +72,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     if (value !== current) {
       const selection = quill.getSelection();
       quill.clipboard.dangerouslyPasteHTML(value || '');
+      if (htmlRef) {
+        htmlRef.current = quill.root.innerHTML;
+      }
       if (selection) {
         quill.setSelection(selection);
       }

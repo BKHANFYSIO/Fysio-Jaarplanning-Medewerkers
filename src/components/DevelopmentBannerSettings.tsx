@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import RichTextEditor from './RichTextEditor';
 import DOMPurify from 'dompurify';
 import { Settings, Save, Eye, EyeOff } from 'lucide-react';
@@ -10,6 +10,7 @@ export const DevelopmentBannerSettings: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [localConfig, setLocalConfig] = useState<BannerSettings | null>(null);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const descriptionHtmlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -47,7 +48,8 @@ export const DevelopmentBannerSettings: React.FC = () => {
       try {
         const cleanedConfig = {
           ...localConfig,
-          description: cleanHtml(localConfig.description)
+          // Neem de meest actuele HTML rechtstreeks uit de editor, als beschikbaar
+          description: cleanHtml(descriptionHtmlRef.current || localConfig.description)
         };
         
         await updateSettings({ developmentBanner: cleanedConfig });
@@ -61,7 +63,7 @@ export const DevelopmentBannerSettings: React.FC = () => {
         try {
           const cleanedConfig = {
             ...localConfig,
-            description: cleanHtml(localConfig.description)
+            description: cleanHtml(descriptionHtmlRef.current || localConfig.description)
           };
           
           await forceUpdateDevelopmentBanner(cleanedConfig);
@@ -184,6 +186,7 @@ export const DevelopmentBannerSettings: React.FC = () => {
               <RichTextEditor
                 value={localConfig.description}
                 onChange={(value) => handleTextChange('description', value)}
+                htmlRef={descriptionHtmlRef}
               />
             </div>
             <p className="text-xs text-gray-500">Gebruik de knoppen om opmaak toe te passen of plak opgemaakte tekst rechtstreeks.</p>
