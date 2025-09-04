@@ -61,6 +61,12 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
             <p className="text-green-800 dark:text-green-200 text-sm mb-3">
               Een Excel bestand met alle relevante activiteiten die je kunt bewerken en terugsturen naar de beheerders.
             </p>
+            <div className="bg-green-100 dark:bg-green-800/30 p-3 rounded border border-green-200 dark:border-green-700 mb-3">
+              <p className="text-green-900 dark:text-green-100 text-sm font-medium">
+                🎯 <strong>Doel:</strong> Je kunt activiteiten van je eigen rol controleren, aanpassen en aanvullen voor een beter proces. 
+                Dit is elk semester nodig om de planning up-to-date te houden en verbeteringen door te voeren.
+              </p>
+            </div>
             <div className="bg-white dark:bg-slate-800 p-3 rounded border border-green-200 dark:border-green-700">
               <p className="text-sm text-gray-700 dark:text-slate-300 mb-2">
                 <strong>Het bestand bevat:</strong>

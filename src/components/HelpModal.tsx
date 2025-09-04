@@ -200,10 +200,16 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             </h3>
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Download Relevante Activiteiten</h4>
-              <p className="text-blue-800 dark:text-blue-200 text-sm">
+              <p className="text-blue-800 dark:text-blue-200 text-sm mb-3">
                 Gebruik de "Download" knop rechtsboven om je relevante activiteiten te downloaden in Excel formaat. 
                 Je krijgt een popup met uitleg en instructies voor het bewerken van het bestand.
               </p>
+              <div className="bg-blue-100 dark:bg-blue-800/30 p-3 rounded border border-blue-200 dark:border-blue-700">
+                <p className="text-blue-900 dark:text-blue-100 text-sm font-medium">
+                  🎯 <strong>Doel:</strong> Je kunt activiteiten van je eigen rol controleren, aanpassen en aanvullen voor een beter proces. 
+                  Dit is elk semester nodig om de planning up-to-date te houden en verbeteringen door te voeren.
+                </p>
+              </div>
             </div>
           </section>
 
