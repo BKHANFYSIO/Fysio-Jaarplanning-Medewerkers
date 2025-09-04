@@ -10,7 +10,8 @@ import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link } from 'lucide-react';
+import { exportToExcel } from './utils/excelParser';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -60,6 +61,7 @@ const Home = ({
   groepen,
   isSnelkoppelingenOpen,
   setIsSnelkoppelingenOpen,
+  handleDownloadActivities,
 }: any) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     <div ref={bannersRef} className="sticky top-0 z-50">
@@ -83,6 +85,15 @@ const Home = ({
             >
               <Link size={16}/>
               <span>Links</span>
+            </button>
+            {/* Download Button */}
+            <button 
+              onClick={handleDownloadActivities}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title="Download activiteiten als Excel"
+            >
+              <Download size={16}/>
+              <span>Download</span>
             </button>
             {/* Help Button */}
             <button 
@@ -131,6 +142,13 @@ const Home = ({
                 title="Snelkoppelingen"
               >
                 <Link size={18}/>
+              </button>
+              <button 
+                onClick={handleDownloadActivities}
+                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                title="Download activiteiten als Excel"
+              >
+                <Download size={18}/>
               </button>
               <button 
                 onClick={() => setIsHelpModalOpen(true)}
@@ -654,6 +672,54 @@ function App() {
   const handleCloseDevBanner = () => setBannerVisibility(prev => ({ ...prev, development: false }));
   const handleCloseChangesBanner = () => setBannerVisibility(prev => ({ ...prev, changes: false }));
 
+  // Download functie voor activiteiten
+  const handleDownloadActivities = () => {
+    // Converteer de gefilterde items naar Excel formaat
+    const excelData = filteredItems.map(item => {
+      // Converteer subjects object naar string
+      const subjects = Object.entries(item.subjects || {})
+        .filter(([_, value]) => value)
+        .map(([key, _]) => key)
+        .join(', ');
+
+      // Converteer phases object naar string
+      const phases = Object.entries(item.phases || {})
+        .filter(([_, value]) => value)
+        .map(([key, _]) => key === 'h2h3' ? 'H2/3' : key.toUpperCase())
+        .join(', ');
+
+      // Converteer links array naar string
+      const links = item.links ? JSON.stringify(item.links) : '';
+
+      return {
+        ID: item.id || '',
+        Status: 'ongewijzigd',
+        Titel: item.title || '',
+        Beschrijving: item.description || '',
+        'Start Datum': item.startDate || '',
+        'Eind Datum': item.endDate || '',
+        'Start Tijd': item.startTime || '',
+        'Eind Tijd': item.endTime || '',
+        Rol: item.role || '',
+        Fase: phases,
+        Onderwerp: subjects,
+        'Instructies URL': item.instructions || '',
+        Links: links,
+        'Actie Vereist': item.deadline ? 'true' : 'false',
+        Deadline: item.deadline || '',
+        Opmerkingen: ''
+      };
+    });
+
+    // Genereer bestandsnaam met huidige datum
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const fileName = `activiteiten-${dateStr}`;
+
+    // Export naar Excel
+    exportToExcel(excelData, fileName, 'Activiteiten');
+  };
+
   return (
     <ErrorBoundary>
       <Routes>
@@ -691,6 +757,7 @@ function App() {
               groepen={groepen}
               isSnelkoppelingenOpen={isSnelkoppelingenOpen}
               setIsSnelkoppelingenOpen={setIsSnelkoppelingenOpen}
+              handleDownloadActivities={handleDownloadActivities}
             />
           } 
         />

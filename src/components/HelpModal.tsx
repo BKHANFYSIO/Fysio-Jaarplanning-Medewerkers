@@ -192,6 +192,69 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             </div>
           </section>
 
+          {/* Activiteiten Downloaden */}
+          <section>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Activiteiten Downloaden
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Download Relevante Activiteiten</h4>
+                <p className="text-blue-800 dark:text-blue-200 text-sm mb-3">
+                  Je kunt de voor jou relevante activiteiten downloaden in Excel formaat om deze te bewerken of aan te vullen.
+                </p>
+                <div className="bg-white dark:bg-slate-800 p-3 rounded border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-gray-700 dark:text-slate-300 mb-2">
+                    <strong>Stappen:</strong>
+                  </p>
+                  <ol className="text-sm text-gray-700 dark:text-slate-300 space-y-1 list-decimal list-inside">
+                    <li>Gebruik de filters hierboven om je relevante activiteiten te selecteren</li>
+                    <li>Klik op "Download Excel" om het bestand te downloaden</li>
+                    <li>Bewerk de activiteiten in Excel volgens de instructies hieronder</li>
+                    <li>Stuur het aangepaste bestand naar de beheerders per email</li>
+                  </ol>
+                </div>
+              </div>
+              
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <h4 className="font-medium text-green-900 dark:text-green-200 mb-2">Instructies voor Bewerken</h4>
+                <div className="text-sm space-y-2">
+                  <p className="text-green-800 dark:text-green-200">
+                    <strong>Belangrijke kolommen:</strong>
+                  </p>
+                  <ul className="text-green-800 dark:text-green-200 space-y-1 list-disc list-inside ml-4">
+                    <li><strong>ID:</strong> Niet bewerken - dit is de unieke identifier</li>
+                    <li><strong>Status:</strong> Zet op "bewerkt" voor gewijzigde activiteiten, "nieuw" voor nieuwe activiteiten</li>
+                    <li><strong>Rol:</strong> Moet exact overeenkomen (CC, studenten, COP Twc, etc.)</li>
+                    <li><strong>Fase:</strong> P, H1, of H2/3</li>
+                    <li><strong>Onderwerp:</strong> Moet exact overeenkomen (BVP, PZW, Minor, etc.)</li>
+                    <li><strong>Datum formaat:</strong> dd-mm-yyyy (bijv. 15-09-2024)</li>
+                    <li><strong>Tijd formaat:</strong> hh:mm (bijv. 09:00)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <h4 className="font-medium text-yellow-900 dark:text-yellow-200 mb-2">Waarschuwingen</h4>
+                <ul className="text-yellow-800 dark:text-yellow-200 text-sm space-y-1 list-disc list-inside">
+                  <li>Rol en Onderwerp moeten <strong>exact</strong> overeenkomen met de bestaande waarden</li>
+                  <li>Verander de ID kolom niet - dit voorkomt dubbelingen</li>
+                  <li>Zet de Status kolom op "bewerkt" als je wijzigingen maakt</li>
+                  <li>Voor nieuwe activiteiten: ID = "nieuw" en Status = "nieuw"</li>
+                </ul>
+              </div>
+              
+              <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2">Terugsturen naar Beheerders</h4>
+                <p className="text-gray-700 dark:text-slate-300 text-sm">
+                  Stuur het bewerkte Excel bestand naar de beheerders per email. 
+                  Zij zullen de wijzigingen controleren en verwerken in het systeem.
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* Tips */}
           <section>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-3">Handige Tips</h3>
