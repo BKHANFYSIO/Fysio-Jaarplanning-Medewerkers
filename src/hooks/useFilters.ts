@@ -7,11 +7,8 @@ const getInitialState = () => {
     const savedFilters = localStorage.getItem('userFilters');
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
-      // Behoud phase en role filters
-      return {
-        phase: parsedFilters.phase || [],
-        role: parsedFilters.role || [],
-      };
+      // Behoud alle filters
+      return parsedFilters || {};
     }
   } catch (error) {
     console.error("Failed to parse filters from localStorage", error);
@@ -26,15 +23,11 @@ export const useFilters = () => {
   // Effect om de filters op te slaan wanneer deze wijzigen
   useEffect(() => {
     try {
-      const filtersToSave = {
-        phase: activeFilters.phase || [],
-        role: activeFilters.role || [],
-      };
-      localStorage.setItem('userFilters', JSON.stringify(filtersToSave));
+      localStorage.setItem('userFilters', JSON.stringify(activeFilters));
     } catch (error) {
       console.error("Failed to save filters to localStorage", error);
     }
-  }, [activeFilters.phase, activeFilters.role]);
+  }, [activeFilters]);
 
   const toggleFilter = useCallback((configId: string, optionValue: string) => {
     setActiveFilters(prevFilters => {
@@ -51,11 +44,8 @@ export const useFilters = () => {
   }, []);
 
   const resetFilters = useCallback(() => {
-    // Reset alles behalve de 'phase' en 'role' filters
-    setActiveFilters(prevFilters => ({
-      phase: prevFilters.phase || [],
-      role: prevFilters.role || []
-    }));
+    // Reset alle filters
+    setActiveFilters({});
   }, []);
 
   return { activeFilters, toggleFilter, resetFilters, filterConfig };
