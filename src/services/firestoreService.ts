@@ -138,7 +138,7 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     return;
   }
   
-  // Existing logic for activities - exacte match met import structuur
+  // Existing logic for activities - exacte match met import structuur + change tracking kolommen
   const csvData = (data as PlanningItem[]).map(item => ({
     'Wat?': item.title,
     'Extra regel': item.description,
@@ -215,7 +215,7 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
     return;
   }
   
-  // Export activities - exacte match met import structuur
+  // Export activities - exacte match met import structuur + change tracking kolommen
   const excelData = (data as PlanningItem[]).map(item => ({
     'Wat?': item.title,
     'Extra regel': item.description,

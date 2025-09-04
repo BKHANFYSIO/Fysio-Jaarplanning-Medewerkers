@@ -224,9 +224,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                     <strong>Belangrijke kolommen:</strong>
                   </p>
                   <ul className="text-green-800 dark:text-green-200 space-y-1 list-disc list-inside ml-4">
-                    <li><strong>Status:</strong> Zet op "Nieuw" voor nieuwe activiteiten, "Bewerkt" voor gewijzigde activiteiten, laat leeg voor ongewijzigde items</li>
-                    <li><strong>Gewijzigd door:</strong> Vul je naam in (bijv. "Docent A", "CC", "Student")</li>
-                    <li><strong>Opmerkingen:</strong> Voeg eventuele opmerkingen toe over wijzigingen</li>
+                    <li><strong>ID:</strong> Niet bewerken - dit is de unieke identifier</li>
+                    <li><strong>Status:</strong> Zet op "bewerkt" voor gewijzigde activiteiten, "nieuw" voor nieuwe activiteiten</li>
                     <li><strong>Rol:</strong> Moet exact overeenkomen (CC, studenten, COP Twc, etc.)</li>
                     <li><strong>Fase:</strong> P, H1, of H2/3</li>
                     <li><strong>Onderwerp:</strong> Moet exact overeenkomen (BVP, PZW, Minor, etc.)</li>
@@ -240,10 +239,9 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <h4 className="font-medium text-yellow-900 dark:text-yellow-200 mb-2">Waarschuwingen</h4>
                 <ul className="text-yellow-800 dark:text-yellow-200 text-sm space-y-1 list-disc list-inside">
                   <li>Rol en Onderwerp moeten <strong>exact</strong> overeenkomen met de bestaande waarden</li>
-                  <li>Zet de Status kolom op "Bewerkt" als je wijzigingen maakt aan bestaande activiteiten</li>
-                  <li>Voor nieuwe activiteiten: Status = "Nieuw"</li>
-                  <li>Vul altijd "Gewijzigd door" in zodat beheerders weten wie de wijziging heeft gemaakt</li>
-                  <li>Gebruik "Opmerkingen" om uitleg te geven over complexe wijzigingen</li>
+                  <li>Verander de ID kolom niet - dit voorkomt dubbelingen</li>
+                  <li>Zet de Status kolom op "bewerkt" als je wijzigingen maakt</li>
+                  <li>Voor nieuwe activiteiten: ID = "nieuw" en Status = "nieuw"</li>
                 </ul>
               </div>
               
