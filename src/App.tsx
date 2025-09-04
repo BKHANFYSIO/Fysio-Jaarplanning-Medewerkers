@@ -208,7 +208,7 @@ const Home = ({
       {/* Overlay (outside header) to close filters via tap or swipe-right on mobile */}
       {isMobileFiltersOpen && (
         <div
-          className="fixed inset-0 z-40 lg:hidden bg-black/10"
+          className="fixed inset-0 z-30 lg:hidden bg-black/10"
           onClick={() => setIsMobileFiltersOpen(false)}
           onTouchStart={(e) => {
             (Home as any).touchStartX = e.touches[0].clientX;
