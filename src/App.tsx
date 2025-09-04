@@ -676,38 +676,31 @@ function App() {
   const handleDownloadActivities = () => {
     // Converteer de gefilterde items naar Excel formaat
     const excelData = filteredItems.map(item => {
-      // Converteer subjects object naar string
-      const subjects = Object.entries(item.subjects || {})
-        .filter(([_, value]) => value)
-        .map(([key, _]) => key)
-        .join(', ');
-
-      // Converteer phases object naar string
-      const phases = Object.entries(item.phases || {})
-        .filter(([_, value]) => value)
-        .map(([key, _]) => key === 'h2h3' ? 'H2/3' : key.toUpperCase())
-        .join(', ');
-
-      // Converteer links array naar string
-      const links = item.links ? JSON.stringify(item.links) : '';
 
       return {
-        ID: item.id || '',
-        Status: 'ongewijzigd',
-        Titel: item.title || '',
-        Beschrijving: item.description || '',
-        'Start Datum': item.startDate || '',
-        'Eind Datum': item.endDate || '',
-        'Start Tijd': item.startTime || '',
-        'Eind Tijd': item.endTime || '',
-        Rol: item.role || '',
-        Fase: phases,
-        Onderwerp: subjects,
-        'Instructies URL': item.instructions || '',
-        Links: links,
-        'Actie Vereist': item.deadline ? 'true' : 'false',
-        Deadline: item.deadline || '',
-        Opmerkingen: ''
+        'Wat?': item.title || '',
+        'Extra regel': item.description || '',
+        'Instructies': item.instructions || '',
+        'Links': item.links ? item.links.join(', ') : '',
+        'Waardere': item.subjects.waarderen ? 'v' : '',
+        'Getuigsch': item.subjects.getuigschriften ? 'v' : '',
+        'Inschrijve': item.subjects.inschrijven ? 'v' : '',
+        'Overig': item.subjects.overig ? 'v' : '',
+        'Meeloops': item.subjects.meeloops ? 'v' : '',
+        'Juniorsta': item.subjects.juniorstage ? 'v' : '',
+        'IPL': item.subjects.ipl ? 'v' : '',
+        'BVP': item.subjects.bvp ? 'v' : '',
+        'PZW': item.subjects.pzw ? 'v' : '',
+        'Minor': item.subjects.minor ? 'v' : '',
+        'Startdatu': item.startDate || '',
+        'Einddatur': item.endDate || '',
+        'Tijd starto': item.startTime || '',
+        'Tijd eindd': item.endTime || '',
+        'Deadline': item.deadline || '',
+        'P': item.phases.p ? 'v' : '',
+        'H1': item.phases.h1 ? 'v' : '',
+        'H2/3': item.phases.h2h3 ? 'v' : '',
+        'Rol': item.role || '',
       };
     });
 

@@ -138,30 +138,31 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     return;
   }
   
-  // Existing logic for activities
+  // Existing logic for activities - exacte match met import structuur
   const csvData = (data as PlanningItem[]).map(item => ({
-    'Titel (of wat)': item.title,
+    'Wat?': item.title,
     'Extra regel': item.description,
     'Instructies': item.instructions || item.link || '',
     'Links': item.links ? item.links.join(', ') : '',
-    'Waarderen': item.subjects.waarderen ? 'v' : '',
-    'Juniorstage': item.subjects.juniorstage ? 'v' : '',
+    'Waardere': item.subjects.waarderen ? 'v' : '',
+    'Getuigsch': item.subjects.getuigschriften ? 'v' : '',
+    'Inschrijve': item.subjects.inschrijven ? 'v' : '',
+    'Overig': item.subjects.overig ? 'v' : '',
+    'Meeloops': item.subjects.meeloops ? 'v' : '',
+    'Juniorsta': item.subjects.juniorstage ? 'v' : '',
     'IPL': item.subjects.ipl ? 'v' : '',
     'BVP': item.subjects.bvp ? 'v' : '',
     'PZW': item.subjects.pzw ? 'v' : '',
     'Minor': item.subjects.minor ? 'v' : '',
-    'Getuigschriften': item.subjects.getuigschriften ? 'v' : '',
-    'Inschrijven/aanmelden': item.subjects.inschrijven ? 'v' : '',
-    'Overig': item.subjects.overig ? 'v' : '',
-    'Startdatum': item.startDate,
-    'Einddatum': item.endDate,
-    'Tijd startdatum': item.startTime,
-    'Tijd einddatum': item.endTime,
-    'Deadline': item.deadline,
-    'Wie?': '', // Placeholder, add if needed
+    'Startdatu': item.startDate,
+    'Einddatur': item.endDate,
+    'Tijd starto': item.startTime || '',
+    'Tijd eindd': item.endTime || '',
+    'Deadline': item.deadline || '',
     'P': item.phases.p ? 'v' : '',
     'H1': item.phases.h1 ? 'v' : '',
     'H2/3': item.phases.h2h3 ? 'v' : '',
+    'Rol': item.role || '',
   }));
 
   const csvString = Papa.unparse(csvData);
@@ -211,29 +212,31 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
     return;
   }
   
-  // Export activities
+  // Export activities - exacte match met import structuur
   const excelData = (data as PlanningItem[]).map(item => ({
-    'Titel': item.title,
-    'Beschrijving': item.description,
+    'Wat?': item.title,
+    'Extra regel': item.description,
     'Instructies': item.instructions || item.link || '',
     'Links': item.links ? item.links.join(', ') : '',
-    'Startdatum': item.startDate,
-    'Einddatum': item.endDate,
-    'Starttijd': item.startTime,
-    'Eindtijd': item.endTime,
-    'Deadline': item.deadline,
-    'Waarderen': item.subjects.waarderen ? 'Ja' : 'Nee',
-    'Juniorstage': item.subjects.juniorstage ? 'Ja' : 'Nee',
-    'IPL': item.subjects.ipl ? 'Ja' : 'Nee',
-    'BVP': item.subjects.bvp ? 'Ja' : 'Nee',
-    'PZW': item.subjects.pzw ? 'Ja' : 'Nee',
-    'Minor': item.subjects.minor ? 'Ja' : 'Nee',
-    'Getuigschriften': item.subjects.getuigschriften ? 'Ja' : 'Nee',
-    'Inschrijven': item.subjects.inschrijven ? 'Ja' : 'Nee',
-    'Overig': item.subjects.overig ? 'Ja' : 'Nee',
-    'Fase P': item.phases.p ? 'Ja' : 'Nee',
-    'Fase H1': item.phases.h1 ? 'Ja' : 'Nee',
-    'Fase H2/3': item.phases.h2h3 ? 'Ja' : 'Nee',
+    'Waardere': item.subjects.waarderen ? 'v' : '',
+    'Getuigsch': item.subjects.getuigschriften ? 'v' : '',
+    'Inschrijve': item.subjects.inschrijven ? 'v' : '',
+    'Overig': item.subjects.overig ? 'v' : '',
+    'Meeloops': item.subjects.meeloops ? 'v' : '',
+    'Juniorsta': item.subjects.juniorstage ? 'v' : '',
+    'IPL': item.subjects.ipl ? 'v' : '',
+    'BVP': item.subjects.bvp ? 'v' : '',
+    'PZW': item.subjects.pzw ? 'v' : '',
+    'Minor': item.subjects.minor ? 'v' : '',
+    'Startdatu': item.startDate,
+    'Einddatur': item.endDate,
+    'Tijd starto': item.startTime || '',
+    'Tijd eindd': item.endTime || '',
+    'Deadline': item.deadline || '',
+    'P': item.phases.p ? 'v' : '',
+    'H1': item.phases.h1 ? 'v' : '',
+    'H2/3': item.phases.h2h3 ? 'v' : '',
+    'Rol': item.role || '',
   }));
 
   exportToExcel(excelData, fileName, 'Activiteiten');

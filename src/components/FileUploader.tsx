@@ -71,7 +71,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
 
   // Helper functie voor header validatie
   const validateHeaders = (headers: string[]): { isValid: boolean; missingColumns: string[]; message: string } => {
-    const requiredColumns = ['Wat?', 'Titel (of wat)', 'Startdatum', 'Einddatum'];
     const missingColumns: string[] = [];
     
     // Controleer of er een titel kolom is
@@ -85,20 +84,20 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
     
     // Controleer of er een startdatum kolom is
     const hasStartDateColumn = headers.some(header => 
-      header === 'Startdatum' || header === 'startDate'
+      header === 'Startdatu' || header === 'Startdatum' || header === 'startDate'
     );
     
     if (!hasStartDateColumn) {
-      missingColumns.push('Startdatum');
+      missingColumns.push('Startdatu of Startdatum');
     }
     
     // Controleer of er een einddatum kolom is
     const hasEndDateColumn = headers.some(header => 
-      header === 'Einddatum' || header === 'endDate'
+      header === 'Einddatur' || header === 'Einddatum' || header === 'endDate'
     );
     
     if (!hasEndDateColumn) {
-      missingColumns.push('Einddatum');
+      missingColumns.push('Einddatur of Einddatum');
     }
     
     // Controleer of er een rol kolom is
@@ -107,7 +106,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
     );
     
     if (!hasRoleColumn) {
-      missingColumns.push('rol of Rol');
+      missingColumns.push('Rol');
     }
     
     const isValid = missingColumns.length === 0;
@@ -119,7 +118,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
   };
 
   // Helper functie voor data validatie
-  const validateData = (data: any[], headers: string[]): { isValid: boolean; message: string; validRows: number } => {
+  const validateData = (data: any[]): { isValid: boolean; message: string; validRows: number } => {
     if (!data || data.length === 0) {
       return { 
         isValid: false, 
@@ -226,7 +225,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
       }
 
       // Data validatie
-      const dataValidation = validateData(parsedData, headers);
+      const dataValidation = validateData(parsedData);
       if (!dataValidation.isValid) {
         setFeedback(dataValidation.message);
         setLoading(false);
@@ -264,21 +263,22 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
             if (!raw) return null; // nooit undefined schrijven
             return raw.toLowerCase();
           })(),
-          startDate: row['Startdatum'] || row['startDate'] || '',
-          endDate: row['Einddatum'] || row['endDate'] || '',
-         startTime: row['Tijd startdatum'] || null,
-         endTime: row['Tijd einddatum'] || null,
+          startDate: row['Startdatu'] || row['Startdatum'] || row['startDate'] || '',
+          endDate: row['Einddatur'] || row['Einddatum'] || row['endDate'] || '',
+         startTime: row['Tijd starto'] || row['Tijd startdatum'] || null,
+         endTime: row['Tijd eindd'] || row['Tijd einddatum'] || null,
          deadline: row['Deadline'] || null,
          subjects: {
-           waarderen: row['Waarderen'] === 'v' || row['Waarderen'] === true,
-           juniorstage: row['Juniorstage'] === 'v' || row['Juniorstage'] === true,
+           waarderen: row['Waardere'] === 'v' || row['Waardere'] === true,
+           juniorstage: row['Juniorsta'] === 'v' || row['Juniorsta'] === true,
            ipl: row['IPL'] === 'v' || row['IPL'] === true,
            bvp: row['BVP'] === 'v' || row['BVP'] === true,
            pzw: row['PZW'] === 'v' || row['PZW'] === true,
            minor: row['Minor'] === 'v' || row['Minor'] === true,
-           getuigschriften: row['Getuigschriften'] === 'v' || row['Getuigschriften'] === true,
-           inschrijven: row['Inschrijven/aanmelden'] === 'v' || row['Inschrijven/aanmelden'] === true,
+           getuigschriften: row['Getuigsch'] === 'v' || row['Getuigsch'] === true,
+           inschrijven: row['Inschrijve'] === 'v' || row['Inschrijve'] === true,
            overig: row['Overig'] === 'v' || row['Overig'] === true,
+           meeloops: row['Meeloops'] === 'v' || row['Meeloops'] === true,
          },
          phases: {
            p: row['P'] === 'v' || row['P'] === true,

@@ -29,6 +29,7 @@ export interface PlanningItem {
     getuigschriften: boolean;
     inschrijven: boolean;
     overig: boolean;
+    meeloops: boolean;
   };
   phases: {
     [key: string]: boolean; // Add index signature
