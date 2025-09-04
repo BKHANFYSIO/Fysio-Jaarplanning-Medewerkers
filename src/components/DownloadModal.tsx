@@ -111,7 +111,8 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
                   <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded">
                     <h5 className="font-medium text-green-900 dark:text-green-200 mb-2">Gewijzigd door Kolom</h5>
                     <p className="text-green-800 dark:text-green-200 text-sm">
-                      Vul hier je naam of rol in (bijv. "Docent A", "CC", "Studenten").
+                      Vul hier je echte naam in (bijv. "Jan de Vries", "Maria Jansen"). 
+                      Dit helpt beheerders om contact met je op te nemen bij vragen over je wijzigingen.
                     </p>
                   </div>
 
@@ -127,8 +128,16 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
                   <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
                     <h5 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Instructies & Links Kolommen</h5>
                     <div className="text-purple-800 dark:text-purple-200 text-sm space-y-2">
-                      <p><strong>Instructies kolom:</strong> Voeg hier een URL toe naar documentatie of instructies.</p>
+                      <p><strong>Instructies kolom:</strong> Voeg hier een URL toe naar documentatie of instructies. Je kunt ook kleine instructies met minimale opmaak toevoegen (bijv. "Let op: deadline is verplaatst naar vrijdag").</p>
                       <p><strong>Links kolom:</strong> Gebruik het formaat <code>Titel: URL</code>. Voor meerdere links: <code>Titel1: URL1, Titel2: URL2</code></p>
+                      <div className="bg-white dark:bg-slate-800 p-2 rounded border border-purple-200 dark:border-purple-700">
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">
+                          <strong>Voorbeeld Links kolom:</strong>
+                        </p>
+                        <code className="text-xs text-purple-800 dark:text-purple-200">
+                          eJournal: https://han.ejournal.app/, Inschrijflijst: https://inschrijven.han.nl/
+                        </code>
+                      </div>
                       <p className="text-xs text-purple-600 dark:text-purple-400">
                         💡 Tip: URL's moeten beginnen met http:// of https://
                       </p>
