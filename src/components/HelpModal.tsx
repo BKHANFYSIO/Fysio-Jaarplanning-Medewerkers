@@ -108,6 +108,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   De gekleurde stippen op elke kaart geven aan welke onderwerpen van toepassing zijn.
                 </p>
               </div>
+              
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                <h4 className="font-medium text-orange-900 dark:text-orange-200 mb-2">Rol Filter</h4>
+                <p className="text-orange-800 dark:text-orange-200 text-sm">
+                  Filter op je <strong>rol</strong> (bijvoorbeeld docent, student, coördinator) om alleen de activiteiten te zien die relevant zijn voor jouw functie. 
+                  Dit helpt je om je te focussen op wat voor jou belangrijk is en voorkomt dat je overspoeld wordt door informatie die niet relevant is voor jouw rol.
+                </p>
+              </div>
             </div>
           </section>
 
@@ -204,6 +212,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-medium">•</span>
                 <span>Gebruik de filters om specifieke activiteiten te vinden</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-600 font-medium">•</span>
+                <span>Selecteer je rol om alleen relevante activiteiten te zien</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 font-medium">•</span>
