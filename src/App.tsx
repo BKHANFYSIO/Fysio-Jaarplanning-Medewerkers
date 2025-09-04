@@ -232,9 +232,12 @@ const Home = ({
               </button>
               <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> 
                 <RotateCcw size={16}/> Reset Filters
-                <span className="ml-2 px-2 py-0.5 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full">
-                  {filteredItemsCount}/{totalItemsCount}
-                </span>
+                <div className="ml-2 flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full">
+                  <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
+                  <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
+                    {filteredItemsCount}/{totalItemsCount}
+                  </span>
+                </div>
               </button>
               <button 
                 onClick={toggleAllLopendeZaken} 
