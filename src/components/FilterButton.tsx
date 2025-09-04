@@ -6,6 +6,8 @@ interface FilterButtonProps {
   onClick: () => void;
   color: string;
   variant?: 'solid' | 'outline';
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 const colorClasses = {
@@ -22,13 +24,24 @@ const colorClasses = {
   slate: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-800 dark:text-slate-200', border: 'border-slate-300 dark:border-slate-700', hoverBg: 'hover:bg-slate-100 dark:hover:bg-slate-700' },
 };
 
-export const FilterButton: React.FC<FilterButtonProps> = ({ label, isActive, onClick, color, variant = 'solid' }) => {
+export const FilterButton: React.FC<FilterButtonProps> = ({ 
+  label, 
+  isActive, 
+  onClick, 
+  color, 
+  variant = 'solid',
+  disabled = false,
+  disabledReason
+}) => {
   const selectedColor = colorClasses[color as keyof typeof colorClasses] || colorClasses.gray;
 
   const baseClasses = "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200";
 
   let styleClasses = '';
-  if (variant === 'outline') {
+  if (disabled) {
+    // Disabled state - grijze tint, lage opacity, niet klikbaar
+    styleClasses = `bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50`;
+  } else if (variant === 'outline') {
     const borderBase = "border";
     const active = `${selectedColor.bg} ${selectedColor.text} ${selectedColor.border} ring-2 ring-han-red ring-offset-2`;
     const inactive = `bg-transparent ${selectedColor.text} ${selectedColor.border} ${selectedColor.hoverBg} hover:opacity-100`;
@@ -40,13 +53,30 @@ export const FilterButton: React.FC<FilterButtonProps> = ({ label, isActive, onC
     styleClasses = `${solidBase} ${isActive ? active : inactive}`;
   }
 
-  return (
+  const button = (
     <button
       type="button"
       className={`${baseClasses} ${styleClasses}`}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      title={disabled ? disabledReason : undefined}
     >
       {label}
     </button>
   );
+
+  // Als disabled en er is een reden, wrap in een div met tooltip
+  if (disabled && disabledReason) {
+    return (
+      <div className="relative group">
+        {button}
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+          {disabledReason}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-100"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return button;
 };

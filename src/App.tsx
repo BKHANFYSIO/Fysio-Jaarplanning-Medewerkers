@@ -5,6 +5,7 @@ import AdminPage from './pages/AdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useData } from './hooks/useData';
 import { useFilters } from './hooks/useFilters';
+import { useAvailableFilterOptions } from './hooks/useAvailableFilterOptions';
 import { FilterButton } from './components/FilterButton';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
@@ -64,6 +65,9 @@ const Home = ({
   isSnelkoppelingenOpen,
   setIsSnelkoppelingenOpen,
   handleDownloadActivities,
+  filteredItemsCount,
+  totalItemsCount,
+  availableFilterOptions,
 }: any) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     <div ref={bannersRef} className="sticky top-0 z-50">
@@ -199,19 +203,20 @@ const Home = ({
                   <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
                   <div className="flex flex-wrap gap-2">
                     {config.options.map((option: any) => {
-                      if (availableOptions[config.id]?.[option.value] > 0) {
-                        return (
-                          <FilterButton
-                            key={option.value}
-                            label={option.label}
-                            color={option.color}
-                            variant={config.id === 'phase' ? 'outline' : 'solid'}
-                            isActive={activeFilters[config.id]?.includes(option.value)}
-                            onClick={() => handleToggleFilter(config.id, option.value)}
-                          />
-                        );
-                      }
-                      return null;
+                      const isDisabled = !availableFilterOptions[config.id]?.[option.value];
+                      
+                      return (
+                        <FilterButton
+                          key={option.value}
+                          label={option.label}
+                          color={option.color}
+                          variant={config.id === 'phase' ? 'outline' : 'solid'}
+                          isActive={activeFilters[config.id]?.includes(option.value)}
+                          onClick={() => handleToggleFilter(config.id, option.value)}
+                          disabled={isDisabled}
+                          disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                        />
+                      );
                     })}
                   </div>
                 </div>
@@ -225,7 +230,12 @@ const Home = ({
               <button onClick={scrollToTargetWeek} disabled={!targetWeekInfo.week} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg sm:w-auto hover:bg-green-700 disabled:bg-gray-400">
                 <LocateFixed size={16}/> Ga naar {targetWeekInfo.label || 'week'}
               </button>
-              <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> <RotateCcw size={16}/> Reset Filters</button>
+              <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> 
+                <RotateCcw size={16}/> Reset Filters
+                <span className="ml-2 px-2 py-0.5 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full">
+                  {filteredItemsCount}/{totalItemsCount}
+                </span>
+              </button>
               <button 
                 onClick={toggleAllLopendeZaken} 
                 className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"
@@ -470,6 +480,8 @@ function App() {
     }
     return cloned;
   }, [planningItems]);
+
+  const availableFilterOptions = useAvailableFilterOptions(planningItems, activeFilters, effectiveFilterConfig);
 
   const availableOptions = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
@@ -758,6 +770,9 @@ function App() {
               isSnelkoppelingenOpen={isSnelkoppelingenOpen}
               setIsSnelkoppelingenOpen={setIsSnelkoppelingenOpen}
               handleDownloadActivities={handleDownloadActivities}
+              filteredItemsCount={filteredItems.length}
+              totalItemsCount={planningItems.length}
+              availableFilterOptions={availableFilterOptions}
             />
           } 
         />
