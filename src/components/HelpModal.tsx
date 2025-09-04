@@ -111,10 +111,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               
               <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
                 <h4 className="font-medium text-orange-900 dark:text-orange-200 mb-2">Rol Filter</h4>
-                <p className="text-orange-800 dark:text-orange-200 text-sm">
-                  Filter op je <strong>rol</strong> (bijvoorbeeld CC, studenten, COP Twc) om alleen de activiteiten te zien die relevant zijn voor jouw functie. 
-                  Dit helpt je om je te focussen op wat voor jou belangrijk is en voorkomt dat je overspoeld wordt door informatie die niet relevant is voor jouw rol.
-                </p>
+                                 <p className="text-orange-800 dark:text-orange-200 text-sm">
+                   Filter op je <strong>rol</strong> (bijvoorbeeld CC, studenten, COP Twc) om alleen de activiteiten te zien die relevant zijn voor jouw functie. 
+                   Dit helpt je om je te focussen op wat voor jou belangrijk is en voorkomt dat je overspoeld wordt door informatie die niet relevant is voor jouw rol.
+                 </p>
               </div>
             </div>
           </section>
@@ -123,47 +123,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-3">Activiteitenkaarten</h3>
             <div className="space-y-4">
-              <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2">Kleurcodering</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-orange-300"></div>
-                    <span>BVP</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-pink-300"></div>
-                    <span>PZW</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-indigo-300"></div>
-                    <span>Minor</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-300"></div>
-                    <span>IPL</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-300"></div>
-                    <span>Juniorstage</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-300"></div>
-                    <span>Waarderen</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                    <span>Getuigschriften</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-teal-300"></div>
-                    <span>Inschrijven</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-slate-300"></div>
-                    <span>Overig</span>
-                  </div>
-                </div>
-              </div>
               
               <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
                 <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2">
