@@ -134,43 +134,49 @@ const Home = ({
         </div>
 
         {/* Mobile Layout */}
-        <div className="md:hidden">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
-            </div>
-            {/* Compact Icon Buttons */}
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setIsSnelkoppelingenOpen(true)}
-                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                title="Snelkoppelingen"
-              >
-                <Link size={18}/>
-              </button>
-              <button 
-                onClick={handleDownloadActivities}
-                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                title="Download activiteiten als Excel"
-              >
-                <Download size={18}/>
-              </button>
-              <button 
-                onClick={() => setIsHelpModalOpen(true)}
-                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                title="Uitleg"
-              >
-                <HelpCircle size={18}/>
-              </button>
-              <button 
-                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
-                title="Filters & Opties"
-              >
-                <Filter size={18}/>
-              </button>
-            </div>
+        <div className="md:hidden py-3">
+          <div className="flex items-center justify-between mb-3">
+            <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
+            <h1 className="text-lg font-bold text-gray-800 dark:text-slate-100 text-center flex-1 mx-2">
+              Jaarplanning Fysiotherapie
+            </h1>
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <span className="text-sm text-red-600 animate-heartbeat">(Medewerkers)</span>
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            {/* Snelkoppelingen Button */}
+            <button 
+              onClick={() => setIsSnelkoppelingenOpen(true)}
+              className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title="Snelkoppelingen"
+            >
+              <Link size={18}/>
+            </button>
+            {/* Download Button */}
+            <button 
+              onClick={() => setIsDownloadModalOpen(true)}
+              className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title="Download activiteiten als Excel"
+            >
+              <Download size={18}/>
+            </button>
+            {/* Help Button */}
+            <button 
+              onClick={() => setIsHelpModalOpen(true)}
+              className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title="Uitleg"
+            >
+              <HelpCircle size={18}/>
+            </button>
+            {/* Filter Button */}
+            <button 
+              onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+              className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
+              title="Filters & Opties"
+            >
+              <Filter size={18}/>
+            </button>
           </div>
         </div>
 
