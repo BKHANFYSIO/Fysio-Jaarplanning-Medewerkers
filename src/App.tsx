@@ -143,7 +143,7 @@ const Home = ({
             if (typeof sx === 'number' && typeof sy === 'number') {
               const dx = e.changedTouches[0].clientX - sx;
               const dy = e.changedTouches[0].clientY - sy;
-              if (dx > 60 && Math.abs(dy) < 40) {
+              if ((dx > 60 || dx < -60) && Math.abs(dy) < 40) {
                 setIsMobileFiltersOpen(false);
               }
             }
@@ -220,7 +220,7 @@ const Home = ({
             if (typeof sx === 'number' && typeof sy === 'number') {
               const dx = e.changedTouches[0].clientX - sx;
               const dy = e.changedTouches[0].clientY - sy;
-              if (dx > 60 && Math.abs(dy) < 40) {
+              if ((dx > 60 || dx < -60) && Math.abs(dy) < 40) {
                 setIsMobileFiltersOpen(false);
               }
             }
