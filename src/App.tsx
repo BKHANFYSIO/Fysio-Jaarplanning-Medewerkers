@@ -10,12 +10,14 @@ import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link } from 'lucide-react';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ChangesBanner } from './components/ChangesBanner';
 import { QRModal } from './components/QRModal';
+import { SnelkoppelingenModal } from './components/SnelkoppelingenModal';
+import { useSnelkoppelingen } from './hooks/useSnelkoppelingen';
 
 interface TopWeekInfo {
   key: string;
@@ -54,6 +56,9 @@ const Home = ({
   weekRefs,
   toggleSectionCollapse,
   collapsedSections,
+  snelkoppelingen,
+  isSnelkoppelingenOpen,
+  setIsSnelkoppelingenOpen,
 }: any) => (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     <div ref={bannersRef} className="sticky top-0 z-50">
@@ -69,6 +74,15 @@ const Home = ({
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
           </div>
           <div className="flex items-center gap-3">
+            {/* Snelkoppelingen Button */}
+            <button 
+              onClick={() => setIsSnelkoppelingenOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              title="Snelkoppelingen"
+            >
+              <Link size={16}/>
+              <span>Links</span>
+            </button>
             {/* Help Button */}
             <button 
               onClick={() => setIsHelpModalOpen(true)}
@@ -110,6 +124,13 @@ const Home = ({
             </div>
             {/* Compact Icon Buttons */}
             <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsSnelkoppelingenOpen(true)}
+                className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                title="Snelkoppelingen"
+              >
+                <Link size={18}/>
+              </button>
               <button 
                 onClick={() => setIsHelpModalOpen(true)}
                 className="flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -264,13 +285,22 @@ const Home = ({
         )}
        </div>
     </div>
+    
+    {/* Snelkoppelingen Modal */}
+    <SnelkoppelingenModal 
+      isOpen={isSnelkoppelingenOpen} 
+      onClose={() => setIsSnelkoppelingenOpen(false)}
+      snelkoppelingen={snelkoppelingen}
+    />
   </div>
 );
 
 function App() {
   const { weeks, planningItems, loading, error } = useData();
   const { activeFilters, toggleFilter, resetFilters } = useFilters();
+  const { snelkoppelingen } = useSnelkoppelingen();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isSnelkoppelingenOpen, setIsSnelkoppelingenOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     const stored = localStorage.getItem('theme');
     return stored ? stored === 'dark' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -655,6 +685,9 @@ function App() {
               weekRefs={weekRefs}
               toggleSectionCollapse={toggleSectionCollapse}
               collapsedSections={collapsedSections}
+              snelkoppelingen={snelkoppelingen}
+              isSnelkoppelingenOpen={isSnelkoppelingenOpen}
+              setIsSnelkoppelingenOpen={setIsSnelkoppelingenOpen}
             />
           } 
         />

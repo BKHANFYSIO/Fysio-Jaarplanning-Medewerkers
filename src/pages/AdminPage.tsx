@@ -13,6 +13,7 @@ import { EditWeekModal } from '../components/EditWeekModal';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../components/Accordion';
 import { DevelopmentBannerSettings } from '../components/DevelopmentBannerSettings';
 import { ChangesBannerSettings } from '../components/ChangesBannerSettings';
+import { SnelkoppelingenAdmin } from '../components/SnelkoppelingenAdmin';
 import { LogOut, Download, CheckCircle2, AlertTriangle, PlusCircle } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 
@@ -559,6 +560,15 @@ const AdminPage = () => {
                     </div>
                 </div>
              </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="snelkoppelingen" className="p-6 mb-8 bg-white rounded-lg shadow">
+            <AccordionTrigger>
+              <h2 className="text-xl font-semibold text-gray-700">Snelkoppelingen Beheer</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              <SnelkoppelingenAdmin />
+            </AccordionContent>
           </AccordionItem>
           
           <AccordionItem value="activities" className="p-6 bg-white rounded-lg shadow">
