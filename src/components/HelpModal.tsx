@@ -126,14 +126,42 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2">Kleurcodering</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  {filterConfig
-                    .find(cfg => cfg.id === 'subject')
-                    ?.options.map(opt => (
-                      <div key={opt.value} className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full bg-${opt.color}-300`}></div>
-                        <span>{opt.label}</span>
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-300"></div>
+                    <span>BVP</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-pink-300"></div>
+                    <span>PZW</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-indigo-300"></div>
+                    <span>Minor</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-300"></div>
+                    <span>IPL</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-green-300"></div>
+                    <span>Juniorstage</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-yellow-300"></div>
+                    <span>Waarderen</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+                    <span>Getuigschriften</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-teal-300"></div>
+                    <span>Inschrijven</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                    <span>Overig</span>
+                  </div>
                 </div>
               </div>
               
