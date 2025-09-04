@@ -18,11 +18,9 @@ export interface PlanningItem {
   isFirstInSeries?: boolean;
   isLastInSeries?: boolean;
   seriesLength?: number;
-  // Status tracking voor Excel export/import
-  status?: 'Nieuw' | 'Bewerkt' | 'Ongewijzigd';
-  lastModified?: string;
-  modifiedBy?: string;
-  opmerkingen?: string;
+  status?: string; // Status kolom voor change tracking
+  gewijzigdDoor?: string; // Gewijzigd door kolom
+  opmerkingen?: string; // Opmerkingen kolom
   subjects: {
     [key: string]: boolean; // Add index signature
     waarderen: boolean;

@@ -701,9 +701,8 @@ function App() {
         'H1': item.phases.h1 ? 'v' : '',
         'H2/3': item.phases.h2h3 ? 'v' : '',
         'Rol': item.role || '',
-        'Status': item.status || 'Ongewijzigd',
-        'Laatst gewijzigd': item.lastModified || new Date().toISOString().split('T')[0],
-        'Gewijzigd door': item.modifiedBy || '',
+        'Status': item.status || '',
+        'Gewijzigd door': item.gewijzigdDoor || '',
         'Opmerkingen': item.opmerkingen || '',
       };
     });

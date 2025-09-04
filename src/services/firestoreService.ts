@@ -138,7 +138,7 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     return;
   }
   
-  // Existing logic for activities - exacte match met import structuur + status tracking
+  // Existing logic for activities - exacte match met import structuur
   const csvData = (data as PlanningItem[]).map(item => ({
     'Wat?': item.title,
     'Extra regel': item.description,
@@ -163,9 +163,8 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     'H1': item.phases.h1 ? 'v' : '',
     'H2/3': item.phases.h2h3 ? 'v' : '',
     'Rol': item.role || '',
-    'Status': item.status || 'Ongewijzigd',
-    'Laatst gewijzigd': item.lastModified || new Date().toISOString().split('T')[0],
-    'Gewijzigd door': item.modifiedBy || '',
+    'Status': item.status || '',
+    'Gewijzigd door': item.gewijzigdDoor || '',
     'Opmerkingen': item.opmerkingen || '',
   }));
 
@@ -216,7 +215,7 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
     return;
   }
   
-  // Export activities - exacte match met import structuur + status tracking
+  // Export activities - exacte match met import structuur
   const excelData = (data as PlanningItem[]).map(item => ({
     'Wat?': item.title,
     'Extra regel': item.description,
@@ -241,9 +240,8 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
     'H1': item.phases.h1 ? 'v' : '',
     'H2/3': item.phases.h2h3 ? 'v' : '',
     'Rol': item.role || '',
-    'Status': item.status || 'Ongewijzigd',
-    'Laatst gewijzigd': item.lastModified || new Date().toISOString().split('T')[0],
-    'Gewijzigd door': item.modifiedBy || '',
+    'Status': item.status || '',
+    'Gewijzigd door': item.gewijzigdDoor || '',
     'Opmerkingen': item.opmerkingen || '',
   }));
 

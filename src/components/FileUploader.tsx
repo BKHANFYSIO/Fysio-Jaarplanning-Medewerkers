@@ -285,10 +285,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
            h1: row['H1'] === 'v' || row['H1'] === true,
            h2h3: row['H2/3'] === 'v' || row['H2/3'] === true,
          },
-         // Status tracking kolommen
-         status: row['Status'] || 'Ongewijzigd',
-         lastModified: row['Laatst gewijzigd'] || new Date().toISOString().split('T')[0],
-         modifiedBy: row['Gewijzigd door'] || '',
+         status: row['Status'] || '',
+         gewijzigdDoor: row['Gewijzigd door'] || '',
          opmerkingen: row['Opmerkingen'] || '',
        })).filter(item => (item as PlanningItem).title); // Filter out items without a title
 

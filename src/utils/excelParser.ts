@@ -172,68 +172,11 @@ export const detectFileType = (fileName: string): 'excel' | 'csv' => {
 };
 
 /**
- * Export data naar Excel bestand met kleurcodering en instructies
+ * Export data naar Excel bestand
  */
 export const exportToExcel = (data: any[], fileName: string, sheetName: string = 'Data') => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
-  
-  // Voeg instructies toe als eerste rij
-  const instructions = [
-    'INSTRUCTIES VOOR MEDEWERKERS:',
-    '1. Nieuwe items toevoegen: Status = "Nieuw"',
-    '2. Bestaande items wijzigen: Status = "Bewerkt"',
-    '3. Ongewijzigde items: Status leeg laten of "Ongewijzigd"',
-    '4. Opmerkingen: Voeg uitleg toe over wijzigingen',
-    '5. Stuur het bestand terug naar de beheerder',
-    '',
-    'KLEURCODERING:',
-    '- Groen: Nieuwe items',
-    '- Geel: Bewerkte items', 
-    '- Wit: Ongewijzigde items',
-    '',
-    'LET OP: Wijzig alleen de Status kolom en de inhoud van items die je wilt aanpassen!'
-  ];
-  
-  // Voeg instructies toe aan het werkblad
-  XLSX.utils.sheet_add_aoa(worksheet, [instructions], { origin: 'A1' });
-  
-  // Voeg lege rij toe tussen instructies en data
-  const dataStartRow = instructions.length + 2;
-  XLSX.utils.sheet_add_json(worksheet, data, { origin: `A${dataStartRow}`, skipHeader: false });
-  
-  // Stel kolombreedte in
-  const colWidths = [
-    { wch: 15 }, // Wat?
-    { wch: 20 }, // Extra regel
-    { wch: 15 }, // Instructies
-    { wch: 20 }, // Links
-    { wch: 8 },  // Waardere
-    { wch: 8 },  // Getuigsch
-    { wch: 8 },  // Inschrijve
-    { wch: 8 },  // Overig
-    { wch: 8 },  // Meeloops
-    { wch: 8 },  // Juniorsta
-    { wch: 8 },  // IPL
-    { wch: 8 },  // BVP
-    { wch: 8 },  // PZW
-    { wch: 8 },  // Minor
-    { wch: 12 }, // Startdatu
-    { wch: 12 }, // Einddatur
-    { wch: 10 }, // Tijd starto
-    { wch: 10 }, // Tijd eindd
-    { wch: 12 }, // Deadline
-    { wch: 5 },  // P
-    { wch: 5 },  // H1
-    { wch: 5 },  // H2/3
-    { wch: 10 }, // Rol
-    { wch: 12 }, // Status
-    { wch: 15 }, // Laatst gewijzigd
-    { wch: 15 }, // Gewijzigd door
-    { wch: 20 }, // Opmerkingen
-  ];
-  worksheet['!cols'] = colWidths;
-  
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   
   // Download het bestand
