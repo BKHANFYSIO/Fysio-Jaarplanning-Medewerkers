@@ -17,6 +17,7 @@ import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ChangesBanner } from './components/ChangesBanner';
 import { QRModal } from './components/QRModal';
+import { DownloadModal } from './components/DownloadModal';
 import { SnelkoppelingenModal } from './components/SnelkoppelingenModal';
 import { useSnelkoppelingen } from './hooks/useSnelkoppelingen';
 
@@ -51,6 +52,7 @@ const Home = ({
   toggleAllLopendeZaken,
   areAllLopendeZakenCollapsed,
   setIsHelpModalOpen,
+  setIsDownloadModalOpen,
   loading,
   weeks,
   itemsByWeek,
@@ -88,7 +90,7 @@ const Home = ({
             </button>
             {/* Download Button */}
             <button 
-              onClick={handleDownloadActivities}
+              onClick={() => setIsDownloadModalOpen(true)}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               title="Download activiteiten als Excel"
             >
@@ -351,6 +353,7 @@ function App() {
     changes: true,
   });
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const weekRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const headerRef = useRef<HTMLElement | null>(null);
@@ -743,6 +746,7 @@ function App() {
               toggleAllLopendeZaken={toggleAllLopendeZaken}
               areAllLopendeZakenCollapsed={areAllLopendeZakenCollapsed}
               setIsHelpModalOpen={setIsHelpModalOpen}
+              setIsDownloadModalOpen={setIsDownloadModalOpen}
               loading={loading}
               weeks={weeks}
               itemsByWeek={itemsByWeek}
@@ -767,6 +771,12 @@ function App() {
         onClose={() => setIsHelpModalOpen(false)} 
       />
       <QRModal isOpen={isQrOpen} onClose={() => setIsQrOpen(false)} />
+      <DownloadModal 
+        isOpen={isDownloadModalOpen} 
+        onClose={() => setIsDownloadModalOpen(false)}
+        onDownload={handleDownloadActivities}
+        filteredItemsCount={filteredItems.length}
+      />
     </ErrorBoundary>
   );
 }
