@@ -128,7 +128,48 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
                   <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
                     <h5 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Instructies & Links Kolommen</h5>
                     <div className="text-purple-800 dark:text-purple-200 text-sm space-y-2">
-                      <p><strong>Instructies kolom:</strong> Voeg hier een URL toe naar documentatie of instructies. Je kunt ook kleine instructies met minimale opmaak toevoegen (bijv. "Let op: deadline is verplaatst naar vrijdag").</p>
+                      <p><strong>Instructies kolom:</strong> Voeg hier een URL toe naar documentatie of instructies. Je kunt ook kleine instructies met minimale opmaak toevoegen.</p>
+                      
+                      {/* Inklapbare sectie voor tekst opmaak */}
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100 font-medium">
+                          📝 Hoe tekst met opmaak toevoegen?
+                        </summary>
+                        <div className="mt-3 pl-4 border-l-2 border-purple-300 dark:border-purple-600 space-y-3">
+                          <div className="bg-white dark:bg-slate-800 p-3 rounded border border-purple-200 dark:border-purple-700">
+                            <h6 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Ondersteunde opmaak:</h6>
+                            <ul className="text-xs text-purple-800 dark:text-purple-200 space-y-1">
+                              <li><strong>Bullets:</strong> Regels die starten met <code>-</code> of <code>*</code></li>
+                              <li><strong>Genummerde lijst:</strong> Regels die starten met <code>1.</code>, <code>2.</code>, etc.</li>
+                              <li><strong>Nieuwe regel:</strong> Gebruik <code>#</code> voor een nieuwe regel</li>
+                              <li><strong>Extra witregel:</strong> Gebruik <code>##</code> voor een extra lege regel</li>
+                              <li><strong>Klikbare links:</strong> Webadressen worden automatisch klikbaar</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-white dark:bg-slate-800 p-3 rounded border border-purple-200 dark:border-purple-700">
+                            <h6 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Voorbeeld (alles in één Excel-cel):</h6>
+                            <code className="text-xs text-purple-800 dark:text-purple-200 block bg-purple-100 dark:bg-purple-800 p-2 rounded">
+                              1. Inloggen 2. Kies opleiding 3. Afronden. # Dit is een voorbeeld van bullets: - Lees de richtlijn - Volg de stappen - https://www.han.nl/ ## Deze komt dus met een witregel.
+                            </code>
+                          </div>
+                          
+                          <div className="bg-white dark:bg-slate-800 p-3 rounded border border-purple-200 dark:border-purple-700">
+                            <h6 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Wordt weergegeven als:</h6>
+                            <div className="text-xs text-purple-800 dark:text-purple-200 space-y-1">
+                              <div>1. Inloggen</div>
+                              <div>2. Kies opleiding</div>
+                              <div>3. Afronden.</div>
+                              <div className="mt-2">Dit is een voorbeeld van bullets:</div>
+                              <div>• Lees de richtlijn</div>
+                              <div>• Volg de stappen</div>
+                              <div>• <a href="#" className="text-blue-600 underline">https://www.han.nl/</a></div>
+                              <div className="mt-2">Deze komt dus met een witregel.</div>
+                            </div>
+                          </div>
+                        </div>
+                      </details>
+                      
                       <p><strong>Links kolom:</strong> Gebruik het formaat <code>Titel: URL</code>. Voor meerdere links: <code>Titel1: URL1, Titel2: URL2</code></p>
                       <div className="bg-white dark:bg-slate-800 p-2 rounded border border-purple-200 dark:border-purple-700">
                         <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">
