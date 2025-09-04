@@ -57,6 +57,7 @@ const Home = ({
   toggleSectionCollapse,
   collapsedSections,
   snelkoppelingen,
+  groepen,
   isSnelkoppelingenOpen,
   setIsSnelkoppelingenOpen,
 }: any) => (
@@ -291,6 +292,7 @@ const Home = ({
       isOpen={isSnelkoppelingenOpen} 
       onClose={() => setIsSnelkoppelingenOpen(false)}
       snelkoppelingen={snelkoppelingen}
+      groepen={groepen}
     />
   </div>
 );
@@ -298,7 +300,7 @@ const Home = ({
 function App() {
   const { weeks, planningItems, loading, error } = useData();
   const { activeFilters, toggleFilter, resetFilters } = useFilters();
-  const { snelkoppelingen } = useSnelkoppelingen();
+  const { snelkoppelingen, groepen } = useSnelkoppelingen();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [isSnelkoppelingenOpen, setIsSnelkoppelingenOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -686,6 +688,7 @@ function App() {
               toggleSectionCollapse={toggleSectionCollapse}
               collapsedSections={collapsedSections}
               snelkoppelingen={snelkoppelingen}
+              groepen={groepen}
               isSnelkoppelingenOpen={isSnelkoppelingenOpen}
               setIsSnelkoppelingenOpen={setIsSnelkoppelingenOpen}
             />
