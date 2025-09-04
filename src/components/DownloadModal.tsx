@@ -51,6 +51,13 @@ export const DownloadModal: React.FC<DownloadModalProps> = ({
                     </span>
                   )}
                 </p>
+                {filteredItemsCount > 0 && (
+                  <div className="mt-3 p-2 bg-blue-100 dark:bg-blue-800/30 rounded border border-blue-200 dark:border-blue-700">
+                    <p className="text-blue-900 dark:text-blue-100 text-xs">
+                      <strong>Selectie niet correct?</strong> Sluit deze popup, maak een andere selectie met je filters en klik opnieuw op downloaden.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
