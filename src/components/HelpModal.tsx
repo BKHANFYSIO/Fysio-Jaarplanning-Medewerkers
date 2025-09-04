@@ -212,10 +212,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <span className="text-blue-600 font-medium">•</span>
                 <span>Doorlopende activiteiten kunnen in- en uitgeklapt worden</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 font-medium">•</span>
-                <span>De app werkt het beste op desktop voor optimale overzichtelijkheid</span>
-              </li>
+                             <li className="flex items-start gap-2">
+                 <span className="text-blue-600 font-medium">•</span>
+                 <span>De app werkt goed op zowel desktop als mobiel</span>
+               </li>
+               <li className="flex items-start gap-2">
+                 <span className="text-blue-600 font-medium">•</span>
+                 <span>Tip: Voeg de app toe aan je startscherm voor snelle toegang. Ga naar instellingen van je browser en kies "Aan startscherm toevoegen"</span>
+               </li>
             </ul>
           </section>
         </div>
