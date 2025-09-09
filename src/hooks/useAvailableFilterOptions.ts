@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { PlanningItem } from '../types';
-import { tokenizeRoles } from '../utils/roleUtils';
+import { extractNormalizedRoles } from '../utils/roleUtils';
 import { FilterConfig } from '../config/types';
 
 interface AvailableOptions {
@@ -48,7 +48,7 @@ export const useAvailableFilterOptions = (
             if (cfg.dataKey === 'semester') {
               return selectedOptions.includes(String(item.semester));
             } else if (cfg.dataKey === 'role') {
-              const roles = tokenizeRoles(item.role);
+              const roles = extractNormalizedRoles(item.role);
               return selectedOptions.some(selectedRole => roles.includes(selectedRole));
             } else {
               const subObject = (item as any)[cfg.dataKey];

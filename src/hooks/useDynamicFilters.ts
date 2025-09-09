@@ -10,29 +10,26 @@ export const useDynamicFilters = () => {
     return filterConfig.map(config => {
       if (config.id === 'role') {
         // Vul de rol filter dynamisch in met rollen uit de data
-        // Extra bescherming: split labels die alsnog een separator bevatten
-        const uniqueOptions = new Map<string, { value: string; label: string; color: string }>();
-
+        // Build options from roles; if any role id/label accidentally contains a delimiter,
+        // split it into separate atomic options as a safety net.
+        const optionMap = new Map<string, { value: string; label: string; color: string }>();
         roles.forEach(role => {
-          const parts = extractNormalizedRoles(role.name);
-          if (parts.length === 0) return;
-          parts.forEach(part => {
-            const key = part.toLowerCase();
-            if (!uniqueOptions.has(key)) {
-              uniqueOptions.set(key, {
-                value: key,
-                label: formatRoleLabel(part),
+          const ids = extractNormalizedRoles(role.id) ;
+          const labels = ids.length > 1 ? ids.map(id => formatRoleLabel(id)) : [formatRoleLabel(role.name)];
+          ids.forEach((id, index) => {
+            if (!optionMap.has(id)) {
+              optionMap.set(id, {
+                value: id,
+                label: labels[index] || formatRoleLabel(id),
                 color: role.color,
               });
             }
           });
         });
 
-        const options = Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label));
-
         return {
           ...config,
-          options,
+          options: Array.from(optionMap.values())
         };
       }
       return config;

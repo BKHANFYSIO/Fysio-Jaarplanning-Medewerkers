@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlanningItem } from '../types';
 import { useDynamicFilters } from '../hooks/useDynamicFilters';
 import { useRoles } from '../hooks/useRoles';
+import { extractNormalizedRoles, formatRoleLabel } from '../utils/roleUtils';
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -48,22 +49,22 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
   const handleRoleChange = (roleName: string, isChecked: boolean) => {
     setFormData(prev => {
       if (!prev) return null;
-      
-      const currentRoles = (prev.role || '').split(',').map(r => r.trim()).filter(r => r.length > 0);
-      
+
+      const currentIds = extractNormalizedRoles(prev.role);
+      const roleId = roleName.toLowerCase();
+
+      let nextIds: string[] = currentIds;
       if (isChecked) {
-        // Voeg rol toe als deze nog niet bestaat
-        if (!currentRoles.includes(roleName)) {
-          const newRoles = [...currentRoles, roleName];
-          return { ...prev, role: newRoles.join(', ') };
+        if (!currentIds.includes(roleId)) {
+          nextIds = [...currentIds, roleId];
         }
       } else {
-        // Verwijder rol
-        const newRoles = currentRoles.filter(r => r !== roleName);
-        return { ...prev, role: newRoles.join(', ') };
+        nextIds = currentIds.filter(r => r !== roleId);
       }
-      
-      return prev;
+
+      // Store as formatted, comma-separated labels for readability
+      const nextLabel = nextIds.map(id => formatRoleLabel(id)).join(', ');
+      return { ...prev, role: nextLabel };
     });
   };
 
@@ -108,8 +109,8 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             ) : (
               <div className="grid grid-cols-3 gap-2 mt-2">
                 {roles.map((role) => {
-                  const currentRoles = (formData.role || '').split(',').map(r => r.trim()).filter(r => r.length > 0);
-                  const isChecked = currentRoles.includes(role.name);
+                  const selectedIds = extractNormalizedRoles(formData.role);
+                  const isChecked = selectedIds.includes(role.id);
                   
                   return (
                     <label key={role.id} className="flex items-center space-x-2">
@@ -118,7 +119,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
                         checked={isChecked}
                         onChange={(e) => handleRoleChange(role.name, e.target.checked)}
                       />
-                      <span>{role.name}</span>
+                      <span>{formatRoleLabel(role.name)}</span>
                     </label>
                   );
                 })}

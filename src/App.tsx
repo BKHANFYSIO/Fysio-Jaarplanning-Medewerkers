@@ -13,6 +13,7 @@ import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { exportToExcel } from './utils/excelParser';
 import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
+import { extractNormalizedRoles, formatRoleLabel } from './utils/roleUtils';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -471,15 +472,15 @@ function App() {
     const cloned = filterConfig.map(cfg => ({ ...cfg, options: [...cfg.options] }));
     const roleIdx = cloned.findIndex(c => c.id === 'role');
     if (roleIdx !== -1) {
-      const roles = new Set<string>();
+      const roleIds = new Set<string>();
       planningItems.forEach(item => {
-        const role = (item.role || '').toString().trim().toLowerCase();
-        if (role) roles.add(role);
+        const ids = extractNormalizedRoles(item.role);
+        ids.forEach(id => roleIds.add(id));
       });
       const palette = ['blue','indigo','teal','yellow','pink','purple','green','orange','slate','gray'];
-      const options = Array.from(roles).sort().map((r, i) => ({
-        value: r,
-        label: r.charAt(0).toUpperCase() + r.slice(1),
+      const options = Array.from(roleIds).sort().map((id, i) => ({
+        value: id,
+        label: formatRoleLabel(id),
         color: palette[i % palette.length],
       }));
       cloned[roleIdx] = { ...cloned[roleIdx], options };
@@ -504,10 +505,12 @@ function App() {
         if (config.dataKey === 'semester' && itemValue) {
           // nog geen semester-filter UI actief
         } else if (config.dataKey === 'role') {
-          const role = (item.role || '').toString().toLowerCase();
-          if (role && counts[config.id] && counts[config.id][role] !== undefined) {
-            counts[config.id][role]++;
-          }
+          const ids = extractNormalizedRoles(item.role);
+          ids.forEach(id => {
+            if (counts[config.id] && counts[config.id][id] !== undefined) {
+              counts[config.id][id]++;
+            }
+          });
         } else if (typeof itemValue === 'object' && itemValue !== null) {
           Object.keys(itemValue).forEach(key => {
             if (itemValue[key] === true && counts[config.id]?.[key] !== undefined) {
@@ -632,9 +635,7 @@ function App() {
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
       } else if (config.dataKey === 'role') {
-        const role = (item.role || '').toString().toLowerCase();
-        // Ondersteun meerdere rollen gescheiden door komma's
-        const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
+        const roles = extractNormalizedRoles((item.role || '').toString());
         return selectedOptions.some(selectedRole => roles.includes(selectedRole));
       } else {
         const subObject = (item as any)[config.dataKey];
