@@ -1,6 +1,8 @@
 export function extractNormalizedRoles(input: string | null | undefined): string[] {
   if (!input) return [];
   const normalized = String(input)
+    .normalize('NFKC')
+    .replace(/[，、﹐﹑､]/g, ',') // normalize uncommon comma variants
     .replace(/[\u00A0]/g, ' ') // normalize non-breaking spaces
     .replace(/\s+/g, ' ')
     .trim();
@@ -9,7 +11,7 @@ export function extractNormalizedRoles(input: string | null | undefined): string
 
   // Split on common separators: comma, semicolon, pipe, slash
   const primaryParts = normalized
-    .split(/[;,\/|]+/g)
+    .split(/[;,]+|[\/|]+/g)
     .flatMap(part => part.split(/\s+en\s+/i)) // also split on " en "
     .map(p => p.trim())
     .filter(Boolean);
