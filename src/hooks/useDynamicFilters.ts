@@ -51,6 +51,7 @@ export const useDynamicFilters = () => {
             value: id,
             label: subjectLabelMap[id] ?? (['ipl','bvp','pzw'].includes(id) ? id.toUpperCase() : formatIdToLabel(id)),
             color: palette[i % palette.length],
+            isOther: ['overig','other','overige','anders'].includes(id.toLowerCase()),
           }))
         };
       }

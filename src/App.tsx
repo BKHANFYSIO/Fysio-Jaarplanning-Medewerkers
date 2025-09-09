@@ -212,22 +212,46 @@ const Home = ({
                 <div key={config.id} className="mr-4">
                   <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {config.options.map((option: any) => {
-                      const isDisabled = !availableFilterOptions[config.id]?.[option.value];
-                      
-                      return (
-                        <FilterButton
-                          key={option.value}
-                          label={option.label}
-                          color={option.color}
-                          variant={config.id === 'phase' ? 'outline' : 'solid'}
-                          isActive={activeFilters[config.id]?.includes(option.value)}
-                          onClick={() => handleToggleFilter(config.id, option.value)}
-                          disabled={isDisabled}
-                          disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                        />
-                      );
-                    })}
+                    {config.options
+                      .filter((option: any) => !option.isOther)
+                      .map((option: any) => {
+                        const isDisabled = !availableFilterOptions[config.id]?.[option.value];
+                        return (
+                          <FilterButton
+                            key={option.value}
+                            label={option.label}
+                            color={option.color}
+                            variant={config.id === 'phase' ? 'outline' : 'solid'}
+                            isActive={activeFilters[config.id]?.includes(option.value)}
+                            onClick={() => handleToggleFilter(config.id, option.value)}
+                            disabled={isDisabled}
+                            disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                          />
+                        );
+                      })}
+                    {config.options.some((o: any) => o.isOther) && (
+                      <>
+                        <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                        {config.options
+                          .filter((option: any) => option.isOther)
+                          .map((option: any) => {
+                            const isDisabled = !availableFilterOptions[config.id]?.[option.value];
+                            return (
+                              <FilterButton
+                                key={option.value}
+                                label={option.label}
+                                color={option.color}
+                                variant={config.id === 'phase' ? 'outline' : 'solid'}
+                                isActive={activeFilters[config.id]?.includes(option.value)}
+                                onClick={() => handleToggleFilter(config.id, option.value)}
+                                disabled={isDisabled}
+                                disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                              />
+                            );
+                          })}
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -503,6 +527,7 @@ function App() {
         value: id,
         label: subjectLabelMap[id] ?? (['ipl','bvp','pzw'].includes(id) ? id.toUpperCase() : formatIdToLabel(id)),
         color: palette[i % palette.length],
+        isOther: ['overig','other','overige','anders'].includes(id.toLowerCase()),
       }));
       cloned[subjectIdx] = { ...cloned[subjectIdx], options };
     }

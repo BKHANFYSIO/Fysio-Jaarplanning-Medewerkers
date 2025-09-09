@@ -8,6 +8,7 @@ interface FilterButtonProps {
   variant?: 'solid' | 'outline';
   disabled?: boolean;
   disabledReason?: string;
+  className?: string;
 }
 
 const colorClasses = {
@@ -31,7 +32,8 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
   color, 
   variant = 'solid',
   disabled = false,
-  disabledReason
+  disabledReason,
+  className = ''
 }) => {
   const selectedColor = colorClasses[color as keyof typeof colorClasses] || colorClasses.gray;
 
@@ -56,7 +58,7 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
   const button = (
     <button
       type="button"
-      className={`${baseClasses} ${styleClasses}`}
+      className={`${baseClasses} ${styleClasses} ${className}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       title={disabled ? disabledReason : undefined}
