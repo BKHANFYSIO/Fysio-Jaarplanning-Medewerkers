@@ -77,7 +77,7 @@ const Home = ({
     <div className="container p-4 mx-auto">
       <header ref={headerRef} className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-900/90 backdrop-blur-sm">
         {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between py-3">
+        <div className="hidden lg:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-slate-100">Jaarplanning Fysiotherapie <span className="text-red-600 animate-heartbeat">(Medewerkers)</span></h1>
@@ -126,22 +126,11 @@ const Home = ({
                 {filteredItemsCount}/{totalItemsCount}
               </span>
             </div>
-            {/* Mobile Filter Toggle */}
-            <div className="lg:hidden">
-              <button 
-                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800"
-              >
-                <Filter size={16}/>
-                <span>Filters & Opties</span>
-                <ChevronDown size={16} className={`transition-transform ${isMobileFiltersOpen ? 'rotate-180' : ''}`}/>
-              </button>
-            </div>
           </div>
         </div>
 
         {/* Mobile Layout */}
-        <div className="md:hidden py-3">
+        <div className="lg:hidden py-3">
           <div className="flex items-center justify-between mb-3">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
             <h1 className="text-lg font-bold text-gray-800 dark:text-slate-100 text-center flex-1 mx-2">
@@ -176,6 +165,13 @@ const Home = ({
             >
               <HelpCircle size={18}/>
             </button>
+            {/* Filter Count Display (mobile) */}
+            <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full">
+              <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
+              <span className="text-xs font-bold text-blue-800 dark:text-blue-200">
+                {filteredItemsCount}/{totalItemsCount}
+              </span>
+            </div>
             {/* Filter Button */}
             <button 
               onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
