@@ -7,6 +7,7 @@ import { useData } from './hooks/useData';
 import { useFilters } from './hooks/useFilters';
 import { useAvailableFilterOptions } from './hooks/useAvailableFilterOptions';
 import { FilterButton } from './components/FilterButton';
+import { tokenizeRoles } from './utils/roleUtils';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
@@ -21,7 +22,6 @@ import { QRModal } from './components/QRModal';
 import { DownloadModal } from './components/DownloadModal';
 import { SnelkoppelingenModal } from './components/SnelkoppelingenModal';
 import { useSnelkoppelingen } from './hooks/useSnelkoppelingen';
-import { extractNormalizedRoles } from './utils/roleUtils';
 
 interface TopWeekInfo {
   key: string;
@@ -633,7 +633,7 @@ function App() {
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
       } else if (config.dataKey === 'role') {
-        const roles = extractNormalizedRoles(item.role);
+        const roles = tokenizeRoles(item.role);
         return selectedOptions.some(selectedRole => roles.includes(selectedRole));
       } else {
         const subObject = (item as any)[config.dataKey];
