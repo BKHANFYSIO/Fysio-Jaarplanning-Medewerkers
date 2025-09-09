@@ -713,6 +713,15 @@ function App() {
     itemsByWeek.get(weekKey)!.push(item);
   });
 
+  // Unieke activiteiten tellen: gebruik alleen items die isFirstInSeries zijn
+  const totalUniqueCount = useMemo(() => {
+    return planningItems.reduce((count, item) => count + (item.isFirstInSeries ? 1 : 0), 0);
+  }, [planningItems]);
+
+  const filteredUniqueCount = useMemo(() => {
+    return filteredItems.reduce((count, item) => count + (item.isFirstInSeries ? 1 : 0), 0);
+  }, [filteredItems]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -847,8 +856,8 @@ function App() {
               isSnelkoppelingenOpen={isSnelkoppelingenOpen}
               setIsSnelkoppelingenOpen={setIsSnelkoppelingenOpen}
               handleDownloadActivities={handleDownloadActivities}
-              filteredItemsCount={filteredItems.length}
-              totalItemsCount={planningItems.length}
+              filteredItemsCount={filteredUniqueCount}
+              totalItemsCount={totalUniqueCount}
               availableFilterOptions={availableFilterOptions}
             />
           } 
