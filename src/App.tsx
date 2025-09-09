@@ -21,6 +21,7 @@ import { QRModal } from './components/QRModal';
 import { DownloadModal } from './components/DownloadModal';
 import { SnelkoppelingenModal } from './components/SnelkoppelingenModal';
 import { useSnelkoppelingen } from './hooks/useSnelkoppelingen';
+import { extractNormalizedRoles } from './utils/roleUtils';
 
 interface TopWeekInfo {
   key: string;
@@ -632,9 +633,7 @@ function App() {
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
       } else if (config.dataKey === 'role') {
-        const role = (item.role || '').toString().toLowerCase();
-        // Ondersteun meerdere rollen gescheiden door komma's
-        const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
+        const roles = extractNormalizedRoles(item.role);
         return selectedOptions.some(selectedRole => roles.includes(selectedRole));
       } else {
         const subObject = (item as any)[config.dataKey];

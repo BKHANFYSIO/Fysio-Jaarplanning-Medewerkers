@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAdminData } from './useAdminData';
+import { extractNormalizedRoles, formatRoleLabel } from '../utils/roleUtils';
 
 export interface Role {
   id: string;
@@ -20,27 +21,19 @@ export const useRoles = () => {
     const uniqueRoles = new Map<string, Role>();
     
     planningItems.forEach(item => {
-      if (item.role && item.role.trim() !== '') {
-        const roleString = item.role.trim();
-        // Ondersteun meerdere rollen gescheiden door komma's
-        const roles = roleString.split(',').map(r => r.trim()).filter(r => r.length > 0);
-        
-        roles.forEach(roleName => {
-          const roleKey = roleName.toLowerCase();
-          
-          if (!uniqueRoles.has(roleKey)) {
-            // Genereer een kleur op basis van de rol naam
-            const color = generateColorFromString(roleName);
-            
-            uniqueRoles.set(roleKey, {
-              id: roleKey,
-              name: roleName,
-              color: color,
-              active: true
-            });
-          }
-        });
-      }
+      const roles = extractNormalizedRoles(item.role);
+      roles.forEach(roleKey => {
+        if (!uniqueRoles.has(roleKey)) {
+          const label = formatRoleLabel(roleKey);
+          const color = generateColorFromString(label);
+          uniqueRoles.set(roleKey, {
+            id: roleKey,
+            name: label,
+            color,
+            active: true,
+          });
+        }
+      });
     });
 
     // Converteer naar array en sorteer op naam

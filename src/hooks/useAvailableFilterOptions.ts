@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { PlanningItem } from '../types';
+import { extractNormalizedRoles } from '../utils/roleUtils';
 import { FilterConfig } from '../config/types';
 
 interface AvailableOptions {
@@ -47,9 +48,7 @@ export const useAvailableFilterOptions = (
             if (cfg.dataKey === 'semester') {
               return selectedOptions.includes(String(item.semester));
             } else if (cfg.dataKey === 'role') {
-              const role = (item.role || '').toString().toLowerCase();
-              // Ondersteun meerdere rollen gescheiden door komma's
-              const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
+              const roles = extractNormalizedRoles(item.role);
               return selectedOptions.some(selectedRole => roles.includes(selectedRole));
             } else {
               const subObject = (item as any)[cfg.dataKey];
