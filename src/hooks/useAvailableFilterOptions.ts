@@ -48,7 +48,9 @@ export const useAvailableFilterOptions = (
               return selectedOptions.includes(String(item.semester));
             } else if (cfg.dataKey === 'role') {
               const role = (item.role || '').toString().toLowerCase();
-              return selectedOptions.includes(role);
+              // Ondersteun meerdere rollen gescheiden door komma's
+              const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
+              return selectedOptions.some(selectedRole => roles.includes(selectedRole));
             } else {
               const subObject = (item as any)[cfg.dataKey];
               if (subObject && typeof subObject === 'object') {

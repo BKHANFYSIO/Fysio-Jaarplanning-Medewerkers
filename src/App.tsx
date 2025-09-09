@@ -119,6 +119,13 @@ const Home = ({
               <QrCode size={16}/>
               <span>QR</span>
             </button>
+            {/* Filter Count Display */}
+            <div className="flex items-center gap-1 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-lg">
+              <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
+              <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
+                {filteredItemsCount}/{totalItemsCount}
+              </span>
+            </div>
             {/* Mobile Filter Toggle */}
             <div className="lg:hidden">
               <button 
@@ -238,12 +245,6 @@ const Home = ({
               </button>
               <button onClick={handleResetFilters} className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg sm:w-auto hover:bg-gray-300"> 
                 <RotateCcw size={16}/> Reset Filters
-                <div className="ml-2 flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full">
-                  <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
-                  <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
-                    {filteredItemsCount}/{totalItemsCount}
-                  </span>
-                </div>
               </button>
               <button 
                 onClick={toggleAllLopendeZaken} 
@@ -636,7 +637,9 @@ function App() {
         return selectedOptions.includes(String(item.semester));
       } else if (config.dataKey === 'role') {
         const role = (item.role || '').toString().toLowerCase();
-        return selectedOptions.includes(role);
+        // Ondersteun meerdere rollen gescheiden door komma's
+        const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
+        return selectedOptions.some(selectedRole => roles.includes(selectedRole));
       } else {
         const subObject = (item as any)[config.dataKey];
         if (isSubjects(subObject)) {

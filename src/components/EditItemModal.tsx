@@ -45,6 +45,28 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
     });
   };
 
+  const handleRoleChange = (roleName: string, isChecked: boolean) => {
+    setFormData(prev => {
+      if (!prev) return null;
+      
+      const currentRoles = (prev.role || '').split(',').map(r => r.trim()).filter(r => r.length > 0);
+      
+      if (isChecked) {
+        // Voeg rol toe als deze nog niet bestaat
+        if (!currentRoles.includes(roleName)) {
+          const newRoles = [...currentRoles, roleName];
+          return { ...prev, role: newRoles.join(', ') };
+        }
+      } else {
+        // Verwijder rol
+        const newRoles = currentRoles.filter(r => r !== roleName);
+        return { ...prev, role: newRoles.join(', ') };
+      }
+      
+      return prev;
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData) {
@@ -80,23 +102,27 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
 
           {/* Rol selectie */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium">Rol</label>
+            <h4 className="font-semibold">Rol</h4>
             {rolesLoading ? (
               <div className="p-2 mt-1 text-sm text-gray-500 bg-gray-100 rounded">Rollen laden...</div>
             ) : (
-              <select
-                name="role"
-                value={formData.role || ''}
-                onChange={handleChange}
-                className="w-full p-2 mt-1 border rounded"
-              >
-                <option value="">Selecteer een rol</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.name.toLowerCase()}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {roles.map((role) => {
+                  const currentRoles = (formData.role || '').split(',').map(r => r.trim()).filter(r => r.length > 0);
+                  const isChecked = currentRoles.includes(role.name);
+                  
+                  return (
+                    <label key={role.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => handleRoleChange(role.name, e.target.checked)}
+                      />
+                      <span>{role.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
             )}
           </div>
           

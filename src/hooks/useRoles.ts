@@ -21,20 +21,25 @@ export const useRoles = () => {
     
     planningItems.forEach(item => {
       if (item.role && item.role.trim() !== '') {
-        const roleName = item.role.trim();
-        const roleKey = roleName.toLowerCase();
+        const roleString = item.role.trim();
+        // Ondersteun meerdere rollen gescheiden door komma's
+        const roles = roleString.split(',').map(r => r.trim()).filter(r => r.length > 0);
         
-        if (!uniqueRoles.has(roleKey)) {
-          // Genereer een kleur op basis van de rol naam
-          const color = generateColorFromString(roleName);
+        roles.forEach(roleName => {
+          const roleKey = roleName.toLowerCase();
           
-          uniqueRoles.set(roleKey, {
-            id: roleKey,
-            name: roleName,
-            color: color,
-            active: true
-          });
-        }
+          if (!uniqueRoles.has(roleKey)) {
+            // Genereer een kleur op basis van de rol naam
+            const color = generateColorFromString(roleName);
+            
+            uniqueRoles.set(roleKey, {
+              id: roleKey,
+              name: roleName,
+              color: color,
+              active: true
+            });
+          }
+        });
       }
     });
 
