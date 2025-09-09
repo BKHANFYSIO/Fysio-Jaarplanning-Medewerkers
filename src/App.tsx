@@ -7,7 +7,6 @@ import { useData } from './hooks/useData';
 import { useFilters } from './hooks/useFilters';
 import { useAvailableFilterOptions } from './hooks/useAvailableFilterOptions';
 import { FilterButton } from './components/FilterButton';
-import { tokenizeRoles } from './utils/roleUtils';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect } from 'react';
@@ -77,7 +76,7 @@ const Home = ({
     </div>
     <div className="container p-4 mx-auto">
       <header ref={headerRef} className="sticky top-0 z-40 bg-slate-50/95 dark:bg-slate-900/90 backdrop-blur-sm">
-        {/* Desktop Layout */}
+        {/* Desktop Layout (lg and up) */}
         <div className="hidden lg:flex items-center justify-between py-3">
           <div className="flex items-center gap-4">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-10 md:h-12"/>
@@ -114,7 +113,7 @@ const Home = ({
             {/* QR Button (desktop only) */}
             <button 
               onClick={() => setIsQrOpen(true)}
-              className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+              className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               title="Toon QR"
             >
               <QrCode size={16}/>
@@ -127,10 +126,11 @@ const Home = ({
                 {filteredItemsCount}/{totalItemsCount}
               </span>
             </div>
+            {/* Mobile toggle removed from desktop header to avoid mid layout */}
           </div>
         </div>
 
-        {/* Mobile Layout */}
+        {/* Mobile Layout (< lg) */}
         <div className="lg:hidden py-3">
           <div className="flex items-center justify-between mb-3">
             <img src="/images/Logo-HAN.webp" alt="HAN Logo" className="h-8"/>
@@ -166,21 +166,20 @@ const Home = ({
             >
               <HelpCircle size={18}/>
             </button>
-            {/* Filter Count Display (mobile) */}
-            <div className="flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full">
-              <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
-              <span className="text-xs font-bold text-blue-800 dark:text-blue-200">
-                {filteredItemsCount}/{totalItemsCount}
-              </span>
+            {/* Filter Button with count */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+                className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
+                title="Filters & Opties"
+              >
+                <Filter size={18}/>
+              </button>
+              <div className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full">
+                <Filter size={14} className="text-blue-600 dark:text-blue-400"/>
+                <span className="text-xs font-bold text-blue-800 dark:text-blue-200">{filteredItemsCount}/{totalItemsCount}</span>
+              </div>
             </div>
-            {/* Filter Button */}
-            <button 
-              onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-              className="flex items-center justify-center w-10 h-10 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600"
-              title="Filters & Opties"
-            >
-              <Filter size={18}/>
-            </button>
           </div>
         </div>
 
@@ -633,7 +632,9 @@ function App() {
       if (config.dataKey === 'semester') {
         return selectedOptions.includes(String(item.semester));
       } else if (config.dataKey === 'role') {
-        const roles = tokenizeRoles(item.role);
+        const role = (item.role || '').toString().toLowerCase();
+        // Ondersteun meerdere rollen gescheiden door komma's
+        const roles = role.split(',').map(r => r.trim()).filter(r => r.length > 0);
         return selectedOptions.some(selectedRole => roles.includes(selectedRole));
       } else {
         const subObject = (item as any)[config.dataKey];
