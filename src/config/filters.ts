@@ -37,4 +37,11 @@ export const filterConfig: FilterConfig[] = [
         { value: 'overig', label: 'Overig', color: 'slate' },
     ],
   },
+  {
+    id: 'process',
+    label: 'Processen',
+    type: 'pills',
+    dataKey: 'processes',
+    options: [],
+  },
 ];

@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import { db } from '../firebase'; // Make sure you have this file exporting your db instance
 import { PlanningItem, WeekInfo } from '../types';
 import { exportToExcel } from '../utils/excelParser';
+import { formatIdToLabel } from '../utils/roleUtils';
 
 /**
  * Overwrites all documents in a specific collection with new data.
@@ -163,9 +164,6 @@ export const fetchAndExportAsCsv = async (collectionName:string, fileName: strin
     'H1': item.phases.h1 ? 'v' : '',
     'H2/3': item.phases.h2h3 ? 'v' : '',
     'Rol': item.role || '',
-    'Status': item.status || '',
-    'Gewijzigd door': item.gewijzigdDoor || '',
-    'Opmerkingen': item.opmerkingen || '',
   }));
 
   const csvString = Papa.unparse(csvData);
@@ -216,7 +214,8 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
   }
   
   // Export activities - exacte match met import structuur + change tracking kolommen
-  const excelData = (data as PlanningItem[]).map(item => ({
+  const excelData = (data as PlanningItem[]).map(item => {
+    const base: any = {
     'Wat?': item.title,
     'Extra regel': item.description,
     'Instructies': item.instructions || item.link || '',
@@ -240,10 +239,14 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
     'H1': item.phases.h1 ? 'v' : '',
     'H2/3': item.phases.h2h3 ? 'v' : '',
     'Rol': item.role || '',
-    'Status': item.status || '',
-    'Gewijzigd door': item.gewijzigdDoor || '',
-    'Opmerkingen': item.opmerkingen || '',
-  }));
+  };
+  const proc = (item as any).processes || {};
+  Object.keys(proc).forEach(id => {
+    const label = formatIdToLabel(id);
+    base[label] = proc[id] ? 'v' : '';
+  });
+  return base;
+  });
 
   exportToExcel(excelData, fileName, 'Activiteiten');
 };

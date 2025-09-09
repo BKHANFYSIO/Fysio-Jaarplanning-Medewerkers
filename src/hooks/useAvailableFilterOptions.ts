@@ -50,6 +50,15 @@ export const useAvailableFilterOptions = (
             } else if (cfg.dataKey === 'role') {
               const roles = extractNormalizedRoles(item.role);
               return selectedOptions.some(selectedRole => roles.includes(selectedRole));
+            } else if (cfg.dataKey === 'phases') {
+              const phases: any = (item as any).phases || {};
+              const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
+              return selectedOptions.every(option => {
+                if (option === 'algemeen') {
+                  return !hasAnyPhase;
+                }
+                return !!phases[option];
+              });
             } else {
               const subObject = (item as any)[cfg.dataKey];
               if (subObject && typeof subObject === 'object') {

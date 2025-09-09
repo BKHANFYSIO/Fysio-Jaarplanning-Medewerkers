@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Papa from 'papaparse';
 import { bulkOverwrite } from '../services/firestoreService';
+import { normalizeHeaderToId } from '../utils/roleUtils';
 import { PlanningItem, WeekInfo } from '../types';
 import { parseExcel, detectFileType, ExcelParseResult } from '../utils/excelParser';
 
@@ -249,46 +250,88 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
         return;
       }
 
+      // Bepaal dynamisch welke headers bij Onderwerp en welke bij Processen horen
+      const roleIdx = headers.findIndex(h => normalizeHeaderToId(h) === 'rol');
+      const skipNormalized = new Set([
+        'wat', 'titel_of_wat', 'extra_regel', 'instructies', 'links', 'startdatu', 'startdatum', 'startdate', 'einddatur', 'einddatum', 'enddate',
+        'tijd_starto', 'tijd_startdatum', 'tijd_eindd', 'tijd_einddatum', 'deadline', 'status', 'gewijzigd_door', 'opmerkingen',
+        'p', 'h1', 'h2_3'
+      ]);
+      const subjectHeaders: { header: string; id: string }[] = [];
+      const processHeaders: { header: string; id: string }[] = [];
+      headers.forEach((header, idx) => {
+        const id = normalizeHeaderToId(header);
+        if (!id || skipNormalized.has(id)) return;
+        if (roleIdx >= 0 && idx > roleIdx) {
+          processHeaders.push({ header, id });
+        } else {
+          subjectHeaders.push({ header, id });
+        }
+      });
+
       // Use custom parser if provided, otherwise use default for activities
       const finalData = customParser 
         ? customParser({ data: parsedData })
-        : parsedData.map((row: any) => ({
-         title: row['Wat?'] || row['Titel (of wat)'] || '', // Support both column names
-         description: row['Extra regel'] || '',
-                   instructions: row['Instructies'] || row['link'] || null, // Nieuwe instructies kolom
-          links: parseLinksColumn(row['Links'] || ''), // Gebruik de nieuwe, robuuste parser
-          // Verwijder de oude 'link' toewijzing om dubbele data te voorkomen
-          role: (() => {
-            const raw = (row['rol'] ?? row['Rol'] ?? row['gebruiker'] ?? row['Gebruiker'] ?? '').toString().trim();
-            if (!raw) return null; // nooit undefined schrijven
-            return raw.toLowerCase();
-          })(),
-          startDate: row['Startdatu'] || row['Startdatum'] || row['startDate'] || '',
-          endDate: row['Einddatur'] || row['Einddatum'] || row['endDate'] || '',
-         startTime: row['Tijd starto'] || row['Tijd startdatum'] || null,
-         endTime: row['Tijd eindd'] || row['Tijd einddatum'] || null,
-         deadline: row['Deadline'] || null,
-         subjects: {
-           waarderen: row['Waardere'] === 'v' || row['Waardere'] === true,
-           juniorstage: row['Juniorsta'] === 'v' || row['Juniorsta'] === true,
-           ipl: row['IPL'] === 'v' || row['IPL'] === true,
-           bvp: row['BVP'] === 'v' || row['BVP'] === true,
-           pzw: row['PZW'] === 'v' || row['PZW'] === true,
-           minor: row['Minor'] === 'v' || row['Minor'] === true,
-           getuigschriften: row['Getuigsch'] === 'v' || row['Getuigsch'] === true,
-           inschrijven: row['Inschrijve'] === 'v' || row['Inschrijve'] === true,
-           overig: row['Overig'] === 'v' || row['Overig'] === true,
-           meeloops: row['Meeloops'] === 'v' || row['Meeloops'] === true,
-         },
-         phases: {
-           p: row['P'] === 'v' || row['P'] === true,
-           h1: row['H1'] === 'v' || row['H1'] === true,
-           h2h3: row['H2/3'] === 'v' || row['H2/3'] === true,
-         },
-         status: row['Status'] || '',
-         gewijzigdDoor: row['Gewijzigd door'] || '',
-         opmerkingen: row['Opmerkingen'] || '',
-       })).filter(item => (item as PlanningItem).title); // Filter out items without a title
+        : parsedData.map((row: any) => {
+        const processes: Record<string, boolean> = {};
+        const subjects: Record<string, boolean> = {};
+
+        // Vul subjects o.b.v. subjectHeaders (links van Rol)
+        subjectHeaders.forEach(({ header, id }) => {
+          const raw = row[header];
+          const isTrue = raw === 'v' || raw === true || String(raw).toLowerCase() === 'v';
+          if (!id) return;
+          // Normaliseer varianten: bijvoorbeeld inschrijven/aanmelden -> inschrijven_aanmelden
+          subjects[id] = !!isTrue;
+        });
+
+        // Vul processes o.b.v. processHeaders (rechts van Rol), maar sluit onderwerpen uit die rechts van Rol staan
+        const subjectLike = new Set(['waarderen','juniorstage','ipl','bvp','pzw','minor','getuigschriften','inschrijven','inschrijven_aanmelden','overig','meeloopstage','meeloops','meelopen','meeloop']);
+        processHeaders.forEach(({ header, id }) => {
+          if (!id || subjectLike.has(id)) return;
+          const raw = row[header];
+          const isTrue = raw === 'v' || raw === true || String(raw).toLowerCase() === 'v';
+          processes[id] = !!isTrue;
+        });
+
+        return ({
+        title: row['Wat?'] || row['Titel (of wat)'] || '', // Support both column names
+        description: row['Extra regel'] || '',
+                  instructions: row['Instructies'] || row['link'] || null, // Nieuwe instructies kolom
+         links: parseLinksColumn(row['Links'] || ''), // Gebruik de nieuwe, robuuste parser
+         // Verwijder de oude 'link' toewijzing om dubbele data te voorkomen
+         role: (() => {
+           const raw = (row['rol'] ?? row['Rol'] ?? row['gebruiker'] ?? row['Gebruiker'] ?? '').toString().trim();
+           if (!raw) return null; // nooit undefined schrijven
+           return raw.toLowerCase();
+         })(),
+         startDate: row['Startdatu'] || row['Startdatum'] || row['startDate'] || '',
+         endDate: row['Einddatur'] || row['Einddatum'] || row['endDate'] || '',
+        startTime: row['Tijd starto'] || row['Tijd startdatum'] || null,
+        endTime: row['Tijd eindd'] || row['Tijd einddatum'] || null,
+        deadline: row['Deadline'] || null,
+        subjects: {
+          waarderen: subjects['waarderen'] || false,
+          juniorstage: subjects['juniorstage'] || false,
+          ipl: subjects['ipl'] || false,
+          bvp: subjects['bvp'] || false,
+          pzw: subjects['pzw'] || false,
+          minor: subjects['minor'] || false,
+          getuigschriften: subjects['getuigschriften'] || false,
+          inschrijven: subjects['inschrijven'] || subjects['inschrijven_aanmelden'] || false,
+          overig: subjects['overig'] || false,
+          meeloops: subjects['meeloopstage'] || subjects['meeloops'] || subjects['meelopen'] || subjects['meeloop'] || false,
+        },
+        phases: {
+          p: row['P'] === 'v' || row['P'] === true,
+          h1: row['H1'] === 'v' || row['H1'] === true,
+          h2h3: row['H2/3'] === 'v' || row['H2/3'] === true,
+        },
+        status: row['Status'] || '',
+        gewijzigdDoor: row['Gewijzigd door'] || '',
+        opmerkingen: row['Opmerkingen'] || '',
+        processes,
+      })}).filter(item => (item as PlanningItem).title); // Filter out items without a title
 
       // Post-processing validatie
       if (finalData.length === 0) {

@@ -25,4 +25,23 @@ export function formatRoleLabel(role: string): string {
   return cleaned.replace(/\b([a-z])(\w*)/gi, (_m, first: string, rest: string) => first.toUpperCase() + rest.toLowerCase());
 }
 
+/**
+ * Normalize arbitrary header text to a safe identifier key.
+ */
+export function normalizeHeaderToId(header: string): string {
+  return String(header)
+    .toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
+/**
+ * Convert a normalized id back into a user-friendly label.
+ */
+export function formatIdToLabel(id: string): string {
+  const cleaned = String(id).replace(/_/g, ' ').trim();
+  return cleaned.replace(/\b([a-z])(\w*)/gi, (_m, f: string, r: string) => f.toUpperCase() + r.toLowerCase());
+}
+
 

@@ -13,7 +13,7 @@ import { useRef, useMemo, useState, useLayoutEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { exportToExcel } from './utils/excelParser';
 import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
-import { extractNormalizedRoles, formatRoleLabel } from './utils/roleUtils';
+import { extractNormalizedRoles, formatRoleLabel, formatIdToLabel } from './utils/roleUtils';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -485,6 +485,42 @@ function App() {
       }));
       cloned[roleIdx] = { ...cloned[roleIdx], options };
     }
+    const subjectIdx = cloned.findIndex(c => c.id === 'subject');
+    if (subjectIdx !== -1) {
+      const keys = new Set<string>();
+      planningItems.forEach(item => {
+        const subj: any = (item as any).subjects || {};
+        Object.keys(subj).forEach(k => {
+          if (subj[k] === true) keys.add(k);
+        });
+      });
+      const palette = ['orange','pink','indigo','blue','green','yellow','gray','teal','slate','purple'];
+      const subjectLabelMap: Record<string, string> = {
+        meeloops: 'Meeloopstage',
+        inschrijven: 'Inschrijvingen/aanmeldingen',
+      };
+      const options = Array.from(keys).sort().map((id, i) => ({
+        value: id,
+        label: subjectLabelMap[id] ?? (['ipl','bvp','pzw'].includes(id) ? id.toUpperCase() : formatIdToLabel(id)),
+        color: palette[i % palette.length],
+      }));
+      cloned[subjectIdx] = { ...cloned[subjectIdx], options };
+    }
+    const processIdx = cloned.findIndex(c => c.id === 'process');
+    if (processIdx !== -1) {
+      const keys = new Set<string>();
+      planningItems.forEach(item => {
+        const proc = (item as any).processes || {};
+        Object.keys(proc).forEach(k => keys.add(k));
+      });
+      const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
+      const options = Array.from(keys).sort().map((id, i) => ({
+        value: id,
+        label: formatIdToLabel(id),
+        color: palette[i % palette.length],
+      }));
+      cloned[processIdx] = { ...cloned[processIdx], options };
+    }
     return cloned;
   }, [planningItems]);
 
@@ -509,6 +545,17 @@ function App() {
           ids.forEach(id => {
             if (counts[config.id] && counts[config.id][id] !== undefined) {
               counts[config.id][id]++;
+            }
+          });
+        } else if (config.dataKey === 'phases') {
+          const phases: any = itemValue || {};
+          const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
+          if (!hasAnyPhase && counts[config.id]?.['algemeen'] !== undefined) {
+            counts[config.id]['algemeen']++;
+          }
+          ['p','h1','h2h3'].forEach(k => {
+            if (phases[k] === true && counts[config.id]?.[k] !== undefined) {
+              counts[config.id][k]++;
             }
           });
         } else if (typeof itemValue === 'object' && itemValue !== null) {
@@ -637,6 +684,16 @@ function App() {
       } else if (config.dataKey === 'role') {
         const roles = extractNormalizedRoles((item.role || '').toString());
         return selectedOptions.some(selectedRole => roles.includes(selectedRole));
+      } else if (config.dataKey === 'phases') {
+        const phases = (item as any).phases || {};
+        const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
+        return selectedOptions.every(option => {
+          if (option === 'algemeen') {
+            // match wanneer geen enkele fase aan staat
+            return !hasAnyPhase;
+          }
+          return !!phases[option];
+        });
       } else {
         const subObject = (item as any)[config.dataKey];
         if (isSubjects(subObject)) {
@@ -699,9 +756,16 @@ function App() {
   // Download functie voor activiteiten
   const handleDownloadActivities = () => {
     // Converteer de gefilterde items naar Excel formaat
+    // Verzamel alle process-keys die zichtbaar zijn in filters
+    const processKeys = new Set<string>();
+    filteredItems.forEach(item => {
+      const proc = (item as any).processes || {};
+      Object.keys(proc).forEach(k => processKeys.add(k));
+    });
+
     const excelData = filteredItems.map(item => {
 
-      return {
+      const base: any = {
         'Wat?': item.title || '',
         'Extra regel': item.description || '',
         'Instructies': item.instructions || '',
@@ -725,10 +789,14 @@ function App() {
         'H1': item.phases.h1 ? 'v' : '',
         'H2/3': item.phases.h2h3 ? 'v' : '',
         'Rol': item.role || '',
-        'Status': item.status || '',
-        'Gewijzigd door': item.gewijzigdDoor || '',
-        'Opmerkingen': item.opmerkingen || '',
       };
+      // Voeg processen toe als losse kolommen met nette labels
+      const proc = (item as any).processes || {};
+      Array.from(processKeys).forEach(id => {
+        const label = formatIdToLabel(id);
+        base[label] = proc[id] ? 'v' : '';
+      });
+      return base;
     });
 
     // Genereer bestandsnaam met huidige datum

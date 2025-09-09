@@ -40,6 +40,9 @@ export interface PlanningItem {
     h1: boolean;
     h2h3: boolean;
   };
+  processes?: {
+    [key: string]: boolean;
+  };
 }
 
 export interface WeekInfo {

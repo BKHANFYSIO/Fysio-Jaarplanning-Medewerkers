@@ -32,7 +32,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
     }
   };
 
-  const handleCheckboxChange = (group: 'phases' | 'subjects', key: string) => {
+  const handleCheckboxChange = (group: 'phases' | 'subjects' | 'processes', key: string) => {
     setFormData(prev => {
       if (!prev) return null;
       
@@ -159,16 +159,20 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {filterConfig.filter(c => c.id !== 'semester' && c.id !== 'role').map(config => (
+          {filterConfig
+            .filter(c => c.id !== 'semester' && c.id !== 'role')
+            .map(config => (
             <div key={config.id}>
               <h4 className="font-semibold">{config.label}</h4>
               <div className="grid grid-cols-3 gap-2 mt-2">
-                {config.options.map(option => (
+                {config.options
+                  .filter(option => !(config.id === 'phase' && option.value === 'algemeen'))
+                  .map(option => (
                   <label key={option.value} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      checked={!!((formData[config.dataKey as 'phases' | 'subjects'] as Record<string, boolean> | undefined)?.[option.value])}
-                      onChange={() => handleCheckboxChange(config.dataKey as 'phases' | 'subjects', option.value)}
+                      checked={!!((formData[config.dataKey as 'phases' | 'subjects' | 'processes'] as Record<string, boolean> | undefined)?.[option.value])}
+                      onChange={() => handleCheckboxChange(config.dataKey as 'phases' | 'subjects' | 'processes', option.value)}
                     />
                     <span>{option.label}</span>
                   </label>
