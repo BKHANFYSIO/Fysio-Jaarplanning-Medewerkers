@@ -485,7 +485,8 @@ function App() {
     if (lastHeaderTotalHeightRef.current !== null && lastMobileOpenRef.current !== null && lastMobileOpenRef.current !== isMobileFiltersOpen) {
       const delta = total - lastHeaderTotalHeightRef.current;
       if (delta !== 0) {
-        window.scrollBy({ top: delta, behavior: 'auto' });
+        // Compenseer hoogteverandering van de header: bij kleiner worden scroll juist naar beneden
+        window.scrollBy({ top: -delta, behavior: 'auto' });
       }
     }
 
