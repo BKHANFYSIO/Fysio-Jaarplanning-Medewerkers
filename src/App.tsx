@@ -9,7 +9,7 @@ import { useAvailableFilterOptions } from './hooks/useAvailableFilterOptions';
 import { FilterButton } from './components/FilterButton';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
-import { useRef, useMemo, useState, useLayoutEffect } from 'react';
+import { useRef, useMemo, useState, useLayoutEffect, useEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { exportToExcel } from './utils/excelParser';
 import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
@@ -69,7 +69,47 @@ const Home = ({
   filteredItemsCount,
   totalItemsCount,
   availableFilterOptions,
-}: any) => (
+}: any) => {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelMaxHeight, setPanelMaxHeight] = useState<number | null>(null);
+
+  // Lock body scroll when mobile filters are open
+  useEffect(() => {
+    if (isMobileFiltersOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileFiltersOpen]);
+
+  // Compute max height for the filter panel so it can scroll independently
+  useEffect(() => {
+    const computeMaxHeight = () => {
+      if (!panelRef.current) return;
+      const rect = panelRef.current.getBoundingClientRect();
+      const marginBottom = 16; // space below panel
+      const max = Math.max(200, window.innerHeight - rect.top - marginBottom);
+      setPanelMaxHeight(max);
+    };
+
+    if (isMobileFiltersOpen) {
+      // Wait a tick to ensure layout is ready
+      const timer = setTimeout(() => computeMaxHeight(), 0);
+      window.addEventListener('resize', computeMaxHeight);
+      window.addEventListener('orientationchange', computeMaxHeight as any);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', computeMaxHeight);
+        window.removeEventListener('orientationchange', computeMaxHeight as any);
+      };
+    } else {
+      setPanelMaxHeight(null);
+    }
+  }, [isMobileFiltersOpen]);
+
+  return (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
     <div ref={bannersRef} className="sticky top-0 z-50">
       {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
@@ -205,7 +245,11 @@ const Home = ({
             }
           }}
         >
-          <div className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative dark:bg-slate-800 dark:ring-slate-700 dark:border-blue-500">
+          <div
+            ref={panelRef}
+            className="p-4 mt-2 bg-white rounded-lg shadow-lg ring-1 ring-blue-100 border-l-4 border-blue-600 z-50 relative dark:bg-slate-800 dark:ring-slate-700 dark:border-blue-500 overscroll-contain overflow-x-hidden"
+            style={isMobileFiltersOpen ? { maxHeight: panelMaxHeight ? panelMaxHeight + 'px' : undefined, overflowY: 'auto' } : undefined}
+          >
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
               {effectiveFilterConfig.map((config: any) => (
@@ -357,6 +401,7 @@ const Home = ({
     />
   </div>
 );
+}
 
 function App() {
   const { weeks, planningItems, loading, error } = useData();
@@ -400,6 +445,8 @@ function App() {
   const headerRef = useRef<HTMLElement | null>(null);
   const bannersRef = useRef<HTMLDivElement | null>(null);
   const keepInViewWeekKey = useRef<string | null>(null);
+  const lastHeaderTotalHeightRef = useRef<number | null>(null);
+  const lastMobileOpenRef = useRef<boolean | null>(null);
 
   useLayoutEffect(() => {
     if (!hasSeenHelp && !loading) {
@@ -428,6 +475,23 @@ function App() {
       setCollapsedSections(newCollapsedSections);
     }
   }, [weeks, areAllLopendeZakenCollapsed]);
+
+  // Houd content uitgelijnd met de header wanneer mobiel filterpaneel opent/sluit
+  useLayoutEffect(() => {
+    const headerHeight = headerRef.current ? headerRef.current.offsetHeight : 0;
+    const bannersHeight = bannersRef.current ? bannersRef.current.offsetHeight : 0;
+    const total = headerHeight + bannersHeight;
+
+    if (lastHeaderTotalHeightRef.current !== null && lastMobileOpenRef.current !== null && lastMobileOpenRef.current !== isMobileFiltersOpen) {
+      const delta = total - lastHeaderTotalHeightRef.current;
+      if (delta !== 0) {
+        window.scrollBy({ top: delta, behavior: 'auto' });
+      }
+    }
+
+    lastHeaderTotalHeightRef.current = total;
+    lastMobileOpenRef.current = isMobileFiltersOpen;
+  }, [isMobileFiltersOpen]);
 
   const saveCurrentScrollPosition = () => {
     if (headerRef.current && bannersRef.current) {
