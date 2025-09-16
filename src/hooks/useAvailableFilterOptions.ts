@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { PlanningItem } from '../types';
 import { extractNormalizedRoles } from '../utils/roleUtils';
 import { FilterConfig } from '../config/types';
+import { doesItemMatchFiltersUnion, ActiveFilters } from '../utils/filterEvaluator';
 
 interface AvailableOptions {
   [filterId: string]: {
@@ -39,41 +40,7 @@ export const useAvailableFilterOptions = (
 
         // Filter de items met deze test filters
         const testFilteredItems = planningItems.filter(item => {
-          return filterConfig.every(cfg => {
-            const selectedOptions = testFilters[cfg.id];
-            if (!selectedOptions || selectedOptions.length === 0) {
-              return true;
-            }
-            
-            if (cfg.dataKey === 'semester') {
-              return selectedOptions.includes(String(item.semester));
-            } else if (cfg.dataKey === 'role') {
-              const roles = extractNormalizedRoles(item.role);
-              return selectedOptions.some(selectedRole => roles.includes(selectedRole));
-            } else if (cfg.dataKey === 'phases') {
-              const phases: any = (item as any).phases || {};
-              const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
-              return selectedOptions.every(option => {
-                if (option === 'algemeen') {
-                  return !hasAnyPhase;
-                }
-                return !!phases[option];
-              });
-            } else {
-              // Subject-filter is alleen van toepassing wanneer rol 'studenten' actief is in de testfilters
-              if (cfg.dataKey === 'subjects') {
-                const selectedRoles = (testFilters['role'] || []).map((r: string) => r.toLowerCase());
-                if (!selectedRoles.includes('studenten')) {
-                  return true; // negeer subject-filter indien studenten niet geselecteerd
-                }
-              }
-              const subObject = (item as any)[cfg.dataKey];
-              if (subObject && typeof subObject === 'object') {
-                return selectedOptions.some(opt => (subObject as any)[opt]);
-              }
-              return false;
-            }
-          });
+          return doesItemMatchFiltersUnion(item, testFilters as ActiveFilters);
         });
 
         // Als er geen items overblijven met deze combinatie, maak de optie onbeschikbaar

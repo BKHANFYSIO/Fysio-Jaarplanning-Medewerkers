@@ -12,8 +12,9 @@ import { PlanningItem, WeekInfo } from './types';
 import { useRef, useMemo, useState, useLayoutEffect, useEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { exportToExcel } from './utils/excelParser';
-import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
+import { Filter, RotateCcw, LocateFixed, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
 import { extractNormalizedRoles, formatIdToLabel, tokenizeRoles } from './utils/roleUtils';
+import { doesItemMatchFiltersUnion } from './utils/filterEvaluator';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -28,9 +29,7 @@ interface TopWeekInfo {
   position: number;
 }
 
-function isSubjects(obj: any): obj is PlanningItem['subjects'] {
-  return typeof obj === 'object' && obj !== null;
-}
+//
 
 // Home component now defined outside of App
 const Home = ({
@@ -45,7 +44,6 @@ const Home = ({
   isDark,
   toggleDark,
   effectiveFilterConfig,
-  availableOptions,
   activeFilters,
   handleToggleFilter,
   scrollToTargetWeek,
@@ -65,7 +63,6 @@ const Home = ({
   groepen,
   isSnelkoppelingenOpen,
   setIsSnelkoppelingenOpen,
-  handleDownloadActivities,
   filteredItemsCount,
   totalItemsCount,
   availableFilterOptions,
@@ -784,44 +781,7 @@ function App() {
     }
   }, [loading, weeks, targetWeekInfo.week]);
 
-  const filteredItems = planningItems.filter(item => {
-    return effectiveFilterConfig.every(config => {
-      const selectedOptions = activeFilters[config.id];
-      if (!selectedOptions || selectedOptions.length === 0) {
-        return true;
-      }
-      
-      if (config.dataKey === 'semester') {
-        return selectedOptions.includes(String(item.semester));
-      } else if (config.dataKey === 'role') {
-        const roles = extractNormalizedRoles((item.role || '').toString());
-        return selectedOptions.some(selectedRole => roles.includes(selectedRole));
-      } else if (config.dataKey === 'phases') {
-        const phases = (item as any).phases || {};
-        const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
-        return selectedOptions.every(option => {
-          if (option === 'algemeen') {
-            // match wanneer geen enkele fase aan staat
-            return !hasAnyPhase;
-          }
-          return !!phases[option];
-        });
-      } else {
-        // Speciale regel: Subject-filter is alleen van toepassing wanneer rol 'studenten' actief is
-        if (config.dataKey === 'subjects') {
-          const selectedRoles = (activeFilters['role'] || []).map((r: string) => r.toLowerCase());
-          if (!selectedRoles.includes('studenten')) {
-            return true; // negeer subject-filter wanneer studenten niet geselecteerd is
-          }
-        }
-        const subObject = (item as any)[config.dataKey];
-        if (isSubjects(subObject)) {
-          return selectedOptions.some(option => (subObject as any)[option]);
-        }
-        return false;
-      }
-    });
-  });
+  const filteredItems = planningItems.filter(item => doesItemMatchFiltersUnion(item, activeFilters));
 
   const itemsByWeek = new Map<string, PlanningItem[]>();
   filteredItems.forEach((item) => {
