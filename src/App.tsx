@@ -255,13 +255,10 @@ const Home = ({
               {effectiveFilterConfig
                 .filter((config: any) => {
                   if (config.id === 'subject') {
-                    const selectedRoles = activeFilters['role'] || [];
+                    const selectedRoles = (activeFilters['role'] || []).map((r: string) => r.toLowerCase());
                     return selectedRoles.includes('studenten');
                   }
-                  if (config.id === 'process') {
-                    const selectedRoles = activeFilters['role'] || [];
-                    return !selectedRoles.includes('studenten');
-                  }
+                  // Processen/"Onderwerp (medewerkersrollen)" is altijd zichtbaar
                   return true;
                 })
                 .map((config: any) => (
