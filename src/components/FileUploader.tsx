@@ -259,11 +259,16 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
       ]);
       const subjectHeaders: { header: string; id: string }[] = [];
       const processHeaders: { header: string; id: string }[] = [];
+      const processHeaderLabelById = new Map<string, string>();
       headers.forEach((header, idx) => {
         const id = normalizeHeaderToId(header);
         if (!id || skipNormalized.has(id)) return;
         if (roleIdx >= 0 && idx > roleIdx) {
           processHeaders.push({ header, id });
+          // Bewaar originele header label per id voor latere weergave
+          if (!processHeaderLabelById.has(id)) {
+            processHeaderLabelById.set(id, header);
+          }
         } else {
           subjectHeaders.push({ header, id });
         }
@@ -274,6 +279,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
         ? customParser({ data: parsedData })
         : parsedData.map((row: any) => {
         const processes: Record<string, boolean> = {};
+        const processLabels: Record<string, string> = {};
         const subjects: Record<string, boolean> = {};
 
         // Vul subjects o.b.v. subjectHeaders (links van Rol)
@@ -292,6 +298,11 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
           const raw = row[header];
           const isTrue = raw === 'v' || raw === true || String(raw).toLowerCase() === 'v';
           processes[id] = !!isTrue;
+          if (processes[id]) {
+            // Koppel originele headerlabel aan id voor UI-weergave
+            const originalHeader = processHeaderLabelById.get(id) || header;
+            processLabels[id] = originalHeader;
+          }
         });
 
         return ({
@@ -303,7 +314,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
          role: (() => {
            const raw = (row['rol'] ?? row['Rol'] ?? row['gebruiker'] ?? row['Gebruiker'] ?? '').toString().trim();
            if (!raw) return null; // nooit undefined schrijven
-           return raw.toLowerCase();
+           // Bewaar originele casing uit Excel voor UI-weergave
+           return raw;
          })(),
          startDate: row['Startdatu'] || row['Startdatum'] || row['startDate'] || '',
          endDate: row['Einddatur'] || row['Einddatum'] || row['endDate'] || '',
@@ -331,6 +343,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
         gewijzigdDoor: row['Gewijzigd door'] || '',
         opmerkingen: row['Opmerkingen'] || '',
         processes,
+        processLabels,
       })}).filter(item => (item as PlanningItem).title); // Filter out items without a title
 
       // Post-processing validatie

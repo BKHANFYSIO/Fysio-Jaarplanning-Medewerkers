@@ -62,8 +62,13 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
         nextIds = currentIds.filter(r => r !== roleId);
       }
 
-      // Store as formatted, comma-separated labels for readability
-      const nextLabel = nextIds.map(id => formatRoleLabel(id)).join(', ');
+      // Bewaar originele casing waar mogelijk
+      const nextLabel = nextIds
+        .map(id => {
+          const fromList = roles.find(r => r.id === id)?.name;
+          return fromList || formatRoleLabel(id);
+        })
+        .join(', ');
       return { ...prev, role: nextLabel };
     });
   };
@@ -119,7 +124,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, o
                         checked={isChecked}
                         onChange={(e) => handleRoleChange(role.name, e.target.checked)}
                       />
-                      <span>{formatRoleLabel(role.name)}</span>
+                      <span>{role.name}</span>
                     </label>
                   );
                 })}

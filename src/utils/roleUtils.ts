@@ -17,6 +17,28 @@ export function extractNormalizedRoles(input: string | null | undefined): string
 }
 
 /**
+ * Tokenize role string while preserving original casing, and provide a normalized id per token.
+ * Ensures uniqueness by normalized id, keeping the first encountered original label.
+ */
+export function tokenizeRoles(input: string | null | undefined): { id: string; original: string }[] {
+  if (!input) return [];
+  const tokens = String(input)
+    .split(/[;,]+/)
+    .map(token => token.trim())
+    .filter(token => token.length > 0);
+  const seen = new Set<string>();
+  const result: { id: string; original: string }[] = [];
+  tokens.forEach(token => {
+    const id = token.toLowerCase();
+    if (!seen.has(id)) {
+      seen.add(id);
+      result.push({ id, original: token });
+    }
+  });
+  return result;
+}
+
+/**
  * Format a role label for display (capitalize words, collapse whitespace).
  */
 export function formatRoleLabel(role: string): string {

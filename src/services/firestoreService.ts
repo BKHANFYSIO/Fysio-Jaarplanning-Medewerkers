@@ -242,7 +242,8 @@ export const fetchAndExportAsExcel = async (collectionName: string, fileName: st
   };
   const proc = (item as any).processes || {};
   Object.keys(proc).forEach(id => {
-    const label = formatIdToLabel(id);
+    const original = (item as any).processLabels?.[id];
+    const label = original || formatIdToLabel(id);
     base[label] = proc[id] ? 'v' : '';
   });
   return base;

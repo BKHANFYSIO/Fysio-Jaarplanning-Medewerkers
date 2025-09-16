@@ -25,7 +25,7 @@ const roleTextColor: { [key: string]: string } = {
 const getRoleBadgeClasses = (role: string, roles: any[]): string => {
   if (!role || !roles.length) return 'text-gray-700';
   
-  const roleData = roles.find(r => r.name.toLowerCase() === role.toLowerCase());
+  const roleData = roles.find(r => r.id === String(role).toLowerCase() || r.name.toLowerCase() === String(role).toLowerCase());
   if (!roleData) return 'text-gray-700';
   
   const color = roleData.color || 'gray';
@@ -203,7 +203,7 @@ export function PlanningCard({ item, type, showDateDetails }: PlanningCardProps)
             })}
             {item.role && (
               <span className={`px-2 py-0.5 text-xs rounded ${getRoleBadgeClasses(String(item.role), roles)}`}>
-                {String(item.role).charAt(0).toUpperCase() + String(item.role).slice(1)}
+                {String(item.role)}
               </span>
             )}
             {/* Geen extra icoon hier; alleen in de footer rechts zichtbaar */}

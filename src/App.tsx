@@ -13,7 +13,7 @@ import { useRef, useMemo, useState, useLayoutEffect, useEffect } from 'react';
 import { parseDate } from './utils/dateUtils';
 import { exportToExcel } from './utils/excelParser';
 import { Filter, RotateCcw, LocateFixed, ChevronDown, ChevronUp, HelpCircle, QrCode, Sun, Moon, Link, Download } from 'lucide-react';
-import { extractNormalizedRoles, formatRoleLabel, formatIdToLabel } from './utils/roleUtils';
+import { extractNormalizedRoles, formatIdToLabel, tokenizeRoles } from './utils/roleUtils';
 import { HelpModal } from './components/HelpModal';
 import { DevelopmentBanner } from './components/DevelopmentBanner';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -561,17 +561,23 @@ function App() {
     const cloned = filterConfig.map(cfg => ({ ...cfg, options: [...cfg.options] }));
     const roleIdx = cloned.findIndex(c => c.id === 'role');
     if (roleIdx !== -1) {
-      const roleIds = new Set<string>();
-      planningItems.forEach(item => {
-        const ids = extractNormalizedRoles(item.role);
-        ids.forEach(id => roleIds.add(id));
-      });
+      const byId = new Map<string, { value: string; label: string; color: string }>();
       const palette = ['blue','indigo','teal','yellow','pink','purple','green','orange','slate','gray'];
-      const options = Array.from(roleIds).sort().map((id, i) => ({
-        value: id,
-        label: formatRoleLabel(id),
-        color: palette[i % palette.length],
-      }));
+      planningItems.forEach(item => {
+        const tokens = tokenizeRoles(item.role);
+        tokens.forEach(tok => {
+          if (!byId.has(tok.id)) {
+            const idx = byId.size;
+            byId.set(tok.id, {
+              value: tok.id,
+              // Gebruik originele casing zoals in Excel (eerste keer gezien)
+              label: tok.original,
+              color: palette[idx % palette.length],
+            });
+          }
+        });
+      });
+      const options = Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label));
       cloned[roleIdx] = { ...cloned[roleIdx], options };
     }
     const subjectIdx = cloned.findIndex(c => c.id === 'subject');
@@ -598,17 +604,24 @@ function App() {
     }
     const processIdx = cloned.findIndex(c => c.id === 'process');
     if (processIdx !== -1) {
-      const keys = new Set<string>();
+      const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
+      const byId = new Map<string, { value: string; label: string; color: string }>();
       planningItems.forEach(item => {
         const proc = (item as any).processes || {};
-        Object.keys(proc).forEach(k => keys.add(k));
+        const labels = (item as any).processLabels || {};
+        Object.keys(proc).forEach(k => {
+          if (!byId.has(k)) {
+            const idx = byId.size;
+            byId.set(k, {
+              value: k,
+              // Gebruik originele header label als beschikbaar, anders fallback
+              label: labels[k] || formatIdToLabel(k),
+              color: palette[idx % palette.length],
+            });
+          }
+        });
       });
-      const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
-      const options = Array.from(keys).sort().map((id, i) => ({
-        value: id,
-        label: formatIdToLabel(id),
-        color: palette[i % palette.length],
-      }));
+      const options = Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label));
       cloned[processIdx] = { ...cloned[processIdx], options };
     }
     return cloned;
@@ -891,8 +904,9 @@ function App() {
       };
       // Voeg processen toe als losse kolommen met nette labels
       const proc = (item as any).processes || {};
+      const labels = (item as any).processLabels || {};
       Array.from(processKeys).forEach(id => {
-        const label = formatIdToLabel(id);
+        const label = labels[id] || formatIdToLabel(id);
         base[label] = proc[id] ? 'v' : '';
       });
       return base;

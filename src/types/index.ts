@@ -43,6 +43,9 @@ export interface PlanningItem {
   processes?: {
     [key: string]: boolean;
   };
+  processLabels?: {
+    [key: string]: string;
+  };
 }
 
 export interface WeekInfo {

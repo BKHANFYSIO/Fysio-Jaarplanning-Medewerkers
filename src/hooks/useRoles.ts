@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAdminData } from './useAdminData';
-import { extractNormalizedRoles, formatRoleLabel } from '../utils/roleUtils';
+import { extractNormalizedRoles, formatRoleLabel, tokenizeRoles } from '../utils/roleUtils';
 
 export interface Role {
   id: string;
@@ -21,13 +21,13 @@ export const useRoles = () => {
     const uniqueRoles = new Map<string, Role>();
     
     planningItems.forEach(item => {
-      const roles = extractNormalizedRoles(item.role);
-      roles.forEach(roleKey => {
-        if (!uniqueRoles.has(roleKey)) {
-          const displayName = formatRoleLabel(roleKey);
+      const tokens = tokenizeRoles(item.role);
+      tokens.forEach(tok => {
+        if (!uniqueRoles.has(tok.id)) {
+          const displayName = tok.original; // behoud originele casing
           const color = generateColorFromString(displayName);
-          uniqueRoles.set(roleKey, {
-            id: roleKey,
+          uniqueRoles.set(tok.id, {
+            id: tok.id,
             name: displayName,
             color: color,
             active: true

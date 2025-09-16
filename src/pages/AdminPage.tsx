@@ -658,7 +658,7 @@ const AdminPage = () => {
                           {sortedItems.map((item: PlanningItem) => (
                             <tr key={item.id} className="bg-white border-b hover:bg-gray-50">
                               <td className="px-6 py-4 font-medium">{item.title}</td>
-                              <td className="px-6 py-4">{item.role ? String(item.role).charAt(0).toUpperCase() + String(item.role).slice(1) : '-'}</td>
+                              <td className="px-6 py-4">{item.role ? String(item.role) : '-'}</td>
                               <td className="px-6 py-4">{item.startDate}</td>
                               <td className="px-6 py-4">{item.endDate}</td>
                               <td className="px-6 py-4 text-right">
