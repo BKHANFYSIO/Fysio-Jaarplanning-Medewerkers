@@ -119,7 +119,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
   };
 
   // Helper functie voor data validatie
-  const validateData = (data: any[]): { isValid: boolean; message: string; validRows: number } => {
+  const validateData = (
+    data: any[],
+    headers?: string[]
+  ): { isValid: boolean; message: string; validRows: number } => {
     if (!data || data.length === 0) {
       return { 
         isValid: false, 
@@ -128,10 +131,35 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
       };
     }
     
-    // Tel rijen met ten minste een titel
-    const rowsWithTitle = data.filter(row => {
-      const title = row['Wat?'] || row['Titel (of wat)'];
-      return title && title.toString().trim() !== '';
+    // Tel rijen met ten minste een titel en verzamel details voor ontbrekende
+    const invalidRows: { index: number; reason: string; sample?: string }[] = [];
+    const rowsWithTitle = data.filter((row, idx) => {
+      const raw1 = row['Wat?'];
+      const raw2 = row['Titel (of wat)'];
+      const title = raw1 ?? raw2;
+      const rawStr = title == null ? '' : String(title);
+      const trimmed = rawStr.replace(/\u00A0/g, ' ').trim(); // verwijder NBSP ook
+      const ok = trimmed !== '';
+      if (!ok) {
+        const hasWatQ = headers?.some(h => h === 'Wat?');
+        const hasTitelOfWat = headers?.some(h => h === 'Titel (of wat)');
+        const hasWatNoQ = headers?.some(h => h.trim().toLowerCase() === 'wat');
+        const hasTitelOnly = headers?.some(h => h.trim().toLowerCase() === 'titel');
+        let reason = 'Titel ontbreekt of is leeg';
+        if (!hasWatQ && !hasTitelOfWat && (hasWatNoQ || hasTitelOnly)) {
+          reason = "Kolomkop wijkt af: gebruik 'Wat?' of 'Titel (of wat)'";
+        } else if (rawStr.length > 0 && trimmed.length === 0) {
+          reason = 'Alleen spaties/onzichtbare tekens';
+        }
+        const previewSource = title == null ? '' : String(title);
+        const sample = previewSource
+          .replace(/\u00A0/g, ' ')
+          .replace(/[\r\n]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .slice(0, 60);
+        invalidRows.push({ index: idx + 1, reason, sample: sample || undefined });
+      }
+      return ok;
     });
     
     if (rowsWithTitle.length === 0) {
@@ -143,9 +171,15 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
     }
     
     if (rowsWithTitle.length < data.length) {
+      const maxList = 10;
+      const list = invalidRows
+        .slice(0, maxList)
+        .map(r => `- Rij ${r.index}: ${r.reason}${r.sample ? ` — "${r.sample}"` : ''}`)
+        .join('\n');
+      const more = invalidRows.length > maxList ? `\n... en ${invalidRows.length - maxList} meer.` : '';
       return {
         isValid: true,
-        message: `⚠️ Waarschuwing: ${data.length - rowsWithTitle.length} van de ${data.length} rijen hebben geen geldige titel en worden overgeslagen.`,
+        message: `⚠️ Waarschuwing: ${data.length - rowsWithTitle.length} van de ${data.length} rijen hebben geen geldige titel en worden overgeslagen.\n\nDetails:\n${list}${more}`,
         validRows: rowsWithTitle.length
       };
     }
@@ -226,7 +260,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
       }
 
       // Data validatie
-      const dataValidation = validateData(parsedData);
+      const dataValidation = validateData(parsedData, headers);
       if (!dataValidation.isValid) {
         setFeedback(dataValidation.message);
         setLoading(false);
