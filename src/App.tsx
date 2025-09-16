@@ -807,6 +807,13 @@ function App() {
           return !!phases[option];
         });
       } else {
+        // Speciale regel: Subject-filter is alleen van toepassing wanneer rol 'studenten' actief is
+        if (config.dataKey === 'subjects') {
+          const selectedRoles = (activeFilters['role'] || []).map((r: string) => r.toLowerCase());
+          if (!selectedRoles.includes('studenten')) {
+            return true; // negeer subject-filter wanneer studenten niet geselecteerd is
+          }
+        }
         const subObject = (item as any)[config.dataKey];
         if (isSubjects(subObject)) {
           return selectedOptions.some(option => (subObject as any)[option]);

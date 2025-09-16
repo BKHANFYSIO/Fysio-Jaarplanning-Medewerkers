@@ -60,6 +60,13 @@ export const useAvailableFilterOptions = (
                 return !!phases[option];
               });
             } else {
+              // Subject-filter is alleen van toepassing wanneer rol 'studenten' actief is in de testfilters
+              if (cfg.dataKey === 'subjects') {
+                const selectedRoles = (testFilters['role'] || []).map((r: string) => r.toLowerCase());
+                if (!selectedRoles.includes('studenten')) {
+                  return true; // negeer subject-filter indien studenten niet geselecteerd
+                }
+              }
               const subObject = (item as any)[cfg.dataKey];
               if (subObject && typeof subObject === 'object') {
                 return selectedOptions.some(opt => (subObject as any)[opt]);
