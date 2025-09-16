@@ -43,6 +43,7 @@ export const useDynamicFilters = () => {
         };
         return {
           ...config,
+          label: 'Onderwerp (alleen met rol Studenten)',
           options: Array.from(keys).sort().map((id, i) => ({
             value: id,
             label: subjectLabelMap[id] ?? (['ipl','bvp','pzw'].includes(id) ? id.toUpperCase() : formatIdToLabel(id)),
@@ -70,6 +71,7 @@ export const useDynamicFilters = () => {
         });
         return {
           ...config,
+          label: 'Onderwerp (medewerkersrollen)',
           options: Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label))
         };
       }

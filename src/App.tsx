@@ -252,7 +252,19 @@ const Home = ({
           >
             {/* Filters */}
             <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
-              {effectiveFilterConfig.map((config: any) => (
+              {effectiveFilterConfig
+                .filter((config: any) => {
+                  if (config.id === 'subject') {
+                    const selectedRoles = activeFilters['role'] || [];
+                    return selectedRoles.includes('studenten');
+                  }
+                  if (config.id === 'process') {
+                    const selectedRoles = activeFilters['role'] || [];
+                    return !selectedRoles.includes('studenten');
+                  }
+                  return true;
+                })
+                .map((config: any) => (
                 <div key={config.id} className="mr-4">
                   <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
                   <div className="flex flex-wrap gap-2">
@@ -600,7 +612,7 @@ function App() {
         color: palette[i % palette.length],
         isOther: ['overig','other','overige','anders'].includes(id.toLowerCase()),
       }));
-      cloned[subjectIdx] = { ...cloned[subjectIdx], options };
+      cloned[subjectIdx] = { ...cloned[subjectIdx], label: 'Onderwerp (alleen met rol Studenten)', options };
     }
     const processIdx = cloned.findIndex(c => c.id === 'process');
     if (processIdx !== -1) {
@@ -622,7 +634,7 @@ function App() {
         });
       });
       const options = Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label));
-      cloned[processIdx] = { ...cloned[processIdx], options };
+      cloned[processIdx] = { ...cloned[processIdx], label: 'Onderwerp (medewerkersrollen)', options };
     }
     return cloned;
   }, [planningItems]);

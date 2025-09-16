@@ -22,7 +22,7 @@ export const filterConfig: FilterConfig[] = [
   },
   {
     id: 'subject',
-    label: 'Onderwerp',
+    label: 'Onderwerp (alleen met rol Studenten)',
     type: 'pills',
     dataKey: 'subjects',
     options: [
@@ -39,7 +39,7 @@ export const filterConfig: FilterConfig[] = [
   },
   {
     id: 'process',
-    label: 'Processen',
+    label: 'Onderwerp (medewerkersrollen)',
     type: 'pills',
     dataKey: 'processes',
     options: [],
