@@ -60,14 +60,9 @@ export function doesItemMatchFiltersUnion(item: PlanningItem, activeFilters: Act
   const staffRoles = selectedRoles.filter(r => r !== 'studenten');
   const anyStaffSelected = staffRoles.length > 0;
 
-  // Fallback: geen rolfilters actief -> behoud bestaand gedrag
+  // Fallback: geen rolfilters actief -> toon geen items (lege staat tot er rollen gekozen zijn)
   if (!hasStudentSelected && !anyStaffSelected) {
-    // Subject wordt genegeerd indien studenten niet is geselecteerd
-    if (!matchesSemester(item, activeFilters)) return false;
-    if (!matchesPhases(item, activeFilters)) return false;
-    // Processes mogen filteren als ze zijn geselecteerd
-    if (!matchesProcesses(item, activeFilters)) return false;
-    return true;
+    return false;
   }
 
   // Studenten-branch
@@ -81,10 +76,10 @@ export function doesItemMatchFiltersUnion(item: PlanningItem, activeFilters: Act
   const staffBranch = anyStaffSelected
     && itemHasAnyRole(item, staffRoles)
     && matchesSemester(item, activeFilters)
-    && matchesPhases(item, activeFilters)
     && matchesProcesses(item, activeFilters);
 
   return studentBranch || staffBranch;
 }
+
 
 

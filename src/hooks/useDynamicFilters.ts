@@ -12,7 +12,7 @@ export const useDynamicFilters = () => {
     return filterConfig.map(config => {
       if (config.id === 'role') {
         // Gebruik originele casing zoals in Excel (eerste keer gezien)
-        const optionMap = new Map<string, { value: string; label: string; color: string }>();
+        const optionMap = new Map<string, { value: string; label: string; color: string; isOther?: boolean }>();
         roles.forEach(role => {
           const tokens = tokenizeRoles(role.name);
           tokens.forEach(tok => {
@@ -21,10 +21,13 @@ export const useDynamicFilters = () => {
                 value: tok.id,
                 label: tok.original,
                 color: role.color,
+                // Markeer studenten als 'andere' groep om rechts te positioneren met scheiding
+                isOther: tok.id === 'studenten',
               });
             }
           });
         });
+        // Sorteer alfabetisch, maar 'isOther' groep blijft rechts in de UI via bestaande rendering
         return {
           ...config,
           options: Array.from(optionMap.values()).sort((a,b) => a.label.localeCompare(b.label))
@@ -43,7 +46,7 @@ export const useDynamicFilters = () => {
         };
         return {
           ...config,
-          label: 'Onderwerp (alleen met rol Studenten)',
+          label: 'Onderwerp (werkt alleen met rol Studenten)',
           options: Array.from(keys).sort().map((id, i) => ({
             value: id,
             label: subjectLabelMap[id] ?? (['ipl','bvp','pzw'].includes(id) ? id.toUpperCase() : formatIdToLabel(id)),
@@ -54,25 +57,31 @@ export const useDynamicFilters = () => {
       }
       if (config.id === 'process') {
         const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
-        const byId = new Map<string, { value: string; label: string; color: string }>();
+        // Verzamel eerst alle originele labels uit alle items om casing exact te behouden
+        const labelById = new Map<string, string>();
         planningItems.forEach(item => {
-          const proc: any = (item as any).processes || {};
           const labels: any = (item as any).processLabels || {};
-          Object.keys(proc).forEach(k => {
-            if (!byId.has(k)) {
-              const idx = byId.size;
-              byId.set(k, {
-                value: k,
-                label: labels[k] || formatIdToLabel(k),
-                color: palette[idx % palette.length],
-              });
+          Object.keys(labels).forEach((id) => {
+            if (!labelById.has(id)) {
+              labelById.set(id, labels[id]);
             }
           });
         });
+
+        // Bouw opties uitsluitend op basis van bekende labels (dus alleen processen die ergens actief zijn)
+        const options = Array.from(labelById.entries())
+          .map(([id, label], idx) => ({
+            value: id,
+            label,
+            color: palette[idx % palette.length],
+            isOther: ['overig','other','overige','anders'].includes(String(id).toLowerCase()),
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+
         return {
           ...config,
           label: 'Onderwerp (medewerkersrollen)',
-          options: Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label))
+          options,
         };
       }
       return config;

@@ -10,7 +10,7 @@ export const filterConfig: FilterConfig[] = [
   },
   {
     id: 'phase',
-    label: 'Studiefase',
+    label: 'Studiefase (werkt alleen met rol Studenten)',
     type: 'pills',
     dataKey: 'phases',
     options: [
@@ -22,7 +22,7 @@ export const filterConfig: FilterConfig[] = [
   },
   {
     id: 'subject',
-    label: 'Onderwerp (alleen met rol Studenten)',
+    label: 'Onderwerp (werkt alleen met rol Studenten)',
     type: 'pills',
     dataKey: 'subjects',
     options: [

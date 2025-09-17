@@ -325,15 +325,14 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ label, collectionNam
           subjects[id] = !!isTrue;
         });
 
-        // Vul processes o.b.v. processHeaders (rechts van Rol), maar sluit onderwerpen uit die rechts van Rol staan
-        const subjectLike = new Set(['waarderen','juniorstage','ipl','bvp','pzw','minor','getuigschriften','inschrijven','inschrijven_aanmelden','overig','meeloopstage','meeloops','meelopen','meeloop']);
+        // Vul processes o.b.v. alle processHeaders (rechts van Rol)
         processHeaders.forEach(({ header, id }) => {
-          if (!id || subjectLike.has(id)) return;
+          if (!id) return;
           const raw = row[header];
           const isTrue = raw === 'v' || raw === true || String(raw).toLowerCase() === 'v';
           processes[id] = !!isTrue;
           if (processes[id]) {
-            // Koppel originele headerlabel aan id voor UI-weergave
+            // Koppel originele headerlabel aan id voor UI-weergave (exacte Excel-casing)
             const originalHeader = processHeaderLabelById.get(id) || header;
             processLabels[id] = originalHeader;
           }

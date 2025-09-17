@@ -46,6 +46,7 @@ const Home = ({
   effectiveFilterConfig,
   activeFilters,
   handleToggleFilter,
+  setRoleSelection,
   scrollToTargetWeek,
   targetWeekInfo,
   handleResetFilters,
@@ -53,6 +54,7 @@ const Home = ({
   areAllLopendeZakenCollapsed,
   setIsHelpModalOpen,
   setIsDownloadModalOpen,
+  isHelpModalOpen,
   loading,
   weeks,
   itemsByWeek,
@@ -66,6 +68,8 @@ const Home = ({
   filteredItemsCount,
   totalItemsCount,
   availableFilterOptions,
+  showRolePrompt,
+  setShowRolePrompt,
 }: any) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [panelMaxHeight, setPanelMaxHeight] = useState<number | null>(null);
@@ -108,6 +112,28 @@ const Home = ({
 
   return (
   <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    {showRolePrompt && (activeFilters['role'] || []).length === 0 && !isHelpModalOpen && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-5 w-full max-w-md">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">Kies eerst één of meer rollen</h3>
+          <p className="text-sm text-gray-600 dark:text-slate-300 mb-2">Je ziet pas activiteiten nadat je een rol hebt geselecteerd.</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Je rol- en filterselectie wordt opgeslagen op dit apparaat en bij een volgend bezoek automatisch hersteld.</p>
+          <div className="flex gap-2 justify-end">
+            <button
+              className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => {
+                const isMobile = typeof window !== 'undefined' ? window.innerWidth < 1024 : true;
+                if (isMobile) {
+                  setIsMobileFiltersOpen(true);
+                }
+                setShowRolePrompt(false);
+                try { localStorage.setItem('hasSelectedRolesPromptSeen', 'true'); } catch {}
+              }}
+            >{typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'Kies rollen' : 'Open filters'}</button>
+          </div>
+        </div>
+      </div>
+    )}
     <div ref={bannersRef} className="sticky top-0 z-50">
       {bannerVisibility.development && <DevelopmentBanner onClose={handleCloseDevBanner} />}
       {bannerVisibility.changes && <ChangesBanner onClose={handleCloseChangesBanner} />}
@@ -248,64 +274,255 @@ const Home = ({
             style={isMobileFiltersOpen ? { maxHeight: panelMaxHeight ? panelMaxHeight + 'px' : undefined, overflowY: 'auto' } : undefined}
           >
             {/* Filters */}
-            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap">
-              {effectiveFilterConfig
-                .filter((config: any) => {
-                  if (config.id === 'subject') {
-                    const selectedRoles = (activeFilters['role'] || []).map((r: string) => r.toLowerCase());
-                    return selectedRoles.includes('studenten');
-                  }
-                  // Processen/"Onderwerp (medewerkersrollen)" is altijd zichtbaar
-                  return true;
-                })
-                .map((config: any) => (
-                <div key={config.id} className="mr-4">
-                  <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{config.label}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {config.options
-                      .filter((option: any) => !option.isOther)
-                      .map((option: any) => {
-                        const isDisabled = !availableFilterOptions[config.id]?.[option.value];
-                        return (
-                          <FilterButton
-                            key={option.value}
-                            label={option.label}
-                            color={option.color}
-                            variant={config.id === 'phase' ? 'outline' : 'solid'}
-                            isActive={activeFilters[config.id]?.includes(option.value)}
-                            onClick={() => handleToggleFilter(config.id, option.value)}
-                            disabled={isDisabled}
-                            disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                          />
-                        );
-                      })}
-                    {config.options.some((o: any) => o.isOther) && (
-                      <>
-                        <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
-                        {config.options
-                          .filter((option: any) => option.isOther)
-                          .map((option: any) => {
-                            const isDisabled = !availableFilterOptions[config.id]?.[option.value];
-                            return (
-                              <FilterButton
-                                key={option.value}
-                                label={option.label}
-                                color={option.color}
-                                variant={config.id === 'phase' ? 'outline' : 'solid'}
-                                isActive={activeFilters[config.id]?.includes(option.value)}
-                                onClick={() => handleToggleFilter(config.id, option.value)}
-                                disabled={isDisabled}
-                                disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                                className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
-                              />
-                            );
-                          })}
-                      </>
-                    )}
+            {(() => {
+              const selectedRoles = (activeFilters['role'] || []).map((r: string) => r.toLowerCase());
+              const studentOn = selectedRoles.includes('studenten');
+              const roleCfg: any = effectiveFilterConfig.find((c: any) => c.id === 'role');
+              const processCfg: any = effectiveFilterConfig.find((c: any) => c.id === 'process');
+              const phaseCfg: any = effectiveFilterConfig.find((c: any) => c.id === 'phase');
+              const subjectCfg: any = effectiveFilterConfig.find((c: any) => c.id === 'subject');
+
+              const staffRoleOptions = (roleCfg?.options || []).filter((o: any) => o.value !== 'studenten' && !o.isOther);
+              const studentRoleOptions = (roleCfg?.options || []).filter((o: any) => o.value === 'studenten');
+
+              return (
+                <div className="flex flex-col gap-4">
+                  {/* Rij 1: Rollen, altijd in 2 kolommen zodat 'Studenten' selecteerbaar blijft */}
+                  <div className="grid gap-2 lg:grid-cols-[1fr_auto_1fr] items-start">
+                    <div>
+                      <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">Rol (medewerkers)</h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => {
+                            const staffValues = staffRoleOptions.map((o: any) => o.value);
+                            const current = new Set(activeFilters['role'] || []);
+                            staffValues.forEach((v: string) => current.add(v));
+                            setRoleSelection(Array.from(current));
+                          }}
+                          className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        >Alles</button>
+                        <button
+                          onClick={() => {
+                            const current = new Set(activeFilters['role'] || []);
+                            staffRoleOptions.forEach((o: any) => current.delete(o.value));
+                            setRoleSelection(Array.from(current));
+                          }}
+                          className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        >Niets</button>
+                        {staffRoleOptions.map((option: any) => {
+                          const isDisabled = !availableFilterOptions['role']?.[option.value];
+                          return (
+                            <FilterButton
+                              key={option.value}
+                              label={option.label}
+                              color={option.color}
+                              variant={'solid'}
+                              isActive={activeFilters['role']?.includes(option.value)}
+                              onClick={() => handleToggleFilter('role', option.value)}
+                              disabled={isDisabled}
+                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="hidden lg:block w-px self-stretch bg-gray-300 mx-2" />
+
+                    <div>
+                      <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">Rol (studenten)</h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {studentRoleOptions.map((option: any) => {
+                          const isDisabled = !availableFilterOptions['role']?.[option.value];
+                          return (
+                            <FilterButton
+                              key={option.value}
+                              label={option.label}
+                              color={option.color}
+                              variant={'solid'}
+                              isActive={activeFilters['role']?.includes(option.value)}
+                              onClick={() => handleToggleFilter('role', option.value)}
+                              disabled={isDisabled}
+                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                              className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Rij 2: Overige filters. Twee kolommen als studenten actief; anders enkel links (volledige breedte). */}
+                  {studentOn ? (
+                    <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] items-start">
+                      {/* Links: Onderwerp (medewerkersrollen) */}
+                      {processCfg && (
+                        <div className="mr-4">
+                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{processCfg.label}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {processCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
+                              const isDisabled = !availableFilterOptions['process']?.[option.value];
+                              return (
+                                <FilterButton
+                                  key={option.value}
+                                  label={option.label}
+                                  color={option.color}
+                                  variant={'solid'}
+                                  isActive={activeFilters['process']?.includes(option.value)}
+                                  onClick={() => handleToggleFilter('process', option.value)}
+                                  disabled={isDisabled}
+                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                />
+                              );
+                            })}
+                            {processCfg.options.some((o: any) => o.isOther) && (
+                              <>
+                                <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                                {processCfg.options.filter((o: any) => o.isOther).map((option: any) => {
+                                  const isDisabled = !availableFilterOptions['process']?.[option.value];
+                                  return (
+                                    <FilterButton
+                                      key={option.value}
+                                      label={option.label}
+                                      color={option.color}
+                                      variant={'solid'}
+                                      isActive={activeFilters['process']?.includes(option.value)}
+                                      onClick={() => handleToggleFilter('process', option.value)}
+                                      disabled={isDisabled}
+                                      disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                      className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                    />
+                                  );
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="hidden lg:block w-px self-stretch bg-gray-300 mx-2" />
+
+                      {/* Rechts: Studiefase + Onderwerp (studenten) */}
+                      <div>
+                        {phaseCfg && (
+                          <div className="mr-4">
+                            <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{phaseCfg.label}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {phaseCfg.options.map((option: any) => {
+                                const isDisabled = !availableFilterOptions['phase']?.[option.value];
+                                return (
+                                  <FilterButton
+                                    key={option.value}
+                                    label={option.label}
+                                    color={option.color}
+                                    variant={'outline'}
+                                    isActive={activeFilters['phase']?.includes(option.value)}
+                                    onClick={() => handleToggleFilter('phase', option.value)}
+                                    disabled={isDisabled}
+                                    disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {subjectCfg && (
+                          <div className="mr-4 mt-3">
+                            <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{subjectCfg.label}</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {subjectCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
+                                const isDisabled = !availableFilterOptions['subject']?.[option.value];
+                                return (
+                                  <FilterButton
+                                    key={option.value}
+                                    label={option.label}
+                                    color={option.color}
+                                    variant={'solid'}
+                                    isActive={activeFilters['subject']?.includes(option.value)}
+                                    onClick={() => handleToggleFilter('subject', option.value)}
+                                    disabled={isDisabled}
+                                    disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                  />
+                                );
+                              })}
+                              {subjectCfg.options.some((o: any) => o.isOther) && (
+                                <>
+                                  <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                                  {subjectCfg.options.filter((o: any) => o.isOther).map((option: any) => {
+                                    const isDisabled = !availableFilterOptions['subject']?.[option.value];
+                                    return (
+                                      <FilterButton
+                                        key={option.value}
+                                        label={option.label}
+                                        color={option.color}
+                                        variant={'solid'}
+                                        isActive={activeFilters['subject']?.includes(option.value)}
+                                        onClick={() => handleToggleFilter('subject', option.value)}
+                                        disabled={isDisabled}
+                                        disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                        className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                      />
+                                    );
+                                  })}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    // Alleen medewerkersfilters (volledige breedte)
+                    <div>
+                      {processCfg && (
+                        <div className="mr-4">
+                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{processCfg.label}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {processCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
+                              const isDisabled = !availableFilterOptions['process']?.[option.value];
+                              return (
+                                <FilterButton
+                                  key={option.value}
+                                  label={option.label}
+                                  color={option.color}
+                                  variant={'solid'}
+                                  isActive={activeFilters['process']?.includes(option.value)}
+                                  onClick={() => handleToggleFilter('process', option.value)}
+                                  disabled={isDisabled}
+                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                />
+                              );
+                            })}
+                            {processCfg.options.some((o: any) => o.isOther) && (
+                              <>
+                                <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                                {processCfg.options.filter((o: any) => o.isOther).map((option: any) => {
+                                  const isDisabled = !availableFilterOptions['process']?.[option.value];
+                                  return (
+                                    <FilterButton
+                                      key={option.value}
+                                      label={option.label}
+                                      color={option.color}
+                                      variant={'solid'}
+                                      isActive={activeFilters['process']?.includes(option.value)}
+                                      onClick={() => handleToggleFilter('process', option.value)}
+                                      disabled={isDisabled}
+                                      disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                      className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                    />
+                                  );
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
 
             <hr className="my-1"/>
 
@@ -411,13 +628,17 @@ const Home = ({
 
 function App() {
   const { weeks, planningItems, loading, error } = useData();
-  const { activeFilters, toggleFilter, resetFilters } = useFilters();
+  const { activeFilters, toggleFilter, setFilterSelection, resetFilters } = useFilters();
   const { snelkoppelingen, groepen } = useSnelkoppelingen();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [showRolePrompt, setShowRolePrompt] = useState(() => {
+    try { return localStorage.getItem('hasSelectedRoles') === 'true' || localStorage.getItem('hasSelectedRolesPromptSeen') === 'true' ? false : true; } catch { return true; }
+  });
   const [isSnelkoppelingenOpen, setIsSnelkoppelingenOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     const stored = localStorage.getItem('theme');
-    return stored ? stored === 'dark' : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Standaard licht thema bij eerste bezoek
+    return stored ? stored === 'dark' : false;
   });
   const toggleDark = () => {
     setIsDark(prev => {
@@ -611,23 +832,26 @@ function App() {
     const processIdx = cloned.findIndex(c => c.id === 'process');
     if (processIdx !== -1) {
       const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
-      const byId = new Map<string, { value: string; label: string; color: string }>();
+      // Verzamel originele labels per id uit alle items (casing exact zoals in Excel)
+      const labelById = new Map<string, string>();
       planningItems.forEach(item => {
-        const proc = (item as any).processes || {};
         const labels = (item as any).processLabels || {};
-        Object.keys(proc).forEach(k => {
-          if (!byId.has(k)) {
-            const idx = byId.size;
-            byId.set(k, {
-              value: k,
-              // Gebruik originele header label als beschikbaar, anders fallback
-              label: labels[k] || formatIdToLabel(k),
-              color: palette[idx % palette.length],
-            });
+        Object.keys(labels).forEach((id: string) => {
+          if (!labelById.has(id)) {
+            labelById.set(id, labels[id]);
           }
         });
       });
-      const options = Array.from(byId.values()).sort((a,b) => a.label.localeCompare(b.label));
+
+      const options = Array.from(labelById.entries())
+        .map(([id, label], idx) => ({
+          value: id,
+          label,
+          color: palette[idx % palette.length],
+          isOther: ['overig','other','overige','anders'].includes(String(id).toLowerCase()),
+        }))
+        .sort((a,b) => a.label.localeCompare(b.label));
+
       cloned[processIdx] = { ...cloned[processIdx], label: 'Onderwerp (medewerkersrollen)', options };
     }
     return cloned;
@@ -918,6 +1142,7 @@ function App() {
               availableOptions={availableOptions}
               activeFilters={activeFilters}
               handleToggleFilter={handleToggleFilter}
+              setRoleSelection={(values: string[]) => setFilterSelection('role', values)}
               scrollToTargetWeek={scrollToTargetWeek}
               targetWeekInfo={targetWeekInfo}
               handleResetFilters={handleResetFilters}
@@ -925,6 +1150,7 @@ function App() {
               areAllLopendeZakenCollapsed={areAllLopendeZakenCollapsed}
               setIsHelpModalOpen={setIsHelpModalOpen}
               setIsDownloadModalOpen={setIsDownloadModalOpen}
+              isHelpModalOpen={isHelpModalOpen}
               loading={loading}
               weeks={weeks}
               itemsByWeek={itemsByWeek}
@@ -939,6 +1165,8 @@ function App() {
               filteredItemsCount={filteredUniqueCount}
               totalItemsCount={totalUniqueCount}
               availableFilterOptions={availableFilterOptions}
+              showRolePrompt={showRolePrompt}
+              setShowRolePrompt={setShowRolePrompt}
             />
           } 
         />

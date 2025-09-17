@@ -43,10 +43,25 @@ export const useFilters = () => {
     });
   }, []);
 
+  const setFilterSelection = useCallback((configId: string, values: string[]) => {
+    setActiveFilters(prevFilters => ({
+      ...prevFilters,
+      [configId]: values,
+    }));
+  }, []);
+
   const resetFilters = useCallback(() => {
     // Reset alle filters
     setActiveFilters({});
   }, []);
 
-  return { activeFilters, toggleFilter, resetFilters, filterConfig };
+  // Markeer dat gebruiker rollen gekozen heeft (voor eenmalige prompt)
+  useEffect(() => {
+    const roles = activeFilters['role'] || [];
+    if (roles.length > 0) {
+      try { localStorage.setItem('hasSelectedRoles', 'true'); } catch {}
+    }
+  }, [activeFilters]);
+
+  return { activeFilters, toggleFilter, setFilterSelection, resetFilters, filterConfig };
 };
