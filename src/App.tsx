@@ -74,6 +74,7 @@ const Home = ({
   optionCounts,
   showRolePrompt,
   setShowRolePrompt,
+  preserveScroll,
 }: any) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [panelMaxHeight, setPanelMaxHeight] = useState<number | null>(null);
@@ -299,6 +300,7 @@ const Home = ({
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => {
+                              preserveScroll && preserveScroll();
                               const staffValues = staffRoleOptions.map((o: any) => o.value);
                               const current = new Set(activeFilters['role'] || []);
                               staffValues.forEach((v: string) => current.add(v));
@@ -308,6 +310,7 @@ const Home = ({
                           >Alles</button>
                           <button
                             onClick={() => {
+                              preserveScroll && preserveScroll();
                               const current = new Set(activeFilters['role'] || []);
                               staffRoleOptions.forEach((o: any) => current.delete(o.value));
                               setRoleSelection(Array.from(current));
@@ -517,7 +520,7 @@ const Home = ({
               {/* Dark mode toggle */}
               <button
                 onClick={toggleDark}
-                className={`flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium rounded-lg sm:w-auto transition-colors ${isDark ? 'text-slate-200 bg-slate-700 hover:bg-slate-600' : 'text-gray-700 bg-gray-200 hover:bg-gray-300'}`}
+                className={`flex items-center justify-center w-full gap-2 px-3 py-2 text-sm font-medium rounded-lg sm:w-auto transition-colors text-gray-700 bg-gray-200 hover:bg-gray-300`}
                 title="Schakel licht/donker"
               >
                 {isDark ? <Sun size={16}/> : <Moon size={16}/>}
@@ -658,7 +661,6 @@ function App() {
   const bannersRef = useRef<HTMLDivElement | null>(null);
   const keepInViewWeekKey = useRef<string | null>(null);
   const lastHeaderTotalHeightRef = useRef<number | null>(null);
-  const lastMobileOpenRef = useRef<boolean | null>(null);
 
   useLayoutEffect(() => {
     if (!hasSeenHelp && !loading) {
@@ -688,23 +690,22 @@ function App() {
     }
   }, [weeks, areAllLopendeZakenCollapsed]);
 
-  // Houd content uitgelijnd met de header wanneer mobiel filterpaneel opent/sluit
+  // Houd content uitgelijnd met de header wanneer het filterpaneel opent/sluit of hoogte verandert
   useLayoutEffect(() => {
     const headerHeight = headerRef.current ? headerRef.current.offsetHeight : 0;
     const bannersHeight = bannersRef.current ? bannersRef.current.offsetHeight : 0;
     const total = headerHeight + bannersHeight;
 
-    if (lastHeaderTotalHeightRef.current !== null && lastMobileOpenRef.current !== null && lastMobileOpenRef.current !== isMobileFiltersOpen) {
+    if (lastHeaderTotalHeightRef.current !== null) {
       const delta = total - lastHeaderTotalHeightRef.current;
       if (delta !== 0) {
-        // Compenseer hoogteverandering van de header: bij kleiner worden scroll juist naar beneden
+        // Compenseer hoogteverandering van de header (bij kleiner worden scroll juist naar beneden)
         window.scrollBy({ top: -delta, behavior: 'auto' });
       }
     }
 
     lastHeaderTotalHeightRef.current = total;
-    lastMobileOpenRef.current = isMobileFiltersOpen;
-  }, [isMobileFiltersOpen]);
+  }, [isMobileFiltersOpen, areDesktopFiltersCollapsed, activeFilters]);
 
   const saveCurrentScrollPosition = () => {
     if (headerRef.current && bannersRef.current) {
@@ -1159,6 +1160,7 @@ function App() {
               setShowRolePrompt={setShowRolePrompt}
                 areDesktopFiltersCollapsed={areDesktopFiltersCollapsed}
                 setAreDesktopFiltersCollapsed={setAreDesktopFiltersCollapsed}
+                preserveScroll={saveCurrentScrollPosition}
             />
           } 
         />
