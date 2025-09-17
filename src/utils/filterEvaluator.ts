@@ -14,12 +14,18 @@ function matchesPhases(item: PlanningItem, activeFilters: ActiveFilters): boolea
   if (!selected || selected.length === 0) return true;
   const phases: any = (item as any).phases || {};
   const hasAnyPhase = !!(phases.p || phases.h1 || phases.h2h3);
-  return selected.every(option => {
-    if (option === 'algemeen') {
-      return !hasAnyPhase;
-    }
-    return !!phases[option];
-  });
+  // OR-logica: item matcht als één van de geselecteerde opties matcht
+  // 'algemeen' betekent: geen enkele fase aangevinkt op het item
+  const normalSelections = selected.filter(opt => opt !== 'algemeen');
+  const wantsAlgemeen = selected.includes('algemeen');
+
+  const matchesAnyNormal = normalSelections.some(opt => !!phases[opt]);
+  const matchesAlgemeen = wantsAlgemeen && !hasAnyPhase;
+
+  // Als zowel normaal als algemeen is geselecteerd: match bij een van beide
+  // Als alleen normaal geselecteerd is: match bij een van de normale fases
+  // Als alleen algemeen geselecteerd is: match wanneer item geen fase heeft
+  return matchesAnyNormal || matchesAlgemeen;
 }
 
 function matchesSubjects(item: PlanningItem, activeFilters: ActiveFilters): boolean {
