@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { useData } from './hooks/useData';
 import { useFilters } from './hooks/useFilters';
 import { useAvailableFilterOptions } from './hooks/useAvailableFilterOptions';
+import { useOptionCounts } from './hooks/useOptionCounts';
 import { FilterButton } from './components/FilterButton';
 import { filterConfig } from './config/filters';
 import { PlanningItem, WeekInfo } from './types';
@@ -55,6 +56,8 @@ const Home = ({
   setIsHelpModalOpen,
   setIsDownloadModalOpen,
   isHelpModalOpen,
+  areDesktopFiltersCollapsed,
+  setAreDesktopFiltersCollapsed,
   loading,
   weeks,
   itemsByWeek,
@@ -68,6 +71,7 @@ const Home = ({
   filteredItemsCount,
   totalItemsCount,
   availableFilterOptions,
+  optionCounts,
   showRolePrompt,
   setShowRolePrompt,
 }: any) => {
@@ -286,29 +290,33 @@ const Home = ({
               const studentRoleOptions = (roleCfg?.options || []).filter((o: any) => o.value === 'studenten');
 
               return (
-                <div className="flex flex-col gap-4">
+                <div className={`flex flex-col gap-4 ${areDesktopFiltersCollapsed ? 'lg:hidden' : ''}`}>
                   {/* Rij 1: Rollen, altijd in 2 kolommen zodat 'Studenten' selecteerbaar blijft */}
                   <div className="grid gap-2 lg:grid-cols-[1fr_auto_1fr] items-start">
                     <div>
-                      <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">Rol (medewerkers)</h3>
+                      <div className="mb-2 flex items-center gap-2">
+                        <h3 className="text-base font-semibold text-gray-700 dark:text-slate-200">Rol (medewerkers)</h3>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              const staffValues = staffRoleOptions.map((o: any) => o.value);
+                              const current = new Set(activeFilters['role'] || []);
+                              staffValues.forEach((v: string) => current.add(v));
+                              setRoleSelection(Array.from(current));
+                            }}
+                            className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          >Alles</button>
+                          <button
+                            onClick={() => {
+                              const current = new Set(activeFilters['role'] || []);
+                              staffRoleOptions.forEach((o: any) => current.delete(o.value));
+                              setRoleSelection(Array.from(current));
+                            }}
+                            className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          >Niets</button>
+                        </div>
+                      </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => {
-                            const staffValues = staffRoleOptions.map((o: any) => o.value);
-                            const current = new Set(activeFilters['role'] || []);
-                            staffValues.forEach((v: string) => current.add(v));
-                            setRoleSelection(Array.from(current));
-                          }}
-                          className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        >Alles</button>
-                        <button
-                          onClick={() => {
-                            const current = new Set(activeFilters['role'] || []);
-                            staffRoleOptions.forEach((o: any) => current.delete(o.value));
-                            setRoleSelection(Array.from(current));
-                          }}
-                          className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        >Niets</button>
                         {staffRoleOptions.map((option: any) => {
                           const isDisabled = !availableFilterOptions['role']?.[option.value];
                           return (
@@ -319,8 +327,10 @@ const Home = ({
                               variant={'solid'}
                               isActive={activeFilters['role']?.includes(option.value)}
                               onClick={() => handleToggleFilter('role', option.value)}
-                              disabled={isDisabled}
-                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                              softDisabled={isDisabled}
+                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                              count={optionCounts['role']?.[option.value]}
+                              compact
                             />
                           );
                         })}
@@ -342,9 +352,11 @@ const Home = ({
                               variant={'solid'}
                               isActive={activeFilters['role']?.includes(option.value)}
                               onClick={() => handleToggleFilter('role', option.value)}
-                              disabled={isDisabled}
-                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                              softDisabled={isDisabled}
+                              disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                              count={optionCounts['role']?.[option.value]}
                               className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                              compact
                             />
                           );
                         })}
@@ -352,164 +364,125 @@ const Home = ({
                     </div>
                   </div>
 
-                  {/* Rij 2: Overige filters. Twee kolommen als studenten actief; anders enkel links (volledige breedte). */}
-                  {studentOn ? (
-                    <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] items-start">
-                      {/* Links: Onderwerp (medewerkersrollen) */}
-                      {processCfg && (
-                        <div className="mr-4">
-                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{processCfg.label}</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {processCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
-                              const isDisabled = !availableFilterOptions['process']?.[option.value];
-                              return (
-                                <FilterButton
-                                  key={option.value}
-                                  label={option.label}
-                                  color={option.color}
-                                  variant={'solid'}
-                                  isActive={activeFilters['process']?.includes(option.value)}
-                                  onClick={() => handleToggleFilter('process', option.value)}
-                                  disabled={isDisabled}
-                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                                />
-                              );
-                            })}
-                            {processCfg.options.some((o: any) => o.isOther) && (
-                              <>
-                                <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
-                                {processCfg.options.filter((o: any) => o.isOther).map((option: any) => {
-                                  const isDisabled = !availableFilterOptions['process']?.[option.value];
-                                  return (
-                                    <FilterButton
-                                      key={option.value}
-                                      label={option.label}
-                                      color={option.color}
-                                      variant={'solid'}
-                                      isActive={activeFilters['process']?.includes(option.value)}
-                                      onClick={() => handleToggleFilter('process', option.value)}
-                                      disabled={isDisabled}
-                                      disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                                      className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
-                                    />
-                                  );
-                                })}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="hidden lg:block w-px self-stretch bg-gray-300 mx-2" />
-
-                      {/* Rechts: Studiefase + Onderwerp (studenten) */}
-                      <div>
-                        {phaseCfg && (
-                          <div className="mr-4">
-                            <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{phaseCfg.label}</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {phaseCfg.options.map((option: any) => {
-                                const isDisabled = !availableFilterOptions['phase']?.[option.value];
-                                return (
-                                  <FilterButton
-                                    key={option.value}
-                                    label={option.label}
-                                    color={option.color}
-                                    variant={'outline'}
-                                    isActive={activeFilters['phase']?.includes(option.value)}
-                                    onClick={() => handleToggleFilter('phase', option.value)}
-                                    disabled={isDisabled}
-                                    disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {subjectCfg && (
-                          <div className="mr-4 mt-3">
-                            <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{subjectCfg.label}</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {subjectCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
-                                const isDisabled = !availableFilterOptions['subject']?.[option.value];
+                  {/* Rij 2: Overige filters. Altijd twee kolommen; rechterkant toont alleen studentenfilters als studenten actief is. */}
+                  <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] items-start">
+                    {/* Links: Onderwerp (medewerkersrollen) */}
+                    {processCfg && (
+                      <div className="mr-4">
+                        <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{processCfg.label}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {processCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
+                            const isDisabled = !availableFilterOptions['process']?.[option.value];
+                            return (
+                              <FilterButton
+                                key={option.value}
+                                label={option.label}
+                                color={option.color}
+                                variant={'solid'}
+                                isActive={activeFilters['process']?.includes(option.value)}
+                                onClick={() => handleToggleFilter('process', option.value)}
+                                softDisabled={isDisabled}
+                                disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                                count={optionCounts['process']?.[option.value]}
+                                compact
+                              />
+                            );
+                          })}
+                          {processCfg.options.some((o: any) => o.isOther) && (
+                            <>
+                              <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                              {processCfg.options.filter((o: any) => o.isOther).map((option: any) => {
+                                const isDisabled = !availableFilterOptions['process']?.[option.value];
                                 return (
                                   <FilterButton
                                     key={option.value}
                                     label={option.label}
                                     color={option.color}
                                     variant={'solid'}
-                                    isActive={activeFilters['subject']?.includes(option.value)}
-                                    onClick={() => handleToggleFilter('subject', option.value)}
-                                    disabled={isDisabled}
-                                    disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                    isActive={activeFilters['process']?.includes(option.value)}
+                                    onClick={() => handleToggleFilter('process', option.value)}
+                                    softDisabled={isDisabled}
+                                    disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                                    count={optionCounts['process']?.[option.value]}
+                                    className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                    compact
                                   />
                                 );
                               })}
-                              {subjectCfg.options.some((o: any) => o.isOther) && (
-                                <>
-                                  <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
-                                  {subjectCfg.options.filter((o: any) => o.isOther).map((option: any) => {
-                                    const isDisabled = !availableFilterOptions['subject']?.[option.value];
-                                    return (
-                                      <FilterButton
-                                        key={option.value}
-                                        label={option.label}
-                                        color={option.color}
-                                        variant={'solid'}
-                                        isActive={activeFilters['subject']?.includes(option.value)}
-                                        onClick={() => handleToggleFilter('subject', option.value)}
-                                        disabled={isDisabled}
-                                        disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
-                                        className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
-                                      />
-                                    );
-                                  })}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    // Alleen medewerkersfilters (volledige breedte)
+                    )}
+
+                    <div className="hidden lg:block w-px self-stretch bg-gray-300 mx-2" />
+
+                    {/* Rechts: Studiefase + Onderwerp (studenten) of lege kolom indien niet actief */}
                     <div>
-                      {processCfg && (
+                      {studentOn && phaseCfg && (
                         <div className="mr-4">
-                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{processCfg.label}</h3>
+                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{phaseCfg.label}</h3>
                           <div className="flex flex-wrap gap-2">
-                            {processCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
-                              const isDisabled = !availableFilterOptions['process']?.[option.value];
+                            {phaseCfg.options.map((option: any) => {
+                              const isDisabled = !availableFilterOptions['phase']?.[option.value];
+                              return (
+                                <FilterButton
+                                  key={option.value}
+                                  label={option.label}
+                                  color={option.color}
+                                  variant={'outline'}
+                                  isActive={activeFilters['phase']?.includes(option.value)}
+                                  onClick={() => handleToggleFilter('phase', option.value)}
+                                  softDisabled={isDisabled}
+                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                                  count={optionCounts['phase']?.[option.value]}
+                                  compact
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {studentOn && subjectCfg && (
+                        <div className="mr-4 mt-3">
+                          <h3 className="mb-2 text-base font-semibold text-gray-700 dark:text-slate-200">{subjectCfg.label}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {subjectCfg.options.filter((o: any) => !o.isOther).map((option: any) => {
+                              const isDisabled = !availableFilterOptions['subject']?.[option.value];
                               return (
                                 <FilterButton
                                   key={option.value}
                                   label={option.label}
                                   color={option.color}
                                   variant={'solid'}
-                                  isActive={activeFilters['process']?.includes(option.value)}
-                                  onClick={() => handleToggleFilter('process', option.value)}
-                                  disabled={isDisabled}
-                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                  isActive={activeFilters['subject']?.includes(option.value)}
+                                  onClick={() => handleToggleFilter('subject', option.value)}
+                                  softDisabled={isDisabled}
+                                  disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                                  count={optionCounts['subject']?.[option.value]}
+                                  compact
                                 />
                               );
                             })}
-                            {processCfg.options.some((o: any) => o.isOther) && (
+                            {subjectCfg.options.some((o: any) => o.isOther) && (
                               <>
                                 <div className="w-px h-6 bg-gray-300 mx-2 self-center"></div>
-                                {processCfg.options.filter((o: any) => o.isOther).map((option: any) => {
-                                  const isDisabled = !availableFilterOptions['process']?.[option.value];
+                                {subjectCfg.options.filter((o: any) => o.isOther).map((option: any) => {
+                                  const isDisabled = !availableFilterOptions['subject']?.[option.value];
                                   return (
                                     <FilterButton
                                       key={option.value}
                                       label={option.label}
                                       color={option.color}
                                       variant={'solid'}
-                                      isActive={activeFilters['process']?.includes(option.value)}
-                                      onClick={() => handleToggleFilter('process', option.value)}
-                                      disabled={isDisabled}
-                                      disabledReason={isDisabled ? "Geen activiteiten beschikbaar voor deze combinatie" : undefined}
+                                      isActive={activeFilters['subject']?.includes(option.value)}
+                                      onClick={() => handleToggleFilter('subject', option.value)}
+                                      softDisabled={isDisabled}
+                                      disabledReason={isDisabled ? "Geen activiteiten beschikbaar bij huidige selectie" : undefined}
+                                      count={optionCounts['subject']?.[option.value]}
                                       className="border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                      compact
                                     />
                                   );
                                 })}
@@ -519,7 +492,7 @@ const Home = ({
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })()}
@@ -549,6 +522,16 @@ const Home = ({
               >
                 {isDark ? <Sun size={16}/> : <Moon size={16}/>}
                 <span>{isDark ? 'Lichte modus' : 'Donkere modus'}</span>
+              </button>
+              {/* Rechts uitgelijnd: filterpaneel inklap/uitklap */}
+              <div className="hidden lg:block flex-1"></div>
+              <button 
+                onClick={() => setAreDesktopFiltersCollapsed((prev: boolean) => !prev)}
+                className="hidden lg:flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100"
+                title="Filters inklappen/uitklappen"
+              >
+                <ChevronUp size={16} className={`transition-transform ${areDesktopFiltersCollapsed ? 'rotate-180' : ''}`}/>
+                <span>{areDesktopFiltersCollapsed ? 'Filters uitklappen' : 'Filters inklappen'}</span>
               </button>
             </div>
           </div>
@@ -631,6 +614,8 @@ function App() {
   const { activeFilters, toggleFilter, setFilterSelection, resetFilters } = useFilters();
   const { snelkoppelingen, groepen } = useSnelkoppelingen();
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  // Desktop-only collapse state (niet bewaren in storage)
+  const [areDesktopFiltersCollapsed, setAreDesktopFiltersCollapsed] = useState(false);
   const [showRolePrompt, setShowRolePrompt] = useState(() => {
     try { return localStorage.getItem('hasSelectedRoles') === 'true' || localStorage.getItem('hasSelectedRolesPromptSeen') === 'true' ? false : true; } catch { return true; }
   });
@@ -789,7 +774,8 @@ function App() {
     const roleIdx = cloned.findIndex(c => c.id === 'role');
     if (roleIdx !== -1) {
       const byId = new Map<string, { value: string; label: string; color: string }>();
-      const palette = ['blue','indigo','teal','yellow','pink','purple','green','orange','slate','gray'];
+      // Palet zonder grijs zodat grijs gereserveerd blijft voor 'geen combinatie'
+      const palette = ['blue','indigo','teal','yellow','pink','purple','green','orange','red','emerald'];
       planningItems.forEach(item => {
         const tokens = tokenizeRoles(item.role);
         tokens.forEach(tok => {
@@ -816,7 +802,8 @@ function App() {
           if (subj[k] === true) keys.add(k);
         });
       });
-      const palette = ['orange','pink','indigo','blue','green','yellow','gray','teal','slate','purple'];
+      // Palet zonder grijs
+      const palette = ['orange','pink','indigo','blue','green','yellow','teal','purple','red','emerald'];
       const subjectLabelMap: Record<string, string> = {
         meeloops: 'Meeloopstage',
         inschrijven: 'Inschrijvingen/aanmeldingen',
@@ -831,7 +818,8 @@ function App() {
     }
     const processIdx = cloned.findIndex(c => c.id === 'process');
     if (processIdx !== -1) {
-      const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
+      // Palet zonder grijs
+      const palette = ['teal','yellow','pink','purple','green','orange','indigo','blue','red','emerald'];
       // Verzamel originele labels per id uit alle items (casing exact zoals in Excel)
       const labelById = new Map<string, string>();
       planningItems.forEach(item => {
@@ -858,6 +846,7 @@ function App() {
   }, [planningItems]);
 
   const availableFilterOptions = useAvailableFilterOptions(planningItems, activeFilters, effectiveFilterConfig);
+  const optionCounts = useOptionCounts(planningItems, activeFilters, effectiveFilterConfig);
 
   const availableOptions = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
@@ -1165,8 +1154,11 @@ function App() {
               filteredItemsCount={filteredUniqueCount}
               totalItemsCount={totalUniqueCount}
               availableFilterOptions={availableFilterOptions}
+              optionCounts={optionCounts}
               showRolePrompt={showRolePrompt}
               setShowRolePrompt={setShowRolePrompt}
+                areDesktopFiltersCollapsed={areDesktopFiltersCollapsed}
+                setAreDesktopFiltersCollapsed={setAreDesktopFiltersCollapsed}
             />
           } 
         />

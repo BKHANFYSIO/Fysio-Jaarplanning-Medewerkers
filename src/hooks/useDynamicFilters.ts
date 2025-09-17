@@ -39,7 +39,8 @@ export const useDynamicFilters = () => {
           const subj: any = (item as any).subjects || {};
           Object.keys(subj).forEach(k => { if (subj[k] === true) keys.add(k); });
         });
-        const palette = ['orange','pink','indigo','blue','green','yellow','gray','teal','slate','purple'];
+        // Palet zonder grijs (geen slate/grijs)
+        const palette = ['orange','pink','indigo','blue','green','yellow','teal','purple','red','emerald'];
         const subjectLabelMap: Record<string, string> = {
           meeloops: 'Meeloopstage',
           inschrijven: 'Inschrijvingen/aanmeldingen',
@@ -56,7 +57,8 @@ export const useDynamicFilters = () => {
         };
       }
       if (config.id === 'process') {
-        const palette = ['teal','yellow','pink','purple','green','orange','slate','gray','indigo','blue'];
+        // Palet zonder grijs (geen slate/grijs)
+        const palette = ['teal','yellow','pink','purple','green','orange','indigo','blue','red','emerald'];
         // Verzamel eerst alle originele labels uit alle items om casing exact te behouden
         const labelById = new Map<string, string>();
         planningItems.forEach(item => {

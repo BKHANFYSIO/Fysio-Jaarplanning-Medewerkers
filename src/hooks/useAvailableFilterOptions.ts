@@ -29,13 +29,17 @@ export const useAvailableFilterOptions = (
     // Voor elke filter configuratie, bepaal welke opties nog beschikbaar zijn
     filterConfig.forEach(config => {
       config.options.forEach(option => {
-        // Simuleer wat er zou gebeuren als deze optie geselecteerd zou worden
-        const testFilters = { ...activeFilters };
-        const currentSelection = testFilters[config.id] || [];
-        
-        // Voeg deze optie toe aan de test filters
-        if (!currentSelection.includes(option.value)) {
-          testFilters[config.id] = [...currentSelection, option.value];
+        // Simuleer de selectie van ALLEEN deze optie binnen dezelfde filtergroep
+        // (i.p.v. toevoegen aan bestaande selectie). Dit voorkomt dat een optie
+        // kunstmatig 'beschikbaar' lijkt door OR-logica met al gekozen opties
+        // in dezelfde filtergroep (zoals processen).
+        const testFilters = { ...activeFilters } as Record<string, string[]>;
+        testFilters[config.id] = [option.value];
+        // Voorkom kruisbesmetting tussen studenten- en medewerkerskant bij beschikbaarheid
+        if (config.id === 'process') {
+          testFilters['subject'] = ['__none__'];
+        } else if (config.id === 'subject' || config.id === 'phase') {
+          testFilters['process'] = ['__none__'];
         }
 
         // Filter de items met deze test filters

@@ -46,6 +46,7 @@ export const useRoles = () => {
 
   // Helper functie om een kleur te genereren op basis van een string
   const generateColorFromString = (str: string): string => {
+    // Gebruik een palet zonder grijstinten zodat grijs gereserveerd blijft voor 'geen combinatie'
     const colors = ['blue', 'green', 'purple', 'orange', 'teal', 'pink', 'indigo', 'yellow', 'red', 'emerald'];
     const hash = str.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);

@@ -9,6 +9,9 @@ interface FilterButtonProps {
   disabled?: boolean;
   disabledReason?: string;
   className?: string;
+  softDisabled?: boolean; // visueel disabled + tooltip, maar nog klikbaar
+  count?: number; // optioneel teller-badge
+  compact?: boolean; // maak knoppen compacter op laptop
 }
 
 const colorClasses = {
@@ -23,6 +26,9 @@ const colorClasses = {
   gray: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-200', border: 'border-gray-300 dark:border-gray-700', hoverBg: 'hover:bg-gray-100 dark:hover:bg-gray-700' },
   teal: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-200', border: 'border-teal-300 dark:border-teal-700', hoverBg: 'hover:bg-teal-100 dark:hover:bg-teal-900/40' },
   slate: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-800 dark:text-slate-200', border: 'border-slate-300 dark:border-slate-700', hoverBg: 'hover:bg-slate-100 dark:hover:bg-slate-700' },
+  red: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-200', border: 'border-red-300 dark:border-red-700', hoverBg: 'hover:bg-red-100 dark:hover:bg-red-900/40' },
+  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-200', border: 'border-emerald-300 dark:border-emerald-700', hoverBg: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/40' },
+  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-800 dark:text-cyan-200', border: 'border-cyan-300 dark:border-cyan-700', hoverBg: 'hover:bg-cyan-100 dark:hover:bg-cyan-900/40' },
 };
 
 export const FilterButton: React.FC<FilterButtonProps> = ({ 
@@ -33,25 +39,32 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
   variant = 'solid',
   disabled = false,
   disabledReason,
-  className = ''
+  className = '',
+  softDisabled = false,
+  count,
+  compact = false,
 }) => {
   const selectedColor = colorClasses[color as keyof typeof colorClasses] || colorClasses.gray;
 
-  const baseClasses = "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200";
+  const baseClasses = `px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${compact ? 'lg:px-2 lg:py-1 lg:text-xs' : ''}`;
 
   let styleClasses = '';
   if (disabled) {
-    // Disabled state - grijze tint, lage opacity, niet klikbaar
+    // Hard disabled: niet klikbaar
     styleClasses = `bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border border-gray-200 dark:border-gray-700 cursor-not-allowed opacity-50`;
   } else if (variant === 'outline') {
     const borderBase = "border";
-    const active = `${selectedColor.bg} ${selectedColor.text} ${selectedColor.border} ring-2 ring-han-red ring-offset-2`;
-    const inactive = `bg-transparent ${selectedColor.text} ${selectedColor.border} ${selectedColor.hoverBg} hover:opacity-100`;
+    const colorBase = softDisabled ? 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-700' : `${selectedColor.text} ${selectedColor.border}`;
+    const bgActive = softDisabled ? 'bg-gray-100 dark:bg-gray-800' : selectedColor.bg;
+    const active = `${bgActive} ${colorBase} ring-2 ring-han-red ring-offset-2 border-2 border-blue-500 dark:border-blue-400`;
+    const inactiveHover = softDisabled ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : selectedColor.hoverBg;
+    const inactiveEmphasis = !softDisabled && typeof count === 'number' && count > 0 ? 'opacity-100' : '';
+    const inactive = `bg-transparent ${colorBase} ${inactiveHover} ${inactiveEmphasis}`;
     styleClasses = `${borderBase} ${isActive ? active : inactive}`;
   } else { // solid
-    const solidBase = `${selectedColor.bg} ${selectedColor.text}`;
-    const active = `ring-2 ring-han-red ring-offset-2`;
-    const inactive = `opacity-70 hover:opacity-100`;
+    const solidBase = softDisabled ? `bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400` : `${selectedColor.bg} ${selectedColor.text}`;
+    const active = `ring-2 ring-han-red ring-offset-2 border-2 border-blue-500 dark:border-blue-400`;
+    const inactive = (!softDisabled && typeof count === 'number' && count > 0) ? 'opacity-100' : 'opacity-70 hover:opacity-100';
     styleClasses = `${solidBase} ${isActive ? active : inactive}`;
   }
 
@@ -59,16 +72,23 @@ export const FilterButton: React.FC<FilterButtonProps> = ({
     <button
       type="button"
       className={`${baseClasses} ${styleClasses} ${className}`}
-      onClick={disabled ? undefined : onClick}
+      onClick={(disabled ? undefined : onClick)}
       disabled={disabled}
-      title={disabled ? disabledReason : undefined}
+      title={(disabled || softDisabled) ? disabledReason : undefined}
     >
-      {label}
+      <span className="inline-flex items-center gap-0.5">
+        <span className={softDisabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-slate-100'}>{label}</span>
+        {typeof count === 'number' && (
+          <span className={`ml-0.5 inline-flex items-center justify-center text-[10px] leading-none px-1 py-0 rounded-full bg-gray-200 text-gray-700 dark:bg-slate-700 dark:text-slate-200 -translate-y-0.5 ${softDisabled ? 'opacity-60' : ''}`}>
+            {count}
+          </span>
+        )}
+      </span>
     </button>
   );
 
   // Als disabled en er is een reden, wrap in een div met tooltip
-  if (disabled && disabledReason) {
+  if ((disabled || softDisabled) && disabledReason) {
     return (
       <div className="relative group">
         {button}
